@@ -1,3 +1,5 @@
+npx create-next-app@latest mi-proyecto
+
 import React from 'react';
 
 export default function LandingPage() {
