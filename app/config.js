@@ -1,7 +1,7 @@
 // ===== Configuración del negocio =====
 // Todo lo que vayas a cambiar seguido (número, horario, servicios, zonas) vive acá.
 
-export const WHATSAPP_NUMBER = "56900000000"; // TODO: reemplaza por el número real, formato 569XXXXXXXX
+export const WHATSAPP_NUMBER = "56982674570"; // TODO: reemplaza por el número real, formato 569XXXXXXXX
 
 // Mismo Access Key usado en la landing de 1312MOTORSPORTS (llega al mismo correo).
 // Si quieres separar los agendamientos de ambos sitios, saca un key nuevo gratis en https://web3forms.com
