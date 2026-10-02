@@ -8,8 +8,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
-      {/* 1. HERO SECTION (Con el toque azulado tecnológico que te gustaba) */}
-      <header className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-b border-slate-800/80 py-20 px-4 text-center">
+      {/* 1. HERO SECTION (Con el toque azulado exacto que te gusta) */}
+      <header className="bg-gradient-to-b from-slate-900 via-blue-950/40 to-slate-950 border-b border-slate-800/80 py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight text-white">
             Auto<span className="text-blue-500">Booking</span>
@@ -23,7 +23,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="#agendar"
-              className="bg-blue-600 text-white font-bold text-lg py-3 px-8 rounded-full shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition duration-300"
+              className="bg-blue-600 text-white font-bold text-lg py-3 px-8 rounded-full shadow-lg shadow-blue-600/40 hover:bg-blue-500 transition duration-300"
             >
               Agendar mi visita
             </a>
