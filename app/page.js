@@ -60,22 +60,39 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. NUESTROS SERVICIOS */}
-      <section className="bg-gray-100 py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold mb-10 text-center text-gray-900">Nuestros Servicios</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {SERVICES.map((servicio, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-600 flex items-center"
-              >
-                <span className="font-semibold text-gray-700">{servicio}</span>
-              </div>
-            ))}
+            {/* 3. NUESTROS SERVICIOS (Estilo Carrusel Horizontal App) */}
+      <section className="bg-white py-12">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex justify-between items-end mb-6">
+            <h3 className="text-2xl font-bold text-gray-900">Encuentra servicios</h3>
+            <a href="#agendar" className="text-sm font-semibold text-red-600 hover:underline">
+              Ver todos
+            </a>
+          </div>
+
+          {/* Contenedor del carrusel con scroll oculto */}
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {SERVICES.map((servicio, index) => {
+              // Asignamos un ícono (emoji) basado en tus servicios para simular el diseño 3D
+              const icons = ["🔋", "🛑", "⚡", "🔊", "🛠️", "💻", "🔍"];
+              const icon = icons[index] || "🚗";
+
+              return (
+                <div
+                  key={index}
+                  className="snap-start shrink-0 w-36 sm:w-40 bg-gray-50 rounded-3xl p-5 flex flex-col items-center justify-center text-center border border-gray-100 hover:bg-gray-100 transition-colors cursor-pointer"
+                >
+                  <div className="text-5xl mb-4 drop-shadow-md">{icon}</div>
+                  <span className="font-medium text-sm text-gray-800 leading-tight">
+                    {servicio}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
+
 
       {/* 4. COBERTURA */}
       <section className="py-16 px-4 max-w-5xl mx-auto">
