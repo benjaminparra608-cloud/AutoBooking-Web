@@ -1,14 +1,56 @@
-import React from "react";
+'use client';
+
+import React, { useState } from "react";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
+// Diccionario con descripciones y detalles para el modal de cada servicio
+const SERVICE_DETAILS = {
+  "Instalación y Venta de Baterías": {
+    icon: "🔋",
+    description: "Reemplazamos tu batería a domicilio con diagnóstico del sistema de carga incluido. Olvídate de quedar en panne.",
+    badge: "Servicio a domicilio"
+  },
+  "Servicio de frenos": {
+    icon: "🛑",
+    description: "Inspección y cambio de pastillas, discos y líquido de frenos directamente en la comodidad de tu hogar u oficina.",
+    badge: "Seguridad garantizada"
+  },
+  "Diagnósticos Eléctricos": {
+    icon: "⚡",
+    description: "Revisión avanzada del sistema eléctrico, alternador, partida y fusibles con equipos profesionales de alta precisión.",
+    badge: "Alta precisión"
+  },
+  "Car Audio": {
+    icon: "🔊",
+    description: "Instalación de pantallas táctiles, parlantes, cámaras de retroceso y sistemas de sonido personalizados para tu vehículo.",
+    badge: "Entretenimiento y confort"
+  },
+  "Mantenciones por KM": {
+    icon: "🛠️",
+    description: "Cambio de aceite, filtros (aire, aceite, cabina) y revisión general según el kilometraje recomendado por el fabricante.",
+    badge: "Mantén tu garantía"
+  },
+  "Escaner Automotriz": {
+    icon: "💻",
+    description: "Lectura y borrado de códigos de falla (DTC), análisis de sensores en tiempo real y diagnóstico completo del motor.",
+    badge: "Diagnóstico computarizado"
+  },
+  "Inspección Técnica Pre-Compra": {
+    icon: "🔍",
+    description: "Evaluación exhaustiva de más de 100 puntos (carrocería, motor, escáner e historial) antes de que compres un auto usado.",
+    badge: "Compra con seguridad"
+  }
+};
+
 export default function LandingPage() {
+  const [selectedService, setSelectedService] = useState(null);
   const heroWa = whatsappUrl("Hola, quiero cotizar un servicio para mi auto");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
-      {/* 1. HERO SECTION (Degradado marcado de azul vibrante a negro oscuro) */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
+      {/* 1. HERO SECTION */}
       <header className="bg-gradient-to-b from-blue-700 via-blue-950 to-slate-950 border-b border-blue-900 py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight text-white">
@@ -64,7 +106,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. NUESTROS SERVICIOS (Carrusel Horizontal Estilo App) */}
+      {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal Estilo Referencia) */}
       <section id="servicios" className="py-12 bg-slate-900/40 border-y border-slate-800/80">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex justify-between items-end mb-6">
@@ -76,15 +118,15 @@ export default function LandingPage() {
 
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {SERVICES.map((servicio, index) => {
-              const icons = ["🔋", "🛑", "⚡", "🔊", "🛠️", "💻", "🔍"];
-              const icon = icons[index] || "🚗";
+              const details = SERVICE_DETAILS[servicio] || { icon: "🚗" };
 
               return (
                 <div
                   key={index}
-                  className="snap-start shrink-0 w-36 sm:w-40 bg-slate-900 rounded-3xl p-5 flex flex-col items-center justify-center text-center border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg"
+                  onClick={() => setSelectedService(servicio)}
+                  className="snap-start shrink-0 w-36 sm:w-40 bg-slate-900 rounded-3xl p-5 flex flex-col items-center justify-center text-center border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:scale-105"
                 >
-                  <div className="text-5xl mb-4 drop-shadow-md">{icon}</div>
+                  <div className="text-5xl mb-4 drop-shadow-md">{details.icon}</div>
                   <span className="font-medium text-sm text-slate-200 leading-tight">
                     {servicio}
                   </span>
@@ -94,6 +136,47 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* MODAL / MENÚ FLOTANTE AL HACER CLIC EN UN SERVICIO */}
+      {selectedService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full relative shadow-2xl flex flex-col md:flex-row gap-6 items-center">
+            {/* Botón de cerrar */}
+            <button 
+              onClick={() => setSelectedService(null)}
+              className="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* Lado izquierdo: Visual / Ícono grande (Inspirado en la referencia) */}
+            <div className="w-full md:w-1/2 bg-slate-950 rounded-2xl p-8 flex flex-col items-center justify-center text-center border border-slate-800/60">
+              <span className="text-7xl mb-3 drop-shadow-lg">
+                {SERVICE_DETAILS[selectedService]?.icon || "🚗"}
+              </span>
+              <span className="text-xs uppercase tracking-wider text-cyan-400 font-semibold bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-800/40">
+                {SERVICE_DETAILS[selectedService]?.badge || "Servicio AutoBooking"}
+              </span>
+            </div>
+
+            {/* Lado derecho: Descripción y acción */}
+            <div className="w-full md:w-1/2 flex flex-col text-left">
+              <h3 className="text-2xl font-bold text-white mb-3">{selectedService}</h3>
+              <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                {SERVICE_DETAILS[selectedService]?.description || "Servicio técnico automotriz especializado a domicilio."}
+              </p>
+
+              <a
+                href="#agendar"
+                onClick={() => setSelectedService(null)}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-center transition-all shadow-lg shadow-blue-600/30"
+              >
+                Agendar este servicio
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4. COBERTURA */}
       <section className="py-16 px-4 max-w-5xl mx-auto">
