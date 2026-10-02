@@ -8,22 +8,22 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24">
-      {/* 1. HERO SECTION (Con el toque azulado exacto que te gusta) */}
-      <header className="bg-gradient-to-b from-slate-900 via-blue-950/40 to-slate-950 border-b border-slate-800/80 py-20 px-4 text-center">
+      {/* 1. HERO SECTION (Degradado marcado de azul vibrante a negro oscuro) */}
+      <header className="bg-gradient-to-b from-blue-700 via-blue-950 to-slate-950 border-b border-blue-900 py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-extrabold mb-4 tracking-tight text-white">
-            Auto<span className="text-blue-500">Booking</span>
+            Auto<span className="text-cyan-400">Booking</span>
           </h1>
-          <h2 className="text-2xl font-medium mb-6 text-slate-300">
+          <h2 className="text-2xl font-medium mb-6 text-slate-200">
             Agenda con facilidad, sin moverte de casa.
           </h2>
-          <p className="text-lg mb-8 text-slate-400">
+          <p className="text-lg mb-8 text-slate-300">
             Mecánica automotriz a domicilio. Cuide su inversión ahorrando tiempo y dinero.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a
               href="#agendar"
-              className="bg-blue-600 text-white font-bold text-lg py-3 px-8 rounded-full shadow-lg shadow-blue-600/40 hover:bg-blue-500 transition duration-300"
+              className="bg-white text-blue-950 font-bold text-lg py-3 px-8 rounded-full shadow-lg hover:bg-slate-100 transition duration-300"
             >
               Agendar mi visita
             </a>
