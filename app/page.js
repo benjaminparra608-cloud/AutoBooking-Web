@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
+import Navbar from "./components/Navbar";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
@@ -50,6 +51,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
+      {/* Barra de navegación superior para pantallas grandes */}
+      <Navbar />
+
       {/* 1. HERO SECTION */}
       <header className="bg-gradient-to-b from-blue-700 via-blue-950 to-slate-950 border-b border-blue-900 py-20 px-4 text-center">
         <div className="max-w-4xl mx-auto">
@@ -85,7 +89,7 @@ export default function LandingPage() {
       </header>
 
       {/* 2. ¿CÓMO FUNCIONA? */}
-      <section className="py-16 px-4 max-w-5xl mx-auto text-center">
+      <section id="como-funciona" className="py-16 px-4 max-w-5xl mx-auto text-center">
         <h3 className="text-3xl font-bold mb-10 text-white">¿Cómo funciona?</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800">
@@ -106,7 +110,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal Estilo Referencia) */}
+      {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal) */}
       <section id="servicios" className="py-12 bg-slate-900/40 border-y border-slate-800/80">
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex justify-between items-end mb-6">
@@ -149,7 +153,7 @@ export default function LandingPage() {
               ✕
             </button>
 
-            {/* Lado izquierdo: Visual / Ícono grande (Inspirado en la referencia) */}
+            {/* Lado izquierdo: Visual / Ícono grande */}
             <div className="w-full md:w-1/2 bg-slate-950 rounded-2xl p-8 flex flex-col items-center justify-center text-center border border-slate-800/60">
               <span className="text-7xl mb-3 drop-shadow-lg">
                 {SERVICE_DETAILS[selectedService]?.icon || "🚗"}
@@ -179,7 +183,7 @@ export default function LandingPage() {
       )}
 
       {/* 4. COBERTURA */}
-      <section className="py-16 px-4 max-w-5xl mx-auto">
+      <section id="cobertura" className="py-16 px-4 max-w-5xl mx-auto">
         <h3 className="text-3xl font-bold mb-3 text-center text-white">¿Dónde operamos?</h3>
         <p className="text-center text-slate-400 mb-10">
           Atendemos estas comunas de Santiago, agrupadas por zona:
