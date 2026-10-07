@@ -209,8 +209,10 @@ export default function LandingPage() {
           ¿No ves tu comuna en la lista? Escríbenos por WhatsApp igual y te confirmamos.
         </p>
       </section>
-     {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
+
+      {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
       <import FAQ/>
+      
       {/* 6. AGENDA TU HORA */}
       <section id="agendar" className="py-16 px-4 bg-slate-900/40 border-t border-slate-800/80">
         <div className="max-w-5xl mx-auto">
@@ -222,7 +224,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. FOOTER */}
+      {/* 7. FOOTER */}
       <footer className="bg-slate-950 text-slate-400 py-12 text-center border-t border-slate-900">
         <div className="max-w-4xl mx-auto px-4">
           <p className="text-sm">© 2026 AutoBooking. Todos los derechos reservados.</p>
