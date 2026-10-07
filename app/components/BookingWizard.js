@@ -27,6 +27,7 @@ const initialForm = {
   fecha: "",
   horario: "",
   nombre: "",
+  email: "",
   telefono: "",
   comuna: "",
   direccion: "",
@@ -123,7 +124,7 @@ export default function BookingWizard() {
           subject: "Nuevo agendamiento — AutoBooking",
           from_name: "AutoBooking — Agendamiento web",
           Nombre: form.nombre,
-          email: formData.email,
+          email: form.email,
           Teléfono: form.telefono,
           Comuna: form.comuna,
           Dirección: form.direccion || "(no indicada)",
@@ -398,16 +399,14 @@ export default function BookingWizard() {
               />
             </div>
             <div>
-            <label className="block text-sm text-slate-300 mb-1">Email</label>
-               <input 
-                type="email" 
-                name="email"
-                value={formData.email}
-                onChange={(e) => update("email", e.target.value)}
-                required
-                className={inputClass("email")}
+              <label className="block text-sm text-gray-600 mb-1">Email</label>
+              <input
+                type="email"
                 placeholder="tucorreo@ejemplo.com"
-           />
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                className={inputClass("email")}
+              />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-600 mb-1">Teléfono</label>
