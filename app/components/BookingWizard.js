@@ -397,19 +397,18 @@ export default function BookingWizard() {
                 onChange={(e) => update("nombre", e.target.value)}
               />
             </div>
-            {/* Campo Correo / Email */}
-<div>
-  <label className="block text-sm text-slate-300 mb-1">Email</label>
-  <input 
-    type="email" 
-    name="email"
-    value={formData.email || ''} 
-    onChange={handleChange} 
-    required
-    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-400"
-    placeholder="tucorreo@ejemplo.com"
-  />
-</div>
+            <div>
+            <label className="block text-sm text-slate-300 mb-1">Email</label>
+               <input 
+                type="email" 
+                name="email"
+                value={formData.email}
+                onChange={(e) => update("email", e.target.value)}
+                required
+                className={inputClass("email")}
+                placeholder="tucorreo@ejemplo.com"
+           />
+            </div>
             <div>
               <label className="block text-sm font-semibold text-gray-600 mb-1">Teléfono</label>
               <input
