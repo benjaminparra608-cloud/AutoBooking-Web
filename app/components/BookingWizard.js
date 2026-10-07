@@ -119,20 +119,21 @@ export default function BookingWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-  access_key: "c6b804a3-8309-4850-87b4-fedd3c534e77",
-  subject: "Nuevo agendamiento — AutoBooking",
-  from_name: "AutoBooking — Agendamiento web",
-  Nombre: form.nombre,
-  Teléfono: form.telefono,
-  Comuna: form.comuna,
-  Dirección: form.direccion || "(no indicada)",
-  Vehículo: `${form.marca} ${form.modelo}`,
-  Patente: form.patente,
-  Kilometraje: form.km || "(no indicado)",
-  Servicio: form.servicio,
-  "Fecha preferida": `${form.fecha} — ${form.horario}`,
-  Detalle: form.comentario || "(sin comentario)",
-}),
+          access_key: "c6b804a3-8309-4850-87b4-fedd3c534e77",
+          subject: "Nuevo agendamiento — AutoBooking",
+          from_name: "AutoBooking — Agendamiento web",
+          Nombre: form.nombre,
+          email: formData.email,
+          Teléfono: form.telefono,
+          Comuna: form.comuna,
+          Dirección: form.direccion || "(no indicada)",
+          Vehículo: `${form.marca} ${form.modelo}`,
+          Patente: form.patente,
+          Kilometraje: form.km || "(no indicado)",
+          Servicio: form.servicio,
+          "Fecha preferida": `${form.fecha} — ${form.horario}`,
+          Detalle: form.comentario || "(sin comentario)",
+        }),
       });
     } catch (err) {
       console.error("No se pudo enviar el correo del agendamiento:", err);
@@ -396,6 +397,19 @@ export default function BookingWizard() {
                 onChange={(e) => update("nombre", e.target.value)}
               />
             </div>
+            {/* Campo Correo / Email */}
+<div>
+  <label className="block text-sm text-slate-300 mb-1">Email</label>
+  <input 
+    type="email" 
+    name="email"
+    value={formData.email || ''} 
+    onChange={handleChange} 
+    required
+    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-cyan-400"
+    placeholder="tucorreo@ejemplo.com"
+  />
+</div>
             <div>
               <label className="block text-sm font-semibold text-gray-600 mb-1">Teléfono</label>
               <input
