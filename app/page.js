@@ -1,11 +1,13 @@
 'use client';
 
+
 import React, { useState } from "react";
 import Navbar from "./components/Navbar";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
-import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 import FAQ from "./components/FAQ";
+import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
+
 // Diccionario con descripciones y detalles para el modal de cada servicio
 const SERVICE_DETAILS = {
   "Instalación y Venta de Baterías": {
