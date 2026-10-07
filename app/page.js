@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
-
+import FAQ from "./components/FAQ";
 // Diccionario con descripciones y detalles para el modal de cada servicio
 const SERVICE_DETAILS = {
   "Instalación y Venta de Baterías": {
@@ -209,8 +209,9 @@ export default function LandingPage() {
           ¿No ves tu comuna en la lista? Escríbenos por WhatsApp igual y te confirmamos.
         </p>
       </section>
-
-      {/* 5. AGENDA TU HORA */}
+     {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
+      <import FAQ/>
+      {/* 6. AGENDA TU HORA */}
       <section id="agendar" className="py-16 px-4 bg-slate-900/40 border-t border-slate-800/80">
         <div className="max-w-5xl mx-auto">
           <h3 className="text-3xl font-bold mb-3 text-center text-white">Agenda tu hora</h3>
