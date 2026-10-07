@@ -211,8 +211,8 @@ export default function LandingPage() {
       </section>
 
       {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
-      <import FAQ/>
-      
+      <FAQ />
+
       {/* 6. AGENDA TU HORA */}
       <section id="agendar" className="py-16 px-4 bg-slate-900/40 border-t border-slate-800/80">
         <div className="max-w-5xl mx-auto">
