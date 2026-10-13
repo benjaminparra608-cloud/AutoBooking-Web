@@ -119,40 +119,6 @@ export const GALLERY = [
   },
 ];
 
-// Comparación AutoBooking vs. taller tradicional, para la sección "Qué nos diferencia".
-export const DIFFERENTIATORS = [
-  {
-    icon: "🚗",
-    title: "Vamos nosotros, no tú",
-    description: "Te atendemos en tu casa, oficina o donde estés. Sin perder la mañana en un taller.",
-  },
-  {
-    icon: "💬",
-    title: "Precio claro antes de confirmar",
-    description: "Sabes el costo estimado al agendar. Sin sorpresas al momento de pagar.",
-  },
-  {
-    icon: "📋",
-    title: "Registramos el estado de tu auto",
-    description: "Nos cuentas el problema al agendar, así llegamos con el repuesto y la herramienta correcta.",
-  },
-  {
-    icon: "🛡️",
-    title: "Repuestos con garantía",
-    description: "Toda pieza o batería que instalamos tiene garantía de fábrica, más la garantía de mano de obra.",
-  },
-  {
-    icon: "📱",
-    title: "Todo por WhatsApp",
-    description: "Agenda, confirma y resuelve dudas sin descargar ninguna app ni crear una cuenta.",
-  },
-  {
-    icon: "⭐",
-    title: "Hecho solo para mecánica a domicilio",
-    description: "No somos un sistema genérico de citas: cada paso está pensado para autos y servicios a domicilio.",
-  },
-];
-
 // ===== Horario de atención =====
 
 export function isOpenNow(date) {

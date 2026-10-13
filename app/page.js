@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
 import FAQ from "./components/FAQ";
-import Differentiators from "./components/Differentiators";
+import Features from "./components/Features";
 import Gallery from "./components/Gallery";
 import Reviews from "./components/Reviews";
 import FloatingBookButton from "./components/FloatingBookButton";
@@ -115,8 +115,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 2.5 QUÉ NOS DIFERENCIA */}
-      <Differentiators />
+      {/* 2.5 CARACTERÍSTICAS (tarjetas con mockup, estilo Bookr) */}
+      <Features />
 
       {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal) */}
       <section id="servicios" className="py-12 bg-slate-900/40 border-y border-slate-800/80">
