@@ -65,6 +65,94 @@ export const ZONES = [
   },
 ];
 
+// Reseñas de clientes. Son datos de ejemplo — reemplázalos por reseñas reales
+// apenas las tengas (puedes copiarlas de WhatsApp o de tu perfil de Google Business).
+export const REVIEWS = [
+  {
+    nombre: "Marcos R.",
+    comuna: "Ñuñoa",
+    servicio: "Cambio de batería",
+    texto:
+      "Llegaron puntuales y me cambiaron la batería en menos de 30 minutos, sin moverme de la oficina.",
+    estrellas: 5,
+  },
+  {
+    nombre: "Francisca V.",
+    comuna: "La Florida",
+    servicio: "Mantención por KM",
+    texto:
+      "Muy profesionales, me explicaron todo antes de hacer el trabajo y dejaron todo ordenado.",
+    estrellas: 5,
+  },
+  {
+    nombre: "Ignacio T.",
+    comuna: "Providencia",
+    servicio: "Escáner automotriz",
+    texto:
+      "Detectaron la falla al tiro con el escáner. En otro taller llevaban dos visitas sin encontrarla.",
+    estrellas: 5,
+  },
+];
+
+// Trabajos para la galería antes/después. Son placeholders (sin fotos reales todavía):
+// cuando tengas fotos, agrega los archivos en /public/gallery/ y reemplaza "before"/"after"
+// por las rutas de imagen (ej: "/gallery/bateria-antes.jpg"), y GalleryItem las mostrará
+// como imagen automáticamente en vez del bloque de color.
+export const GALLERY = [
+  {
+    titulo: "Cambio de batería",
+    descripcion: "Diagnóstico del sistema de carga + instalación de batería nueva.",
+    before: null,
+    after: null,
+  },
+  {
+    titulo: "Servicio de frenos",
+    descripcion: "Cambio de pastillas y discos, con prueba de frenado incluida.",
+    before: null,
+    after: null,
+  },
+  {
+    titulo: "Detalle de motor",
+    descripcion: "Limpieza de bahía de motor tras una mantención completa.",
+    before: null,
+    after: null,
+  },
+];
+
+// Comparación AutoBooking vs. taller tradicional, para la sección "Qué nos diferencia".
+export const DIFFERENTIATORS = [
+  {
+    icon: "🚗",
+    title: "Vamos nosotros, no tú",
+    description: "Te atendemos en tu casa, oficina o donde estés. Sin perder la mañana en un taller.",
+  },
+  {
+    icon: "💬",
+    title: "Precio claro antes de confirmar",
+    description: "Sabes el costo estimado al agendar. Sin sorpresas al momento de pagar.",
+  },
+  {
+    icon: "📋",
+    title: "Registramos el estado de tu auto",
+    description: "Nos cuentas el problema al agendar, así llegamos con el repuesto y la herramienta correcta.",
+  },
+  {
+    icon: "🛡️",
+    title: "Repuestos con garantía",
+    description: "Toda pieza o batería que instalamos tiene garantía de fábrica, más la garantía de mano de obra.",
+  },
+  {
+    icon: "📱",
+    title: "Todo por WhatsApp",
+    description: "Agenda, confirma y resuelve dudas sin descargar ninguna app ni crear una cuenta.",
+  },
+  {
+    icon: "⭐",
+    title: "Hecho solo para mecánica a domicilio",
+    description: "No somos un sistema genérico de citas: cada paso está pensado para autos y servicios a domicilio.",
+  },
+];
+
 // ===== Horario de atención =====
 
 export function isOpenNow(date) {

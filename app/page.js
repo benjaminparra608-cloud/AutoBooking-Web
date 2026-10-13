@@ -5,6 +5,10 @@ import Navbar from "./components/Navbar";
 import BookingWizard from "./components/BookingWizard";
 import BottomNav from "./components/BottomNav";
 import FAQ from "./components/FAQ";
+import Differentiators from "./components/Differentiators";
+import Gallery from "./components/Gallery";
+import Reviews from "./components/Reviews";
+import FloatingBookButton from "./components/FloatingBookButton";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
 // Diccionario con descripciones y detalles para el modal de cada servicio
@@ -111,6 +115,9 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* 2.5 QUÉ NOS DIFERENCIA */}
+      <Differentiators />
+
       {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal) */}
       <section id="servicios" className="py-12 bg-slate-900/40 border-y border-slate-800/80">
         <div className="max-w-5xl mx-auto px-4">
@@ -211,6 +218,12 @@ export default function LandingPage() {
         </p>
       </section>
 
+      {/* 4.5 GALERÍA ANTES/DESPUÉS */}
+      <Gallery />
+
+      {/* 4.6 RESEÑAS DE CLIENTES */}
+      <Reviews />
+
       {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
       <FAQ />
 
@@ -233,6 +246,7 @@ export default function LandingPage() {
       </footer>
 
       <BottomNav />
+      <FloatingBookButton />
     </div>
   );
 }
