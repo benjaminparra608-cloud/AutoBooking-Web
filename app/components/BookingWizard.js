@@ -10,6 +10,7 @@ import {
   formatDateEs,
   whatsappUrl,
 } from "../lib/config";
+import { createCita } from "../lib/supabase";
 
 const STEPS = [
   { id: 1, label: "Vehículo" },
@@ -116,6 +117,9 @@ export default function BookingWizard() {
 
     setSending(true);
     try {
+      // Guardar agendamiento en la base de datos (Supabase / local)
+      await createCita(form);
+
       await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -137,7 +141,7 @@ export default function BookingWizard() {
         }),
       });
     } catch (err) {
-      console.error("No se pudo enviar el correo del agendamiento:", err);
+      console.error("No se pudo procesar el agendamiento:", err);
     } finally {
       setSending(false);
     }
