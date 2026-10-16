@@ -60,6 +60,14 @@ export default function BottomNav() {
               <span className="text-[10px] font-medium">Servicios</span>
             </a>
 
+            {/* 2.5 Cotizar */}
+            <a href="#cotizador" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
+              <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span className="text-[10px] font-medium">Cotizar</span>
+            </a>
+
             {/* 3. Agendar */}
             <a href="#agendar" className="flex flex-col items-center p-2 text-slate-400 hover:text-blue-400 transition-colors">
               <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -48,7 +48,14 @@ export default function Navbar() {
 
         {/* Botón de acción rápido (solo en página cliente) */}
         {isCliente && (
-          <div>
+          <div className="flex items-center gap-4">
+            <a
+              href="#cotizador"
+              className="text-xs font-bold text-slate-300 hover:text-cyan-400 transition-colors flex items-center gap-1.5"
+            >
+              <span>⚡</span>
+              <span>Cotizador</span>
+            </a>
             <a
               href="#agendar"
               className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold py-2 px-5 rounded-full shadow-md shadow-blue-600/30 transition-all"

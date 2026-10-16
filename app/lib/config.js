@@ -22,6 +22,88 @@ export const SERVICES = [
   "Inspección Técnica Pre-Compra",
 ];
 
+// Tipos de vehículo para el cotizador
+export const VEHICLE_TYPES = [
+  { id: "sedan", label: "Sedán / Hatchback", icon: "🚗", multiplier: 1.0, ejemplo: "Yaris, Sail, Rio, Golf, Mazda 3" },
+  { id: "suv", label: "SUV / Crossover", icon: "🚙", multiplier: 1.2, ejemplo: "RAV4, Tucson, Sportage, Kicks, CX-5" },
+  { id: "pickup", label: "Camioneta / Van / Comercial", icon: "🛻", multiplier: 1.4, ejemplo: "Hilux, L200, D-Max, Ranger, H1" },
+];
+
+// Datos de cotizaciones estimadas y beneficios por servicio
+export const SERVICE_QUOTES = {
+  "Mantenciones por KM": {
+    basePrice: 65000,
+    time: "60–90 min",
+    includes: [
+      "Cambio de aceite sintético certificado (según norma fabricante)",
+      "Reemplazo de filtro de aceite y filtro de aire",
+      "Revisión y relleno de niveles (frenos, refrigerante, dirección)",
+      "Inspección de suspensión, correas y sistema de frenos",
+      "Reset de intervalo de mantención en tablero"
+    ]
+  },
+  "Instalación y Venta de Baterías": {
+    basePrice: 69000,
+    time: "30–45 min",
+    includes: [
+      "Batería nueva sellada libre de mantención (garantía 18 meses)",
+      "Instalación a domicilio o en taller",
+      "Diagnóstico del alternador y sistema de carga",
+      "Retiro y reciclaje ecológico de la batería en desuso"
+    ]
+  },
+  "Servicio de frenos": {
+    basePrice: 45000,
+    time: "60–80 min",
+    includes: [
+      "Inspección de desgaste de pastillas y discos delanteros/traseros",
+      "Instalación de pastillas cerámicas de baja emisión de polvo",
+      "Limpieza y lubricación de calipers y guías",
+      "Revisión y purgado de líquido de frenos DOT4"
+    ]
+  },
+  "Escaner Automotriz": {
+    basePrice: 25000,
+    time: "30–40 min",
+    includes: [
+      "Escaneo computarizado OBD2 de todos los módulos (motor, ABS, airbag)",
+      "Lectura y explicación en persona de códigos de falla (DTC)",
+      "Borrado de luz de Check Engine / advertencias",
+      "Informe técnico en PDF enviado por WhatsApp"
+    ]
+  },
+  "Diagnósticos Eléctricos": {
+    basePrice: 35000,
+    time: "45–60 min",
+    includes: [
+      "Prueba de consumo parasitario y fuga de corriente",
+      "Chequeo de motor de partida, bobinas y alternador",
+      "Revisión de fusiblera y cableado principal",
+      "Diagnóstico con instrumental de precisión"
+    ]
+  },
+  "Inspección Técnica Pre-Compra": {
+    basePrice: 49000,
+    time: "60–90 min",
+    includes: [
+      "Revisión de más de 100 puntos críticos del vehículo",
+      "Escáner computarizado completo y revisión de kilometraje real",
+      "Inspección de carrocería (chasis, choques previos y pintura)",
+      "Prueba de ruta y dictamen de compra por mecánico experto"
+    ]
+  },
+  "Car Audio": {
+    basePrice: 39000,
+    time: "60–120 min",
+    includes: [
+      "Instalación profesional de radio, pantalla CarPlay/Android Auto",
+      "Conexión de cámara de retroceso con integración de marcha atrás",
+      "Ajuste y cableado prolijo sin alterar la garantía del vehículo",
+      "Prueba de sonido y calibración"
+    ]
+  }
+};
+
 export const ZONES = [
   {
     name: "Centro",

@@ -9,6 +9,7 @@ import Features from "./components/Features";
 import Gallery from "./components/Gallery";
 import Reviews from "./components/Reviews";
 import FloatingBookButton from "./components/FloatingBookButton";
+import QuickQuote from "./components/QuickQuote";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
 // Diccionario con descripciones y detalles para el modal de cada servicio
@@ -52,7 +53,17 @@ const SERVICE_DETAILS = {
 
 export default function LandingPage() {
   const [selectedService, setSelectedService] = useState(null);
+  const [preselectedService, setPreselectedService] = useState(null);
   const heroWa = whatsappUrl("Hola, quiero cotizar un servicio para mi auto");
+
+  function handleAgendarServicio(servicio) {
+    setPreselectedService(servicio);
+    setSelectedService(null);
+    const elem = document.getElementById('agendar');
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
@@ -178,17 +189,20 @@ export default function LandingPage() {
                 {SERVICE_DETAILS[selectedService]?.description || "Servicio técnico automotriz especializado a domicilio."}
               </p>
 
-              <a
-                href="#agendar"
-                onClick={() => setSelectedService(null)}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-center transition-all shadow-lg shadow-blue-600/30"
+              <button
+                type="button"
+                onClick={() => handleAgendarServicio(selectedService)}
+                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-center transition-all shadow-lg shadow-blue-600/30 cursor-pointer"
               >
                 Agendar este servicio
-              </a>
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* 3.5 COTIZADOR RÁPIDO INTERACTIVO */}
+      <QuickQuote onSelectService={handleAgendarServicio} />
 
       {/* 4. COBERTURA */}
       <section id="cobertura" className="py-16 px-4 max-w-5xl mx-auto">
@@ -234,7 +248,7 @@ export default function LandingPage() {
           <p className="text-center text-slate-400 mb-10">
             ¿Nos escribes fuera de horario? Deja tus datos y te confirmamos apenas abramos.
           </p>
-          <BookingWizard />
+          <BookingWizard preselectedService={preselectedService} />
         </div>
       </section>
 
