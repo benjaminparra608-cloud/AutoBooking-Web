@@ -13,7 +13,55 @@ export default function Navbar() {
   const isCliente = !isTaller && !isPlanes;
 
   return (
-    <nav className="sticky top-3 z-50 w-full px-4 hidden md:block">
+    <>
+      {/* Barra Móvil Superior Compacta */}
+      <nav className="sticky top-0 z-50 w-full bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/80 px-4 py-2.5 flex md:hidden items-center justify-between shadow-lg">
+        <Link href="/" className="text-base font-black tracking-tight text-white flex items-center gap-2">
+          <span className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 via-cyan-500 to-sky-400 flex items-center justify-center text-white text-xs font-black shadow-md shadow-cyan-500/30 border border-cyan-300/40">
+            AB
+          </span>
+          <span className="text-sm">
+            Auto<span className="text-cyan-400 font-extrabold">Booking</span>
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-2">
+          {/* Botón Carrito en Móvil */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative bg-slate-900 border border-slate-700 text-slate-200 text-xs font-bold p-2 rounded-full flex items-center justify-center transition-all cursor-pointer"
+            aria-label="Abrir Carrito"
+          >
+            <span className="text-sm">🛒</span>
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-amber-400 text-slate-950 font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </button>
+
+          {/* Botón Agendar o Volver en Móvil */}
+          {isCliente ? (
+            <a
+              href="#agendar"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-1.5 px-3.5 rounded-full shadow-md transition-all flex items-center gap-1"
+            >
+              <span>Agendar</span>
+              <span>→</span>
+            </a>
+          ) : (
+            <Link
+              href="/"
+              className="bg-slate-900 text-slate-300 text-xs py-1.5 px-3 rounded-full border border-slate-700"
+            >
+              Inicio
+            </Link>
+          )}
+        </div>
+      </nav>
+
+      {/* Barra de navegación superior para pantallas grandes */}
+      <nav className="sticky top-3 z-50 w-full px-4 hidden md:block">
       <div className="max-w-6xl mx-auto bg-slate-950/90 backdrop-blur-xl border border-slate-700/70 shadow-[0_10px_35px_rgba(0,0,0,0.7)] rounded-full px-5 py-2 flex items-center justify-between transition-all">
         
         {/* LOGO & ENLACES DE NAVEGACIÓN PRIMARIOS */}
@@ -138,5 +186,6 @@ export default function Navbar() {
 
       </div>
     </nav>
-  );
+  </>
+);
 }

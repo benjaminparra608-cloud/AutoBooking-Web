@@ -53,7 +53,7 @@ export default function BottomNav() {
       </div>
 
       {/* Accesos rápidos — cambian según la sección activa */}
-      <div className="flex justify-around items-center pb-2 pt-1.5">
+      <div className="flex justify-around items-center pb-3 pt-1.5 px-1">
         {isPlanes ? (
           <>
             <a href="#planes" className="flex flex-col items-center p-2 text-slate-400 hover:text-amber-400 transition-colors">

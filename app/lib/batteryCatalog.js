@@ -1,0 +1,371 @@
+// CATÁLOGO MAESTRO DE BATERÍAS AUTOMOTRICES (MERCADO CHILENO)
+// Basado en el ranking oficial de rotación, normas JIS / DIN y compatibilidad vehicular.
+// Precios referenciales con margen técnico ajustado de $30.000 CLP incluido.
+
+export const TOP_8_BATERIAS = [
+  {
+    id: 'bat-din55',
+    codigo: 'DIN 55 / 55530 / 55457',
+    formatoCaja: 'Caja DIN L2 (242x175x175 mm)',
+    ranking: 1,
+    rankingLabel: '🏆 #1 Más Vendida en Chile (19.2% Parque)',
+    nombre: 'Batería DIN 55 (55Ah - 460 CCA)',
+    segmento: 'Sedanes y Hatchbacks Populares',
+    norma: 'DIN (Europea)',
+    tecnologia: 'SMF Calcio-Calcio 100% Libre de Mantención',
+    capacidadAh: 55,
+    cca: 460,
+    polaridad: 'Positivo Derecho (PD)',
+    tipoBorne: 'Estándar Embutido (Norma DIN)',
+    anclaje: 'Pestaña Inferior B13',
+    dimensiones: '242 x 175 x 175 mm',
+    // Base mercado ~$59.900 + $30.000 extra = $89.900 CLP
+    precio: 89900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Chevrolet Sail (todos los años)',
+      'Chevrolet Corsa',
+      'Chevrolet Onix / Prisma',
+      'Peugeot 207 / 208 (Bencina)',
+      'Peugeot Partner (Bencina)',
+      'Volkswagen Gol / Voyage',
+      'Renault Clio / Symbol',
+      'Fiat Punto / Cronos',
+      'Citroën C3 (Bencina)'
+    ],
+    descripcion: 'El formato de batería más vendido en Chile. Diseñada para vehículos europeos y Mercosur con caja baja L2 y pestaña de fijación inferior B13.',
+    icono: '🔋',
+    colorCard: 'from-amber-950/80 via-yellow-950/60 to-slate-900',
+    borderCard: 'border-amber-600/40 hover:border-amber-400',
+    tagColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+  },
+  {
+    id: 'bat-55d23l',
+    codigo: '55D23L / MF55D23L',
+    formatoCaja: 'Caja JIS D23 (230x173x225 mm)',
+    ranking: 2,
+    rankingLabel: '⭐ #2 Más Vendida en Chile (12.2% Parque)',
+    nombre: 'Batería 55D23L (60Ah - 550 CCA)',
+    segmento: 'Sedanes Medianos y SUVs Asiáticos',
+    norma: 'JIS (Asiática)',
+    tecnologia: 'SMF Calcio Reforzado con Rejilla Expandida',
+    capacidadAh: 60,
+    cca: 550,
+    polaridad: 'Positivo Derecho (PD / L)',
+    tipoBorne: 'Estándar Superior Cónico (Tipo A)',
+    anclaje: 'Pestaña base B01 / Puente superior',
+    dimensiones: '230 x 173 x 225 mm',
+    // Base ~$69.900 + $30.000 = $98.900 CLP
+    precio: 98900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Hyundai Accent (todas las generaciones)',
+      'Hyundai Elantra / Tucson / Creta',
+      'Kia Rio 4 / Rio 5',
+      'Kia Cerato / Sportage',
+      'Toyota Corolla / RAV4 (Bencina)',
+      'Mazda 3 / Mazda 6 (sin i-Stop)',
+      'Nissan Sentra / Tiida',
+      'Mitsubishi ASX / Lancer'
+    ],
+    descripcion: 'La batería asiática por excelencia en el parque automotriz chileno. Alto poder de partida en frío para motores 1.4L a 2.0L.',
+    icono: '🔋',
+    colorCard: 'from-blue-950/80 via-cyan-950/60 to-slate-900',
+    borderCard: 'border-blue-600/40 hover:border-blue-400',
+    tagColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+  },
+  {
+    id: 'bat-ns60l',
+    codigo: 'NS60L / 46B24L / 55B24L',
+    formatoCaja: 'Caja JIS B24 Angosta (235x127x220 mm)',
+    ranking: 3,
+    rankingLabel: '🇯🇵 Top #3 Citycars y Sedanes Japoneses',
+    nombre: 'Batería NS60L / 55B24L (45Ah - 430 CCA)',
+    segmento: 'Citycars y Sedanes Livianos',
+    norma: 'JIS (Asiática)',
+    tecnologia: 'SMF Calcio Sellada de Alta Densidad',
+    capacidadAh: 45,
+    cca: 430,
+    polaridad: 'Positivo Derecho (PD / L)',
+    tipoBorne: 'Delgado (Lápiz) o Estándar (NS60LS)',
+    anclaje: 'B00 (Base plana con puente superior)',
+    dimensiones: '235 x 127 x 220 mm',
+    // Base ~$54.900 + $30.000 = $84.900 CLP
+    precio: 84900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Suzuki Swift (todos los años)',
+      'Suzuki Baleno / Dzire / Ciaz',
+      'Toyota Yaris (1999 al 2023)',
+      'Nissan March / Note / Versa',
+      'Honda Fit / City / Civic antiguos',
+      'Mazda 2 (bencina sin Start-Stop)',
+      'Suzuki SX4 / S-Cross'
+    ],
+    descripcion: 'Diseño angosto ultra-eficiente característico de vehículos japoneses. Excelente recuperación de carga en ciudad y tráfico denso.',
+    icono: '🔋',
+    colorCard: 'from-emerald-950/80 via-teal-950/60 to-slate-900',
+    borderCard: 'border-emerald-600/40 hover:border-emerald-400',
+    tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+  },
+  {
+    id: 'bat-ns40zl',
+    codigo: 'NS40ZL / 38B19L',
+    formatoCaja: 'Caja JIS B19 Compacta (187x127x220 mm)',
+    ranking: 4,
+    rankingLabel: '⚡ Top #4 Citycars Compactos 1.0L - 1.2L',
+    nombre: 'Batería NS40ZL (35Ah - 330 CCA)',
+    segmento: 'Citycars Ultra-Compactos',
+    norma: 'JIS (Asiática)',
+    tecnologia: 'SMF Calcio Libre de Mantención',
+    capacidadAh: 35,
+    cca: 330,
+    polaridad: 'Positivo Derecho (PD / L)',
+    tipoBorne: 'Delgado (Lápiz) o Estándar (NS40ZLS)',
+    anclaje: 'B00 (Sin pestaña inferior)',
+    dimensiones: '187 x 127 x 220 mm',
+    // Base ~$48.900 + $30.000 = $78.900 CLP
+    precio: 78900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Kia Morning (motores 1.0 y 1.2)',
+      'Suzuki Alto 800 / K10',
+      'Suzuki Celerio / S-Presso',
+      'Hyundai i10 / Atos',
+      'Chevrolet Spark Lite / Spark GT',
+      'Chery IQ / BYD F0'
+    ],
+    descripcion: 'Formato ultra compacto para vehículos citadinos de bajo consumo. Arranque instantáneo y peso reducido para bandejas pequeñas.',
+    icono: '🔋',
+    colorCard: 'from-cyan-950/80 via-blue-950/60 to-slate-900',
+    borderCard: 'border-cyan-600/40 hover:border-cyan-400',
+    tagColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+  },
+  {
+    id: 'bat-din60',
+    codigo: 'DIN 60 / 56030',
+    formatoCaja: 'Caja DIN L2 Alta (242x175x190 mm)',
+    ranking: 5,
+    rankingLabel: '🇩🇪 Top #5 Sedanes y SUVs Europeos',
+    nombre: 'Batería DIN 60 (60Ah - 540 CCA)',
+    segmento: 'Sedanes y Crossovers Europeos',
+    norma: 'DIN (Europea)',
+    tecnologia: 'SMF Calcio-Plata de Alta Capacidad',
+    capacidadAh: 60,
+    cca: 540,
+    polaridad: 'Positivo Derecho (PD)',
+    tipoBorne: 'Estándar Embutido (Norma DIN)',
+    anclaje: 'Pestaña Inferior B13',
+    dimensiones: '242 x 175 x 190 mm',
+    // Base ~$68.900 + $30.000 = $98.900 CLP
+    precio: 98900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Volkswagen Golf / Bora / Vento',
+      'Volkswagen Tiguan 1.4 TSI',
+      'Renault Duster / Oroch / Captur',
+      'Renault Mégane / Fluence',
+      'Peugeot 307 / 308 (Bencina)',
+      'Citroën C4 / C4 Cactus (Bencina)',
+      'Fiat Toro / 500X'
+    ],
+    descripcion: 'Diseño europeo de 190 mm de altura con mayor reserva eléctrica para vehículos con alta carga de sensores y pantallas de infoentretenimiento.',
+    icono: '🔋',
+    colorCard: 'from-indigo-950/80 via-purple-950/60 to-slate-900',
+    borderCard: 'border-indigo-600/40 hover:border-indigo-400',
+    tagColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+  },
+  {
+    id: 'bat-105d31l',
+    codigo: '105D31L / 105D31R / NX120-7',
+    formatoCaja: 'Caja JIS D31 Heavy (303x172x220 mm)',
+    ranking: 6,
+    rankingLabel: '🛞 Top #6 Pick-Ups Diésel y Camionetas',
+    nombre: 'Batería 105D31L / R (90Ah - 750 CCA)',
+    segmento: 'Camionetas Pick-Up Diésel y Furgones',
+    norma: 'JIS (Asiática)',
+    tecnologia: 'SMF Heavy Duty con Rejilla X-Frame Reforzada',
+    capacidadAh: 90,
+    cca: 750,
+    polaridad: 'Disponible PD (105D31L) y PI (105D31R)',
+    tipoBorne: 'Estándar Cónico Grueso Reforzado',
+    anclaje: 'Pestaña Base B01',
+    dimensiones: '303 x 172 x 220 mm',
+    // Base ~$109.900 + $30.000 = $139.900 CLP
+    precio: 139900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Toyota Hilux 2.4 / 2.8 / 3.0 Diésel (PI 105D31R)',
+      'Mitsubishi L200 / Montero Sport (PD 105D31L)',
+      'Nissan Navara / NP300 / Terrano Diésel',
+      'Chevrolet D-Max 2.5 / 3.0',
+      'Kia Frontier 2.5',
+      'Hyundai Porter / H1 / Starex',
+      'SsangYong Actyon Sports / Musso / Rexton',
+      'Mahindra Pik-Up / Scorpio'
+    ],
+    descripcion: 'Poder masivo de arranque para motores turbodiésel de 2.0L a 3.2L. Rejilla reforzada contra vibraciones intensas en faenas y carretera.',
+    icono: '🔋',
+    colorCard: 'from-orange-950/80 via-red-950/60 to-slate-900',
+    borderCard: 'border-orange-600/40 hover:border-orange-400',
+    tagColor: 'bg-orange-500/20 text-orange-300 border-orange-500/30'
+  },
+  {
+    id: 'bat-80d26l',
+    codigo: '80D26L / NX110-5L',
+    formatoCaja: 'Caja JIS D26 (258x172x220 mm)',
+    ranking: 7,
+    rankingLabel: '🚙 Top #7 SUVs Medianos y Autos Chinos',
+    nombre: 'Batería 80D26L (70Ah - 600 CCA)',
+    segmento: 'SUVs Medianos y Motores 2.0L - 2.5L',
+    norma: 'JIS (Asiática)',
+    tecnologia: 'SMF Calcio-Calcio Alta Capacidad',
+    capacidadAh: 70,
+    cca: 600,
+    polaridad: 'Positivo Derecho (PD / L)',
+    tipoBorne: 'Estándar Superior',
+    anclaje: 'Pestaña base B01',
+    dimensiones: '258 x 172 x 220 mm',
+    // Base ~$89.900 + $30.000 = $118.900 CLP
+    precio: 118900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Nissan Qashqai / X-Trail / Juke',
+      'Chery Tiggo 2 / Tiggo 3 / Tiggo 7 / Tiggo 8',
+      'Haval H6 / Jolion',
+      'MG ZS / MG RX5 / MG GT',
+      'Geely Coolray / Azkarra',
+      'Changan CS35 / CS55 / CS75',
+      'Mazda CX-5 (Bencina sin i-Stop)'
+    ],
+    descripcion: 'La batería más solicitada para la nueva generación de SUVs asiáticos y marcas chinas líderes en Chile. Alta durabilidad con aire acondicionado y múltiples accesorios.',
+    icono: '🔋',
+    colorCard: 'from-violet-950/80 via-slate-900 to-slate-950',
+    borderCard: 'border-violet-600/40 hover:border-violet-400',
+    tagColor: 'bg-violet-500/20 text-violet-300 border-violet-500/30'
+  },
+  {
+    id: 'bat-din72',
+    codigo: 'DIN 72 / 57113 / 57220',
+    formatoCaja: 'Caja DIN L3 Larga (278x175x175 mm)',
+    ranking: 8,
+    rankingLabel: '🚚 Top #8 Utilitarios Diésel HDi y SUVs Euro',
+    nombre: 'Batería DIN 72 (72Ah - 660 CCA)',
+    segmento: 'Furgones Comerciales y Camionetas Euro',
+    norma: 'DIN (Europea)',
+    tecnologia: 'SMF Heavy Duty con Aleación de Plata',
+    capacidadAh: 72,
+    cca: 660,
+    polaridad: 'Positivo Derecho (PD)',
+    tipoBorne: 'Estándar Embutido (Norma DIN)',
+    anclaje: 'Pestaña Inferior B13',
+    dimensiones: '278 x 175 x 175 mm',
+    // Base ~$98.900 + $30.000 = $128.900 CLP
+    precio: 128900,
+    precioInstalacion: 15000,
+    garantia: '18 meses de garantía directa',
+    modelosCompatibles: [
+      'Peugeot Partner Diésel (motores HDi / BlueHDi)',
+      'Citroën Berlingo Diésel (HDi)',
+      'Ford Ranger 2.2 / 3.2 (sin Start-Stop)',
+      'Volkswagen Amarok 2.0 TDI',
+      'Ford Focus / Mondeo',
+      'Peugeot 3008 / 5008 (Diésel)',
+      'Citroën C5 Aircross Diésel'
+    ],
+    descripcion: 'Diseño largo L3 europeo con gran poder de ignición para furgones de reparto diésel y utilitarios con trabajo exigente diario.',
+    icono: '🔋',
+    colorCard: 'from-teal-950/80 via-emerald-950/60 to-slate-900',
+    borderCard: 'border-teal-600/40 hover:border-teal-400',
+    tagColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30'
+  },
+  {
+    id: 'bat-q85-efb',
+    codigo: 'Q85 / N55 / 95D23L EFB',
+    formatoCaja: 'Caja JIS D23 EFB Start-Stop',
+    ranking: 9,
+    rankingLabel: '🔄 Especial Start-Stop Asiático (i-Stop)',
+    nombre: 'Batería Q85 EFB Start-Stop (65Ah - 650 CCA)',
+    segmento: 'Vehículos con Sistema Start-Stop Básico',
+    norma: 'JIS Start-Stop',
+    tecnologia: 'EFB (Enhanced Flooded Battery) con Placas Reforzadas',
+    capacidadAh: 65,
+    cca: 650,
+    polaridad: 'Positivo Derecho (PD / L)',
+    tipoBorne: 'Estándar Superior',
+    anclaje: 'Pestaña Base B01',
+    dimensiones: '230 x 173 x 225 mm',
+    // Base ~$145.000 + $24.900 = $169.900 CLP
+    precio: 169900,
+    precioInstalacion: 15000,
+    garantia: '24 meses de garantía',
+    modelosCompatibles: [
+      'Mazda 3 (con sistema i-Stop)',
+      'Mazda 6 / CX-3 / CX-5 / CX-30 (con i-Stop)',
+      'Subaru XV / Forester con Start-Stop',
+      'Toyota RAV4 Start-Stop'
+    ],
+    descripcion: 'Batería EFB con tecnología de placas reforzadas para soportar miles de arranques del sistema i-Stop en semáforos sin degradarse.',
+    icono: '⚡',
+    colorCard: 'from-sky-950/80 via-blue-950/60 to-slate-900',
+    borderCard: 'border-sky-500/40 hover:border-sky-400',
+    tagColor: 'bg-sky-500/20 text-sky-300 border-sky-500/30'
+  },
+  {
+    id: 'bat-ln3-agm',
+    codigo: 'LN3 / H6 / DIN 70 AGM',
+    formatoCaja: 'Caja DIN L3 AGM Sellada (278x175x190 mm)',
+    ranking: 10,
+    rankingLabel: '💎 Gama Alta & Start-Stop Regenerativo',
+    nombre: 'Batería LN3 AGM Start-Stop (70Ah - 760 CCA)',
+    segmento: 'Vehículos Premium y Start-Stop Avanzado',
+    norma: 'DIN AGM (Alemana)',
+    tecnologia: 'AGM (Absorbent Glass Mat) con Fibra de Vidrio',
+    capacidadAh: 70,
+    cca: 760,
+    polaridad: 'Positivo Derecho (PD)',
+    tipoBorne: 'Estándar Embutido',
+    anclaje: 'Pestaña Inferior B13',
+    dimensiones: '278 x 175 x 190 mm',
+    // Base ~$189.900 + $30.000 = $219.900 CLP
+    precio: 219900,
+    precioInstalacion: 15000,
+    garantia: '24 meses de garantía',
+    modelosCompatibles: [
+      'BMW Serie 1 / Serie 2 / Serie 3 / X1',
+      'Mercedes-Benz Clase A / CLA / GLA / Clase C',
+      'Audi A3 / A4 / Q3',
+      'Mini Cooper S / Countryman',
+      'Volvo XC40 / V40',
+      'Ford F-150 EcoBoost'
+    ],
+    descripcion: 'Máxima tecnología AGM de fibra de vidrio absorbida. Resiste frenado regenerativo, alta demanda eléctrica y no tiene derrames.',
+    icono: '💎',
+    colorCard: 'from-slate-900 via-indigo-950 to-slate-950',
+    borderCard: 'border-indigo-500/40 hover:border-indigo-400',
+    tagColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+  }
+];
+
+// Helper para búsqueda rápida de compatibilidad por texto (auto o código)
+export function buscarBateriasPorAutoOCodigo(query) {
+  if (!query || !query.trim()) return TOP_8_BATERIAS;
+  const q = query.toLowerCase().trim();
+
+  return TOP_8_BATERIAS.filter((bat) => {
+    const matchCodigo = bat.codigo.toLowerCase().includes(q);
+    const matchNombre = bat.nombre.toLowerCase().includes(q);
+    const matchSegmento = bat.segmento.toLowerCase().includes(q);
+    const matchModelos = bat.modelosCompatibles.some((m) => m.toLowerCase().includes(q));
+    const matchAh = `${bat.capacidadAh}ah`.includes(q) || `${bat.capacidadAh} ah`.includes(q);
+
+    return matchCodigo || matchNombre || matchSegmento || matchModelos || matchAh;
+  });
+}

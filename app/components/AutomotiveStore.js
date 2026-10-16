@@ -346,6 +346,29 @@ export default function AutomotiveStore() {
           ))}
         </div>
 
+        {/* BANNER INFORMATIVO AL FILTRAR POR BATERÍAS */}
+        {categoriaActiva === 'baterias' && (
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/60 border border-amber-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3.5">
+              <span className="text-3xl sm:text-4xl">🔋</span>
+              <div>
+                <strong className="text-white text-sm sm:text-base block font-bold">
+                  ¿Buscas la batería exacta para tu modelo de auto?
+                </strong>
+                <span className="text-xs text-amber-200/90 leading-relaxed block mt-0.5">
+                  Revisa nuestro Catálogo Maestro con el Top 8 de baterías más utilizadas en Chile (DIN 55, 55D23L, NS60L, NS40ZL, DIN 60, 105D31L, 80D26L, DIN 72).
+                </span>
+              </div>
+            </div>
+            <a
+              href="#catalogo-baterias"
+              className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-5 rounded-full transition-all shrink-0 text-center shadow-lg shadow-amber-500/20"
+            >
+              Ver Catálogo Top 8 Chile ↓
+            </a>
+          </div>
+        )}
+
         {/* CARRUSEL DE TARJETAS DE PRODUCTOS AUTOMOTRICES (Estilo Delta Cafés en Image 2) */}
         <div
           ref={carouselRef}
