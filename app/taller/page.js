@@ -128,6 +128,14 @@ export default function TallerPage() {
   const [busquedaHistorial, setBusquedaHistorial] = useState('');
 
   // ==========================================
+  // ESTADOS - FIDELIZACIÓN & RECORDATORIOS
+  // ==========================================
+  const [filterFidelizacion, setFilterFidelizacion] = useState('requieren_atencion');
+  const [contactadosMap, setContactadosMap] = useState({});
+  const [busquedaFidelizacion, setBusquedaFidelizacion] = useState('');
+  const [modalEditarMensaje, setModalEditarMensaje] = useState(null);
+
+  // ==========================================
   // CARGA INICIAL
   // ==========================================
   useEffect(() => {
@@ -515,6 +523,121 @@ export default function TallerPage() {
     );
   }, [todosLosVehiculos, busquedaHistorial]);
 
+  // ==========================================
+  // MEMOS Y CÁLCULOS - FIDELIZACIÓN
+  // ==========================================
+  const fidelizacionData = useMemo(() => {
+    const ahora = new Date();
+    return todosLosVehiculos.map((v, idx) => {
+      const citasAuto = citas.filter(c => (c.patente || '').toUpperCase().trim() === v.patente);
+      const ordenesAuto = ordenes.filter(o => (o.patente || '').toUpperCase().trim() === v.patente);
+
+      const fechas = [
+        ...citasAuto.map(c => c.fecha),
+        ...ordenesAuto.map(o => o.created_at ? o.created_at.split('T')[0] : o.fecha_estimada)
+      ].filter(Boolean).sort().reverse();
+
+      // Para una demo realista, si no hay fecha calculamos fechas distribuidas (ej. 30 a 210 días)
+      const baseDias = (idx % 3 === 0 ? 195 : idx % 3 === 1 ? 105 : 45);
+      const ultimaFecha = fechas[0] || new Date(ahora.getTime() - baseDias * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const fechaObj = new Date(ultimaFecha);
+      const diffMs = ahora - (isNaN(fechaObj.getTime()) ? new Date() : fechaObj);
+      const diasPasados = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+
+      const ultimoServicio = ordenesAuto[0]?.trabajos?.[0]?.descripcion || citasAuto[0]?.servicio || 'Mantenciones por KM';
+      const kmNumerico = parseInt((v.km || '45000').toString().replace(/\D/g, ''), 10) || 45000;
+      const kmEstimadoActual = kmNumerico + Math.round((diasPasados / 30) * 1250);
+
+      let estadoAtencion = 'al_dia';
+      let prioridad = 'Baja';
+      let colorEstado = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      let textoEstado = 'Al día (< 90 días)';
+      let recomendacion = 'Revisión periódica de rutina y niveles';
+
+      if (diasPasados >= 180) {
+        estadoAtencion = 'urgente';
+        prioridad = 'Alta';
+        colorEstado = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+        textoEstado = '🚨 Vencido (> 6 meses)';
+        recomendacion = 'Mantención integral: cambio de aceite, filtros y chequeo de frenos';
+      } else if (diasPasados >= 90) {
+        estadoAtencion = 'proximo';
+        prioridad = 'Media';
+        colorEstado = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+        textoEstado = '⚠️ Próximo (> 3 meses)';
+        recomendacion = 'Revisión preventiva de fluidos y pastillas de freno';
+      }
+
+      const estaContactado = !!contactadosMap[v.patente];
+
+      return {
+        ...v,
+        ultimaFecha,
+        diasPasados,
+        ultimoServicio,
+        kmEstimadoActual,
+        estadoAtencion,
+        prioridad,
+        colorEstado,
+        textoEstado,
+        recomendacion,
+        estaContactado,
+        fechaContactado: contactadosMap[v.patente]
+      };
+    }).sort((a, b) => b.diasPasados - a.diasPasados);
+  }, [todosLosVehiculos, citas, ordenes, contactadosMap]);
+
+  const kpisFidelizacion = useMemo(() => {
+    return {
+      total: fidelizacionData.length,
+      requierenAtencion: fidelizacionData.filter(f => f.diasPasados >= 90).length,
+      urgentes: fidelizacionData.filter(f => f.diasPasados >= 180).length,
+      contactados: Object.keys(contactadosMap).length,
+      potencialRecuperacion: fidelizacionData.filter(f => f.diasPasados >= 90).length * 65000
+    };
+  }, [fidelizacionData, contactadosMap]);
+
+  const fidelizacionFiltrada = useMemo(() => {
+    return fidelizacionData.filter(item => {
+      if (filterFidelizacion === 'requieren_atencion' && item.diasPasados < 90) return false;
+      if (filterFidelizacion === 'urgentes' && item.diasPasados < 180) return false;
+      if (filterFidelizacion === 'contactados' && !item.estaContactado) return false;
+
+      if (busquedaFidelizacion.trim()) {
+        const q = busquedaFidelizacion.toLowerCase();
+        return (
+          item.patente.toLowerCase().includes(q) ||
+          (item.cliente || '').toLowerCase().includes(q) ||
+          (item.telefono || '').toLowerCase().includes(q) ||
+          `${item.marca || ''} ${item.modelo || ''}`.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [fidelizacionData, filterFidelizacion, busquedaFidelizacion]);
+
+  function handleEnviarWhatsAppRecordatorio(item, textoPersonalizado = null) {
+    const telefono = (item.telefono || '').replace(/\D/g, '');
+    const cliente = item.cliente || 'Estimado/a cliente';
+    const vehiculo = `${item.marca || ''} ${item.modelo || ''}`.trim() || 'tu vehículo';
+
+    const defaultMsg = `Hola ${cliente}, te saludamos del equipo técnico de AutoBooking 🚗.\n\n` +
+      `Esperamos que tu ${vehiculo} (${item.patente}) esté funcionando excelente. ` +
+      `Revisando nuestra pauta técnica, vemos que tu última mantención fue hace ${item.diasPasados} días (${item.ultimoServicio}), ` +
+      `y el kilometraje estimado ya bordea los ${item.kmEstimadoActual.toLocaleString('es-CL')} km.\n\n` +
+      `Para proteger la vida útil del motor y tu seguridad, te recomendamos una ${item.recomendacion}.\n\n` +
+      `¿Te gustaría que agendemos tu visita técnica a domicilio para esta semana? Responde a este mensaje y coordinamos tu horario preferido.`;
+
+    const finalMsg = textoPersonalizado || defaultMsg;
+
+    setContactadosMap(prev => ({
+      ...prev,
+      [item.patente]: new Date().toLocaleDateString('es-CL')
+    }));
+
+    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(finalMsg)}`, '_blank');
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-28 relative">
       <Navbar />
@@ -629,6 +752,21 @@ export default function TallerPage() {
             Historial por Patente
             <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
               {todosLosVehiculos.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('fidelizacion')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'fidelizacion'
+                ? 'border-amber-400 text-amber-400 bg-amber-950/30 rounded-t-lg'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>🔔</span>
+            Fidelización & Recordatorios
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300 border border-amber-800/40">
+              {kpisFidelizacion.requierenAtencion}
             </span>
           </button>
 
@@ -1337,6 +1475,278 @@ export default function TallerPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB: FIDELIZACIÓN & RECORDATORIOS DE MANTENCIÓN (OPCIÓN 5) */}
+        {/* ========================================================= */}
+        {activeTab === 'fidelizacion' && (
+          <div className="space-y-6">
+
+            {/* BANNER PRO SAAS */}
+            <div className="bg-gradient-to-r from-amber-950/60 via-slate-900 to-orange-950/40 border border-amber-800/50 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs uppercase font-extrabold tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full">
+                    ⭐ Módulo de Retención y Fidelización
+                  </span>
+                  <span className="text-xs text-slate-400 font-semibold bg-slate-950 px-2.5 py-0.5 rounded-full border border-slate-800">
+                    Plan Taller Pro
+                  </span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  Recordatorios de Mantención por <span className="text-emerald-400">WhatsApp</span>
+                </h2>
+                <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  El sistema analiza la última fecha y kilometraje de cada vehículo para recordarle proactivamente a tus clientes cuándo les toca cambio de aceite, frenos o mantención periódica. ¡Recupera clientes que no volvían con 1 solo clic!
+                </p>
+              </div>
+
+              <div className="bg-slate-950/80 border border-amber-900/60 rounded-2xl p-4 text-center shrink-0 w-full md:w-auto">
+                <span className="text-xs text-amber-400 font-bold block mb-0.5">Potencial Recuperable Estimado</span>
+                <span className="text-2xl sm:text-3xl font-black text-white font-mono">
+                  ${kpisFidelizacion.potencialRecuperacion.toLocaleString('es-CL')}
+                </span>
+                <span className="text-[11px] text-slate-400 block mt-0.5">en servicios preventivos del mes</span>
+              </div>
+            </div>
+
+            {/* KPIS DE FIDELIZACIÓN */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div
+                onClick={() => setFilterFidelizacion('todos')}
+                className={`bg-slate-900 border p-4 rounded-2xl cursor-pointer transition-all ${
+                  filterFidelizacion === 'todos' ? 'border-amber-400 bg-amber-950/20' : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Clientes</div>
+                <div className="text-2xl font-extrabold text-white">{kpisFidelizacion.total}</div>
+                <div className="text-[11px] text-slate-500 mt-1">Vehículos registrados</div>
+              </div>
+
+              <div
+                onClick={() => setFilterFidelizacion('requieren_atencion')}
+                className={`bg-slate-900 border p-4 rounded-2xl cursor-pointer transition-all ${
+                  filterFidelizacion === 'requieren_atencion' ? 'border-amber-400 bg-amber-950/20' : 'border-slate-800 hover:border-amber-500/40'
+                }`}
+              >
+                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Por Contactar</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-amber-300">{kpisFidelizacion.requierenAtencion}</div>
+                <div className="text-[11px] text-amber-400/70 mt-1">&gt; 90 días sin mantención</div>
+              </div>
+
+              <div
+                onClick={() => setFilterFidelizacion('urgentes')}
+                className={`bg-slate-900 border p-4 rounded-2xl cursor-pointer transition-all ${
+                  filterFidelizacion === 'urgentes' ? 'border-rose-400 bg-rose-950/20' : 'border-slate-800 hover:border-rose-500/40'
+                }`}
+              >
+                <div className="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Riesgo Deserción</span>
+                  <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-rose-300">{kpisFidelizacion.urgentes}</div>
+                <div className="text-[11px] text-rose-400/70 mt-1">&gt; 6 meses sin volver</div>
+              </div>
+
+              <div
+                onClick={() => setFilterFidelizacion('contactados')}
+                className={`bg-slate-900 border p-4 rounded-2xl cursor-pointer transition-all ${
+                  filterFidelizacion === 'contactados' ? 'border-emerald-400 bg-emerald-950/20' : 'border-slate-800 hover:border-emerald-500/40'
+                }`}
+              >
+                <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Contactados</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-emerald-300">{kpisFidelizacion.contactados}</div>
+                <div className="text-[11px] text-emerald-400/70 mt-1">Recordatorio enviado</div>
+              </div>
+            </div>
+
+            {/* BARRA DE FILTROS Y BÚSQUEDA */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-3 justify-between items-center">
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                <button
+                  onClick={() => setFilterFidelizacion('requieren_atencion')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    filterFidelizacion === 'requieren_atencion'
+                      ? 'bg-amber-500 text-slate-950 shadow-md'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  ⚠️ Requieren Atención ({kpisFidelizacion.requierenAtencion})
+                </button>
+                <button
+                  onClick={() => setFilterFidelizacion('urgentes')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    filterFidelizacion === 'urgentes'
+                      ? 'bg-rose-600 text-white shadow-md'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  🚨 Urgentes &gt; 6 meses ({kpisFidelizacion.urgentes})
+                </button>
+                <button
+                  onClick={() => setFilterFidelizacion('todos')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    filterFidelizacion === 'todos'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  Todos ({kpisFidelizacion.total})
+                </button>
+                <button
+                  onClick={() => setFilterFidelizacion('contactados')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    filterFidelizacion === 'contactados'
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  ✅ Ya Contactados ({kpisFidelizacion.contactados})
+                </button>
+              </div>
+
+              <div className="relative w-full md:w-72">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Buscar patente, cliente, auto..."
+                  value={busquedaFidelizacion}
+                  onChange={(e) => setBusquedaFidelizacion(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* LISTADO DE TARJETAS DE FIDELIZACIÓN */}
+            {fidelizacionFiltrada.length === 0 ? (
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-400">
+                <span className="text-4xl block mb-2">🎉</span>
+                <p className="font-bold text-white text-base">¡Excelente trabajo! No hay clientes pendientes con este filtro.</p>
+                <p className="text-xs text-slate-500 mt-1">Todos tus clientes están al día o ya recibieron su recordatorio.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fidelizacionFiltrada.map((item) => (
+                  <div
+                    key={item.patente}
+                    className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-3xl p-5 sm:p-6 transition-all flex flex-col justify-between shadow-lg"
+                  >
+                    <div>
+                      {/* Cabecera de la tarjeta */}
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="font-mono font-bold text-sm bg-slate-950 border border-slate-700 px-3 py-1 rounded-lg text-slate-100 tracking-wider">
+                            <span className="text-[10px] text-cyan-400 mr-1.5 font-sans">CL</span>
+                            {item.patente}
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-bold text-white leading-tight">
+                              {item.marca} {item.modelo}
+                            </h3>
+                            <span className="text-[11px] text-slate-400">
+                              {item.cliente || 'Cliente sin registrar'}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${item.colorEstado}`}>
+                          {item.textoEstado}
+                        </span>
+                      </div>
+
+                      {/* Métricas del vehículo y tiempo transcurrido */}
+                      <div className="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-2xl border border-slate-800/80 text-xs mb-3">
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Último servicio:</span>
+                          <span className="text-slate-300 font-semibold text-[11px] truncate block" title={item.ultimoServicio}>
+                            {item.ultimoServicio}
+                          </span>
+                          <span className="text-amber-400/90 text-[10px] font-medium block mt-0.5">
+                            Hace {item.diasPasados} días ({item.ultimaFecha})
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-500 text-[10px] block">Kilometraje actual est.:</span>
+                          <span className="text-slate-200 font-bold text-xs font-mono">
+                            ~{item.kmEstimadoActual.toLocaleString('es-CL')} km
+                          </span>
+                          <span className="text-slate-500 text-[10px] block mt-0.5">
+                            (+{Math.round((item.diasPasados / 30) * 1250).toLocaleString('es-CL')} km estimados)
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Recomendación inteligente */}
+                      <div className="bg-amber-950/20 border border-amber-900/40 rounded-xl p-2.5 mb-4 text-xs text-amber-200 flex items-start gap-2">
+                        <span className="text-sm shrink-0">💡</span>
+                        <div>
+                          <strong className="font-semibold text-amber-300">Recomendación sugerida:</strong> {item.recomendacion}
+                        </div>
+                      </div>
+
+                      {/* Estado de contacto previo si existe */}
+                      {item.estaContactado && (
+                        <div className="mb-4 bg-emerald-950/30 border border-emerald-800/50 rounded-xl px-3 py-1.5 flex items-center justify-between text-xs text-emerald-300">
+                          <span className="flex items-center gap-1.5">
+                            <span>✅</span> Recordatorio enviado el <strong>{item.fechaContactado}</strong>
+                          </span>
+                          <span className="text-[10px] text-emerald-400 font-bold uppercase">Contactado</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botones de acción */}
+                    <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-800">
+                      <button
+                        onClick={() => handleEnviarWhatsAppRecordatorio(item)}
+                        className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                      >
+                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" aria-hidden="true">
+                          <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.39a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Zm5.8 14.16c-.24.68-1.4 1.32-1.93 1.4-.5.08-1.11.11-1.79-.11-.41-.13-.94-.3-1.62-.6-2.86-1.24-4.72-4.13-4.87-4.32-.14-.19-1.17-1.55-1.17-2.96 0-1.4.74-2.09 1-2.38.26-.28.57-.35.76-.35.19 0 .38 0 .55.01.18.01.41-.07.64.49.24.57.81 1.98.88 2.12.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.3.76 1.26 1.64 2.04 1.13 1 2.08 1.32 2.38 1.47.3.15.47.13.65-.08.18-.2.75-.87.95-1.17.2-.3.4-.24.66-.15.27.1 1.71.81 2 .96.29.15.48.22.55.34.07.13.07.72-.17 1.4Z" />
+                        </svg>
+                        <span>Enviar WhatsApp (1-Clic)</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const vehiculo = `${item.marca || ''} ${item.modelo || ''}`.trim() || 'tu vehículo';
+                          const defaultMsg = `Hola ${item.cliente || 'Estimado/a cliente'}, te saludamos del equipo técnico de AutoBooking 🚗.\n\n` +
+                            `Esperamos que tu ${vehiculo} (${item.patente}) esté funcionando excelente. ` +
+                            `Vemos que tu última mantención fue hace ${item.diasPasados} días (${item.ultimoServicio}), ` +
+                            `y el kilometraje estimado bordea los ${item.kmEstimadoActual.toLocaleString('es-CL')} km.\n\n` +
+                            `Te recomendamos una ${item.recomendacion}.\n\n` +
+                            `🎁 Por ser cliente frecuente, tenemos un 10% de descuento en mano de obra si agendamos esta semana. ¿Qué día te acomodaría?`;
+                          setModalEditarMensaje({ item, mensaje: defaultMsg });
+                        }}
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-3 rounded-xl text-xs transition-colors cursor-pointer"
+                        title="Personalizar texto antes de enviar"
+                      >
+                        ✏️ Editar
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setPatenteSeleccionada(item.patente);
+                          setActiveTab('vehiculos');
+                        }}
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 px-3 rounded-xl text-xs transition-colors cursor-pointer"
+                        title="Ver historial técnico completo"
+                      >
+                        👁️ Historial
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -2206,6 +2616,63 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 className="bg-slate-300 text-slate-800 font-bold px-5 py-2 rounded-xl text-xs"
               >
                 Cerrar Vista Previa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL EDITAR MENSAJE DE RECORDATORIO (WHATSAPP)          */}
+      {/* ========================================================= */}
+      {modalEditarMensaje && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-xl w-full relative shadow-2xl">
+            <button
+              onClick={() => setModalEditarMensaje(null)}
+              className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">✏️</span>
+              <h3 className="text-xl font-bold text-white">Personalizar Mensaje de WhatsApp</h3>
+            </div>
+            <p className="text-xs text-slate-400 mb-4">
+              Vehículo: <strong>{modalEditarMensaje.item.marca} {modalEditarMensaje.item.modelo} ({modalEditarMensaje.item.patente})</strong> — Cliente: {modalEditarMensaje.item.cliente}
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                Texto del mensaje a enviar:
+              </label>
+              <textarea
+                rows="8"
+                value={modalEditarMensaje.mensaje}
+                onChange={(e) => setModalEditarMensaje({ ...modalEditarMensaje, mensaje: e.target.value })}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-400 font-sans leading-relaxed"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setModalEditarMensaje(null)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleEnviarWhatsAppRecordatorio(modalEditarMensaje.item, modalEditarMensaje.mensaje);
+                  setModalEditarMensaje(null);
+                }}
+                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-emerald-600/25 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>📲</span>
+                <span>Enviar por WhatsApp</span>
               </button>
             </div>
           </div>

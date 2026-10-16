@@ -9,6 +9,8 @@ export default function BottomNav() {
   const waLink = whatsappUrl("Hola, necesito ayuda con mi vehículo");
   const pathname = usePathname();
   const isTaller = pathname === '/taller';
+  const isPlanes = pathname === '/planes';
+  const isCliente = !isTaller && !isPlanes;
 
   return (
     <div className="fixed bottom-0 left-0 w-full bg-slate-900 border-t border-slate-800 z-50 md:hidden flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]">
@@ -17,31 +19,61 @@ export default function BottomNav() {
       <div className="flex border-b border-slate-800">
         <Link
           href="/"
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold transition-colors ${
-            !isTaller
+          className={`flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-bold transition-colors ${
+            isCliente
               ? 'text-blue-400 border-b-2 border-blue-500 bg-slate-950/60'
               : 'text-slate-500 hover:text-slate-300'
           }`}
         >
           <span>🚗</span>
-          Servicios al Cliente
+          Clientes
         </Link>
         <Link
           href="/taller"
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-bold transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-bold transition-colors ${
             isTaller
               ? 'text-cyan-400 border-b-2 border-cyan-500 bg-slate-950/60'
               : 'text-slate-500 hover:text-slate-300'
           }`}
         >
           <span>🔧</span>
-          Panel Taller
+          Taller
+        </Link>
+        <Link
+          href="/planes"
+          className={`flex-1 flex items-center justify-center gap-1 py-2 text-[11px] font-bold transition-colors ${
+            isPlanes
+              ? 'text-amber-400 border-b-2 border-amber-500 bg-slate-950/60'
+              : 'text-slate-500 hover:text-slate-300'
+          }`}
+        >
+          <span>💼</span>
+          Planes SaaS
         </Link>
       </div>
 
       {/* Accesos rápidos — cambian según la sección activa */}
       <div className="flex justify-around items-center pb-2 pt-1.5">
-        {!isTaller ? (
+        {isPlanes ? (
+          <>
+            <a href="#planes" className="flex flex-col items-center p-2 text-slate-400 hover:text-amber-400 transition-colors">
+              <span className="text-base mb-0.5">🏷️</span>
+              <span className="text-[10px] font-medium">Planes</span>
+            </a>
+            <a href="#caracteristicas" className="flex flex-col items-center p-2 text-slate-400 hover:text-amber-400 transition-colors">
+              <span className="text-base mb-0.5">⚡</span>
+              <span className="text-[10px] font-medium">Ventajas</span>
+            </a>
+            <a href="#demo" className="flex flex-col items-center p-2 text-amber-400 hover:text-amber-300 transition-colors">
+              <span className="text-base mb-0.5">🚀</span>
+              <span className="text-[10px] font-medium font-bold">Pedir Demo</span>
+            </a>
+            <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-2 text-slate-400 hover:text-green-400 transition-colors">
+              <span className="text-base mb-0.5">💬</span>
+              <span className="text-[10px] font-medium">WhatsApp</span>
+            </a>
+          </>
+        ) : isCliente ? (
           <>
             {/* 1. Inicio */}
             <a href="#" className="flex flex-col items-center p-2 text-slate-400 hover:text-blue-400 transition-colors">

@@ -36,7 +36,7 @@ const initialForm = {
   botcheck: false,
 };
 
-export default function BookingWizard({ preselectedService }) {
+export default function BookingWizard({ preselectedService, preselectedComuna }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -50,6 +50,12 @@ export default function BookingWizard({ preselectedService }) {
       setForm((f) => ({ ...f, servicio: preselectedService }));
     }
   }, [preselectedService]);
+
+  useEffect(() => {
+    if (preselectedComuna) {
+      setForm((f) => ({ ...f, comuna: preselectedComuna }));
+    }
+  }, [preselectedComuna]);
 
   useEffect(() => {
     // Necesita la hora real del navegador en el momento en que se abre la página

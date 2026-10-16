@@ -20,12 +20,12 @@ export default function Navbar() {
           Auto<span className="text-cyan-400">Booking</span>
         </Link>
 
-        {/* Selector de modo: Cliente / Taller */}
+        {/* Selector de modo: Cliente / Taller / Planes SaaS */}
         <div className="flex items-center bg-slate-900 border border-slate-700 rounded-full p-1 gap-1">
           <Link
             href="/"
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-              isCliente
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+              pathname === '/'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
@@ -35,14 +35,25 @@ export default function Navbar() {
           </Link>
           <Link
             href="/taller"
-            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
-              isTaller
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+              pathname === '/taller'
                 ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <span>🔧</span>
             Panel Taller
+          </Link>
+          <Link
+            href="/planes"
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+              pathname === '/planes'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>💼</span>
+            Planes SaaS
           </Link>
         </div>
 

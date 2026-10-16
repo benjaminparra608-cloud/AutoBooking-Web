@@ -10,6 +10,8 @@ import Gallery from "./components/Gallery";
 import Reviews from "./components/Reviews";
 import FloatingBookButton from "./components/FloatingBookButton";
 import QuickQuote from "./components/QuickQuote";
+import SymptomDiagnostic from "./components/SymptomDiagnostic";
+import CoverageChecker from "./components/CoverageChecker";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
 // Diccionario con descripciones y detalles para el modal de cada servicio
@@ -54,11 +56,20 @@ const SERVICE_DETAILS = {
 export default function LandingPage() {
   const [selectedService, setSelectedService] = useState(null);
   const [preselectedService, setPreselectedService] = useState(null);
+  const [preselectedComuna, setPreselectedComuna] = useState(null);
   const heroWa = whatsappUrl("Hola, quiero cotizar un servicio para mi auto");
 
   function handleAgendarServicio(servicio) {
     setPreselectedService(servicio);
     setSelectedService(null);
+    const elem = document.getElementById('agendar');
+    if (elem) {
+      elem.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function handleSelectComuna(comuna) {
+    setPreselectedComuna(comuna);
     const elem = document.getElementById('agendar');
     if (elem) {
       elem.scrollIntoView({ behavior: 'smooth' });
@@ -125,6 +136,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* 2.2 DIAGNÓSTICO POR SÍNTOMAS (ASISTENTE INTELIGENTE) */}
+      <SymptomDiagnostic onSelectService={handleAgendarServicio} />
 
       {/* 2.5 CARACTERÍSTICAS (tarjetas con mockup, estilo Bookr) */}
       <Features />
@@ -207,9 +221,15 @@ export default function LandingPage() {
       {/* 4. COBERTURA */}
       <section id="cobertura" className="py-16 px-4 max-w-5xl mx-auto">
         <h3 className="text-3xl font-bold mb-3 text-center text-white">¿Dónde operamos?</h3>
-        <p className="text-center text-slate-400 mb-10">
-          Atendemos estas comunas de Santiago, agrupadas por zona:
+        <p className="text-center text-slate-400 mb-8">
+          Atendemos las comunas más importantes de Santiago directamente en tu domicilio.
         </p>
+
+        {/* Verificador Inteligente de Cobertura */}
+        <div className="mb-12">
+          <CoverageChecker onSelectComuna={handleSelectComuna} />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {ZONES.map((zone) => (
             <div key={zone.name} className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
@@ -248,7 +268,7 @@ export default function LandingPage() {
           <p className="text-center text-slate-400 mb-10">
             ¿Nos escribes fuera de horario? Deja tus datos y te confirmamos apenas abramos.
           </p>
-          <BookingWizard preselectedService={preselectedService} />
+          <BookingWizard preselectedService={preselectedService} preselectedComuna={preselectedComuna} />
         </div>
       </section>
 
