@@ -8,11 +8,16 @@ import {
   createCita,
   updateCitaStatus,
   deleteCita,
+  getOrdenes,
+  createOrden,
+  updateOrden,
+  deleteOrden,
   isSupabaseConfigured
 } from '../lib/supabase';
 import { SERVICES, ZONES, whatsappUrl } from '../lib/config';
 
-const ESTADOS = [
+// Estados de Citas
+const ESTADOS_CITAS = [
   { id: 'todos', label: 'Todas', color: 'bg-slate-800 text-slate-300' },
   { id: 'pendiente', label: 'Pendientes', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
   { id: 'confirmada', label: 'Confirmadas', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' },
@@ -21,22 +26,36 @@ const ESTADOS = [
   { id: 'cancelada', label: 'Canceladas', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
 ];
 
+// Estados de Órdenes de Trabajo (OT)
+const ESTADOS_OT = [
+  { id: 'todos', label: 'Todas', color: 'bg-slate-800 text-slate-300' },
+  { id: 'ingresado', label: 'Ingresado', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
+  { id: 'en_proceso', label: 'En Proceso', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
+  { id: 'espera_repuestos', label: 'Espera Repuestos', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
+  { id: 'listo_entrega', label: 'Listo Entrega', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+  { id: 'entregado', label: 'Entregado', color: 'bg-slate-700 text-slate-300 border-slate-600' },
+];
+
+const MECANICOS_TALLER = ['Carlos Henríquez', 'Andrés Silva', 'Matías Morales', 'Roberto Díaz'];
+
 export default function TallerPage() {
   const [activeTab, setActiveTab] = useState('citas'); // 'citas' | 'ordenes' | 'vehiculos' | 'config'
-  const [citas, setCitas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filterEstado, setFilterEstado] = useState('todos');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterFecha, setFilterFecha] = useState('todas'); // 'todas' | 'hoy'
+  const [hasSupabase, setHasSupabase] = useState(false);
 
-  // Modales
-  const [showNewModal, setShowNewModal] = useState(false);
+  // ==========================================
+  // ESTADOS - CITAS
+  // ==========================================
+  const [citas, setCitas] = useState([]);
+  const [loadingCitas, setLoadingCitas] = useState(true);
+  const [filterEstadoCita, setFilterEstadoCita] = useState('todos');
+  const [searchQueryCita, setSearchQueryCita] = useState('');
+  const [filterFechaCita, setFilterFechaCita] = useState('todas'); // 'todas' | 'hoy'
+  const [showNewCitaModal, setShowNewCitaModal] = useState(false);
   const [selectedCita, setSelectedCita] = useState(null);
-  const [notasTemp, setNotasTemp] = useState('');
+  const [notasCitaTemp, setNotasCitaTemp] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
-  // Formulario nueva cita manual
-  const [newForm, setNewForm] = useState({
+  const [newCitaForm, setNewCitaForm] = useState({
     patente: '',
     marca: '',
     modelo: '',
@@ -53,26 +72,101 @@ export default function TallerPage() {
     notas_taller: ''
   });
 
-  const [hasSupabase, setHasSupabase] = useState(false);
+  // ==========================================
+  // ESTADOS - ÓRDENES DE TRABAJO (OT)
+  // ==========================================
+  const [ordenes, setOrdenes] = useState([]);
+  const [loadingOrdenes, setLoadingOrdenes] = useState(true);
+  const [filterEstadoOT, setFilterEstadoOT] = useState('todos');
+  const [searchQueryOT, setSearchQueryOT] = useState('');
+  const [selectedOT, setSelectedOT] = useState(null);
+  const [showNewOTModal, setShowNewOTModal] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printOTData, setPrintOTData] = useState(null);
 
+  const initialOTForm = {
+    cita_id: null,
+    patente: '',
+    marca: '',
+    modelo: '',
+    ano: '2020',
+    km: '',
+    cliente_nombre: '',
+    cliente_telefono: '',
+    cliente_email: '',
+    mecanico_asignado: MECANICOS_TALLER[0],
+    estado: 'ingresado',
+    diagnostico: '',
+    trabajos: [
+      { id: 't-1', descripcion: 'Revisión técnica de ingreso e inspección', precio: 20000, completado: false }
+    ],
+    repuestos: [],
+    checklist: {
+      luces: true,
+      combustible: '1/2',
+      ruedaRepuesto: true,
+      rayones: 'Sin observaciones de ingreso',
+      documentos: true
+    },
+    fecha_estimada: new Date().toISOString().split('T')[0],
+    notas_internas: ''
+  };
+
+  const [newOTForm, setNewOTForm] = useState(initialOTForm);
+
+  // Estados temporales para agregar trabajo/repuesto en modal OT
+  const [nuevoTrabajoDesc, setNuevoTrabajoDesc] = useState('');
+  const [nuevoTrabajoPrecio, setNuevoTrabajoPrecio] = useState('');
+  const [nuevoRepuestoNombre, setNuevoRepuestoNombre] = useState('');
+  const [nuevoRepuestoCant, setNuevoRepuestoCant] = useState('1');
+  const [nuevoRepuestoPrecio, setNuevoRepuestoPrecio] = useState('');
+
+  // ==========================================
+  // ESTADOS - HISTORIAL DE VEHÍCULOS
+  // ==========================================
+  const [patenteSeleccionada, setPatenteSeleccionada] = useState('');
+  const [busquedaHistorial, setBusquedaHistorial] = useState('');
+
+  // ==========================================
+  // CARGA INICIAL
+  // ==========================================
   useEffect(() => {
     setHasSupabase(isSupabaseConfigured());
-    cargarCitas();
+    cargarDatos();
   }, []);
 
+  async function cargarDatos() {
+    await Promise.all([cargarCitas(), cargarOrdenes()]);
+  }
+
   async function cargarCitas() {
-    setLoading(true);
+    setLoadingCitas(true);
     try {
       const data = await getCitas();
       setCitas(data || []);
     } catch (err) {
       console.error('Error cargando citas:', err);
     } finally {
-      setLoading(false);
+      setLoadingCitas(false);
     }
   }
 
-  async function handleCambiarEstado(id, nuevoEstado) {
+  async function cargarOrdenes() {
+    setLoadingOrdenes(true);
+    try {
+      const data = await getOrdenes();
+      setOrdenes(data || []);
+    } catch (err) {
+      console.error('Error cargando órdenes:', err);
+    } finally {
+      setLoadingOrdenes(false);
+    }
+  }
+
+  // ==========================================
+  // ACCIONES - CITAS
+  // ==========================================
+  async function handleCambiarEstadoCita(id, nuevoEstado) {
     try {
       await updateCitaStatus(id, nuevoEstado);
       setCitas(prev =>
@@ -82,21 +176,21 @@ export default function TallerPage() {
         setSelectedCita(prev => ({ ...prev, estado: nuevoEstado }));
       }
     } catch (err) {
-      console.error('Error actualizando estado:', err);
+      console.error('Error actualizando estado cita:', err);
     }
   }
 
-  async function handleGuardarNotas() {
+  async function handleGuardarNotasCita() {
     if (!selectedCita) return;
     setSavingNote(true);
     try {
-      await updateCitaStatus(selectedCita.id, selectedCita.estado, notasTemp);
+      await updateCitaStatus(selectedCita.id, selectedCita.estado, notasCitaTemp);
       setCitas(prev =>
-        prev.map(c => (c.id === selectedCita.id ? { ...c, notas_taller: notasTemp } : c))
+        prev.map(c => (c.id === selectedCita.id ? { ...c, notas_taller: notasCitaTemp } : c))
       );
-      setSelectedCita(prev => ({ ...prev, notas_taller: notasTemp }));
+      setSelectedCita(prev => ({ ...prev, notas_taller: notasCitaTemp }));
     } catch (err) {
-      console.error('Error guardando notas:', err);
+      console.error('Error guardando notas cita:', err);
     } finally {
       setSavingNote(false);
     }
@@ -115,19 +209,19 @@ export default function TallerPage() {
 
   async function handleCrearCitaManual(e) {
     e.preventDefault();
-    if (!newForm.patente || !newForm.nombre || !newForm.telefono) {
+    if (!newCitaForm.patente || !newCitaForm.nombre || !newCitaForm.telefono) {
       alert('Por favor completa al menos Patente, Nombre y Teléfono');
       return;
     }
 
     try {
       const created = await createCita({
-        ...newForm,
+        ...newCitaForm,
         estado: 'confirmada'
       });
       setCitas(prev => [created, ...prev]);
-      setShowNewModal(false);
-      setNewForm({
+      setShowNewCitaModal(false);
+      setNewCitaForm({
         patente: '',
         marca: '',
         modelo: '',
@@ -149,10 +243,177 @@ export default function TallerPage() {
     }
   }
 
+  // Generar Orden de Trabajo automáticamente a partir de una Cita
+  function handleGenerarOTDesdeCita(cita) {
+    setNewOTForm({
+      cita_id: cita.id,
+      patente: cita.patente,
+      marca: cita.marca,
+      modelo: cita.modelo,
+      ano: '',
+      km: cita.km || '',
+      cliente_nombre: cita.nombre,
+      cliente_telefono: cita.telefono,
+      cliente_email: cita.email || '',
+      mecanico_asignado: MECANICOS_TALLER[0],
+      estado: 'ingresado',
+      diagnostico: cita.comentario
+        ? `Servicio: ${cita.servicio}. Observación del cliente: "${cita.comentario}"`
+        : `Servicio solicitado: ${cita.servicio}`,
+      trabajos: [
+        {
+          id: 't-' + Date.now(),
+          descripcion: `Ejecución de servicio: ${cita.servicio}`,
+          precio: 35000,
+          completado: false
+        }
+      ],
+      repuestos: [],
+      checklist: {
+        luces: true,
+        combustible: '1/2',
+        ruedaRepuesto: true,
+        rayones: 'Sin observaciones de ingreso',
+        documentos: true
+      },
+      fecha_estimada: cita.fecha,
+      notas_internas: `Generada automáticamente desde cita #${cita.id.slice(-6)}`
+    });
+
+    // Actualizar la cita a "en_taller"
+    handleCambiarEstadoCita(cita.id, 'en_taller');
+    setShowNewOTModal(true);
+    setActiveTab('ordenes');
+  }
+
+  // ==========================================
+  // ACCIONES - ÓRDENES DE TRABAJO
+  // ==========================================
+  async function handleCrearOT(e) {
+    e.preventDefault();
+    if (!newOTForm.patente || !newOTForm.cliente_nombre) {
+      alert('Por favor completa al menos Patente y Nombre de cliente.');
+      return;
+    }
+
+    try {
+      const created = await createOrden(newOTForm);
+      setOrdenes(prev => [created, ...prev]);
+      setShowNewOTModal(false);
+      setNewOTForm(initialOTForm);
+    } catch (err) {
+      console.error('Error creando OT:', err);
+      alert('Error creando la Orden de Trabajo');
+    }
+  }
+
+  async function handleCambiarEstadoOT(id, nuevoEstado) {
+    try {
+      const updated = await updateOrden(id, { estado: nuevoEstado });
+      setOrdenes(prev => prev.map(o => (o.id === id ? { ...o, estado: nuevoEstado } : o)));
+      if (selectedOT?.id === id) {
+        setSelectedOT(prev => ({ ...prev, estado: nuevoEstado }));
+      }
+    } catch (err) {
+      console.error('Error actualizando estado OT:', err);
+    }
+  }
+
+  async function handleToggleTrabajoOT(otId, trabajoId) {
+    const ot = ordenes.find(o => o.id === otId);
+    if (!ot) return;
+    const updatedTrabajos = (ot.trabajos || []).map(t =>
+      t.id === trabajoId ? { ...t, completado: !t.completado } : t
+    );
+    try {
+      await updateOrden(otId, { trabajos: updatedTrabajos });
+      setOrdenes(prev => prev.map(o => (o.id === otId ? { ...o, trabajos: updatedTrabajos } : o)));
+      if (selectedOT?.id === otId) {
+        setSelectedOT(prev => ({ ...prev, trabajos: updatedTrabajos }));
+      }
+    } catch (err) {
+      console.error('Error actualizando trabajo:', err);
+    }
+  }
+
+  async function handleAgregarTrabajoEnSelectedOT() {
+    if (!nuevoTrabajoDesc.trim()) return;
+    const nuevo = {
+      id: 't-' + Date.now(),
+      descripcion: nuevoTrabajoDesc.trim(),
+      precio: Number(nuevoTrabajoPrecio) || 0,
+      completado: false
+    };
+    const updatedTrabajos = [...(selectedOT.trabajos || []), nuevo];
+    try {
+      const updated = await updateOrden(selectedOT.id, { trabajos: updatedTrabajos });
+      setOrdenes(prev => prev.map(o => (o.id === selectedOT.id ? updated : o)));
+      setSelectedOT(updated);
+      setNuevoTrabajoDesc('');
+      setNuevoTrabajoPrecio('');
+    } catch (err) {
+      console.error('Error agregando trabajo:', err);
+    }
+  }
+
+  async function handleAgregarRepuestoEnSelectedOT() {
+    if (!nuevoRepuestoNombre.trim()) return;
+    const nuevo = {
+      id: 'r-' + Date.now(),
+      repuesto: nuevoRepuestoNombre.trim(),
+      cantidad: Number(nuevoRepuestoCant) || 1,
+      precio: Number(nuevoRepuestoPrecio) || 0
+    };
+    const updatedRepuestos = [...(selectedOT.repuestos || []), nuevo];
+    try {
+      const updated = await updateOrden(selectedOT.id, { repuestos: updatedRepuestos });
+      setOrdenes(prev => prev.map(o => (o.id === selectedOT.id ? updated : o)));
+      setSelectedOT(updated);
+      setNuevoRepuestoNombre('');
+      setNuevoRepuestoCant('1');
+      setNuevoRepuestoPrecio('');
+    } catch (err) {
+      console.error('Error agregando repuesto:', err);
+    }
+  }
+
+  async function handleEliminarOT(id) {
+    if (!confirm('¿Seguro que deseas eliminar esta Orden de Trabajo?')) return;
+    try {
+      await deleteOrden(id);
+      setOrdenes(prev => prev.filter(o => o.id !== id));
+      if (selectedOT?.id === id) setSelectedOT(null);
+    } catch (err) {
+      console.error('Error eliminando OT:', err);
+    }
+  }
+
+  function handleImprimirOT(ot) {
+    setPrintOTData(ot);
+    setShowPrintModal(true);
+    setTimeout(() => {
+      window.print();
+    }, 400);
+  }
+
+  function notificarOTPorWhatsApp(ot) {
+    let estadoTexto = 'se encuentra en revisión técnica';
+    if (ot.estado === 'en_proceso') estadoTexto = 'está actualmente en reparación y mantención en taller';
+    if (ot.estado === 'espera_repuestos') estadoTexto = 'está en espera de repuestos específicos autorizados';
+    if (ot.estado === 'listo_entrega') estadoTexto = 'está ¡LISTO PARA ENTREGA! Puedes pasar a retirarlo';
+    if (ot.estado === 'entregado') estadoTexto = 'ha sido entregado exitosamente. ¡Gracias por confiar en AutoBooking!';
+
+    const totalClp = Number(ot.total_general || 0).toLocaleString('es-CL');
+    const msg = `Hola ${ot.cliente_nombre}, te informamos desde el taller AutoBooking que tu orden de trabajo *${ot.numero_ot}* para el vehículo *${ot.marca} ${ot.modelo}* (${ot.patente}) ${estadoTexto}. Total presupuestado: $${totalClp} CLP. ¿Tienes alguna duda o consulta?`;
+    window.open(`https://wa.me/${(ot.cliente_telefono || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  // ==========================================
+  // FILTROS Y MEMOS
+  // ==========================================
   const hoyStr = new Date().toISOString().split('T')[0];
 
-  // Métricas
-  const kpis = useMemo(() => {
+  const kpisCitas = useMemo(() => {
     return {
       total: citas.length,
       pendientes: citas.filter(c => c.estado === 'pendiente').length,
@@ -162,31 +423,97 @@ export default function TallerPage() {
     };
   }, [citas, hoyStr]);
 
-  // Citas filtradas
   const citasFiltradas = useMemo(() => {
     return citas.filter(c => {
-      // Filtro de estado
-      if (filterEstado !== 'todos' && c.estado !== filterEstado) return false;
-      // Filtro de fecha
-      if (filterFecha === 'hoy' && c.fecha !== hoyStr) return false;
-      // Filtro de búsqueda
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchPatente = (c.patente || '').toLowerCase().includes(query);
-        const matchNombre = (c.nombre || '').toLowerCase().includes(query);
-        const matchTelefono = (c.telefono || '').toLowerCase().includes(query);
-        const matchVehiculo = `${c.marca || ''} ${c.modelo || ''}`.toLowerCase().includes(query);
-        const matchServicio = (c.servicio || '').toLowerCase().includes(query);
-        return matchPatente || matchNombre || matchTelefono || matchVehiculo || matchServicio;
+      if (filterEstadoCita !== 'todos' && c.estado !== filterEstadoCita) return false;
+      if (filterFechaCita === 'hoy' && c.fecha !== hoyStr) return false;
+      if (searchQueryCita.trim()) {
+        const q = searchQueryCita.toLowerCase();
+        return (
+          (c.patente || '').toLowerCase().includes(q) ||
+          (c.nombre || '').toLowerCase().includes(q) ||
+          (c.telefono || '').toLowerCase().includes(q) ||
+          `${c.marca || ''} ${c.modelo || ''}`.toLowerCase().includes(q) ||
+          (c.servicio || '').toLowerCase().includes(q)
+        );
       }
       return true;
     });
-  }, [citas, filterEstado, filterFecha, searchQuery, hoyStr]);
+  }, [citas, filterEstadoCita, filterFechaCita, searchQueryCita, hoyStr]);
 
-  function abrirWhatsAppCliente(cita) {
-    const msg = `Hola ${cita.nombre}, te contactamos desde el taller de AutoBooking respecto a tu cita para el vehículo ${cita.marca} ${cita.modelo} (Patente: ${cita.patente}) programada para el ${cita.fecha} (${cita.horario}). ¿En qué te podemos ayudar?`;
-    window.open(`https://wa.me/${(cita.telefono || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-  }
+  const kpisOT = useMemo(() => {
+    return {
+      total: ordenes.length,
+      ingresado: ordenes.filter(o => o.estado === 'ingresado').length,
+      enProceso: ordenes.filter(o => o.estado === 'en_proceso').length,
+      esperaRepuestos: ordenes.filter(o => o.estado === 'espera_repuestos').length,
+      listoEntrega: ordenes.filter(o => o.estado === 'listo_entrega').length,
+      totalFacturado: ordenes.reduce((acc, o) => acc + (Number(o.total_general) || 0), 0)
+    };
+  }, [ordenes]);
+
+  const ordenesFiltradas = useMemo(() => {
+    return ordenes.filter(o => {
+      if (filterEstadoOT !== 'todos' && o.estado !== filterEstadoOT) return false;
+      if (searchQueryOT.trim()) {
+        const q = searchQueryOT.toLowerCase();
+        return (
+          (o.numero_ot || '').toLowerCase().includes(q) ||
+          (o.patente || '').toLowerCase().includes(q) ||
+          (o.cliente_nombre || '').toLowerCase().includes(q) ||
+          (o.mecanico_asignado || '').toLowerCase().includes(q) ||
+          `${o.marca || ''} ${o.modelo || ''}`.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [ordenes, filterEstadoOT, searchQueryOT]);
+
+  // Lista única de vehículos para historial
+  const todosLosVehiculos = useMemo(() => {
+    const map = new Map();
+    // Procesar de citas
+    citas.forEach(c => {
+      if (!c.patente) return;
+      const key = c.patente.toUpperCase().trim();
+      if (!map.has(key)) {
+        map.set(key, {
+          patente: key,
+          marca: c.marca,
+          modelo: c.modelo,
+          km: c.km,
+          cliente: c.nombre,
+          telefono: c.telefono
+        });
+      }
+    });
+    // Procesar de órdenes
+    ordenes.forEach(o => {
+      if (!o.patente) return;
+      const key = o.patente.toUpperCase().trim();
+      if (!map.has(key)) {
+        map.set(key, {
+          patente: key,
+          marca: o.marca,
+          modelo: o.modelo,
+          km: o.km,
+          cliente: o.cliente_nombre,
+          telefono: o.cliente_telefono
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [citas, ordenes]);
+
+  const vehiculosFiltrados = useMemo(() => {
+    if (!busquedaHistorial.trim()) return todosLosVehiculos;
+    const q = busquedaHistorial.toLowerCase();
+    return todosLosVehiculos.filter(v =>
+      v.patente.toLowerCase().includes(q) ||
+      (v.cliente || '').toLowerCase().includes(q) ||
+      `${v.marca} ${v.modelo}`.toLowerCase().includes(q)
+    );
+  }, [todosLosVehiculos, busquedaHistorial]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-28 relative">
@@ -209,7 +536,7 @@ export default function TallerPage() {
                 <button
                   onClick={() => setActiveTab('config')}
                   className="text-xs font-medium text-amber-400 bg-amber-950/50 border border-amber-800/50 hover:bg-amber-900/50 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Haz clic para ver cómo conectar con tu base de datos Supabase"
+                  title="Configurar conexión con Supabase"
                 >
                   <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                   Modo Local Activo (Conectar Supabase)
@@ -220,27 +547,41 @@ export default function TallerPage() {
               Gestión de <span className="text-cyan-400">AutoBooking</span>
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              Administración de agendamientos, vehículos y órdenes del taller en tiempo real.
+              Control de agendamientos, órdenes de trabajo (OT) y fichas de vehículos en tiempo real.
             </p>
           </div>
 
           <div className="flex items-center gap-2.5">
             <button
-              onClick={cargarCitas}
-              disabled={loading}
+              onClick={cargarDatos}
+              disabled={loadingCitas || loadingOrdenes}
               className="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
-              title="Recargar citas"
+              title="Recargar datos"
             >
-              <span className={loading ? 'animate-spin inline-block' : ''}>🔄</span>
+              <span className={(loadingCitas || loadingOrdenes) ? 'animate-spin inline-block' : ''}>🔄</span>
               Actualizar
             </button>
-            <button
-              onClick={() => setShowNewModal(true)}
-              className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-cyan-600/25 transition-all cursor-pointer"
-            >
-              <span>➕</span>
-              Nueva Cita
-            </button>
+
+            {activeTab === 'citas' ? (
+              <button
+                onClick={() => setShowNewCitaModal(true)}
+                className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-cyan-600/25 transition-all cursor-pointer"
+              >
+                <span>➕</span>
+                Nueva Cita
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setNewOTForm(initialOTForm);
+                  setShowNewOTModal(true);
+                }}
+                className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-cyan-600/25 transition-all cursor-pointer"
+              >
+                <span>📋</span>
+                Nueva OT
+              </button>
+            )}
           </div>
         </div>
 
@@ -248,7 +589,7 @@ export default function TallerPage() {
         <div className="max-w-6xl mx-auto mt-6 flex gap-2 border-b border-slate-800 pb-px overflow-x-auto">
           <button
             onClick={() => setActiveTab('citas')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'citas'
                 ? 'border-cyan-400 text-cyan-400 bg-cyan-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -263,7 +604,7 @@ export default function TallerPage() {
 
           <button
             onClick={() => setActiveTab('ordenes')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'ordenes'
                 ? 'border-cyan-400 text-cyan-400 bg-cyan-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -271,11 +612,14 @@ export default function TallerPage() {
           >
             <span>📋</span>
             Órdenes de Trabajo (OT)
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-cyan-900/60 text-cyan-300 border border-cyan-800/40">
+              {ordenes.length}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('vehiculos')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'vehiculos'
                 ? 'border-cyan-400 text-cyan-400 bg-cyan-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -283,11 +627,14 @@ export default function TallerPage() {
           >
             <span>🚗</span>
             Historial por Patente
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+              {todosLosVehiculos.length}
+            </span>
           </button>
 
           <button
             onClick={() => setActiveTab('config')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'config'
                 ? 'border-cyan-400 text-cyan-400 bg-cyan-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
@@ -302,91 +649,83 @@ export default function TallerPage() {
       {/* CONTENIDO PRINCIPAL */}
       <main className="max-w-6xl mx-auto px-4 py-8">
 
-        {/* 1. VISTA DE CITAS Y AGENDAMIENTOS */}
+        {/* ========================================================= */}
+        {/* TAB 1: CITAS Y AGENDAMIENTOS                              */}
+        {/* ========================================================= */}
         {activeTab === 'citas' && (
           <div className="space-y-6">
 
-            {/* TARJETAS KPI */}
+            {/* KPIS CITAS */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
               <div
-                onClick={() => { setFilterEstado('todos'); setFilterFecha('todas'); }}
+                onClick={() => { setFilterEstadoCita('todos'); setFilterFechaCita('todas'); }}
                 className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-4 rounded-2xl cursor-pointer transition-all"
               >
                 <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Citas</div>
-                <div className="text-2xl font-extrabold text-white">{kpis.total}</div>
+                <div className="text-2xl font-extrabold text-white">{kpisCitas.total}</div>
                 <div className="text-[11px] text-slate-500 mt-1">Registradas</div>
               </div>
 
               <div
-                onClick={() => { setFilterEstado('pendiente'); setFilterFecha('todas'); }}
+                onClick={() => { setFilterEstadoCita('pendiente'); setFilterFechaCita('todas'); }}
                 className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-4 rounded-2xl cursor-pointer transition-all"
               >
                 <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center justify-between">
                   <span>Pendientes</span>
                   <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                 </div>
-                <div className="text-2xl font-extrabold text-amber-300">{kpis.pendientes}</div>
+                <div className="text-2xl font-extrabold text-amber-300">{kpisCitas.pendientes}</div>
                 <div className="text-[11px] text-amber-400/70 mt-1">Por confirmar</div>
               </div>
 
               <div
-                onClick={() => { setFilterEstado('confirmada'); setFilterFecha('todas'); }}
+                onClick={() => { setFilterEstadoCita('confirmada'); setFilterFechaCita('todas'); }}
                 className="bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-4 rounded-2xl cursor-pointer transition-all"
               >
                 <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-1">Confirmadas</div>
-                <div className="text-2xl font-extrabold text-blue-300">{kpis.confirmadas}</div>
+                <div className="text-2xl font-extrabold text-blue-300">{kpisCitas.confirmadas}</div>
                 <div className="text-[11px] text-slate-500 mt-1">Agendadas firmes</div>
               </div>
 
               <div
-                onClick={() => { setFilterEstado('en_taller'); setFilterFecha('todas'); }}
+                onClick={() => { setFilterEstadoCita('en_taller'); setFilterFechaCita('todas'); }}
                 className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition-all"
               >
                 <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-1">En Taller</div>
-                <div className="text-2xl font-extrabold text-cyan-300">{kpis.enTaller}</div>
+                <div className="text-2xl font-extrabold text-cyan-300">{kpisCitas.enTaller}</div>
                 <div className="text-[11px] text-slate-500 mt-1">En atención</div>
               </div>
 
               <div
-                onClick={() => { setFilterFecha('hoy'); setFilterEstado('todos'); }}
+                onClick={() => { setFilterFechaCita('hoy'); setFilterEstadoCita('todos'); }}
                 className="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-4 rounded-2xl cursor-pointer transition-all col-span-2 sm:col-span-1"
               >
                 <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">Para Hoy</div>
-                <div className="text-2xl font-extrabold text-emerald-300">{kpis.hoy}</div>
+                <div className="text-2xl font-extrabold text-emerald-300">{kpisCitas.hoy}</div>
                 <div className="text-[11px] text-slate-500 mt-1">{hoyStr}</div>
               </div>
             </div>
 
-            {/* FILTROS Y BÚSQUEDA */}
+            {/* FILTROS CITAS */}
             <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
-              {/* Barra de búsqueda */}
               <div className="relative flex-1 max-w-md">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                 <input
                   type="text"
                   placeholder="Buscar por patente, cliente, teléfono o auto..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  value={searchQueryCita}
+                  onChange={e => setSearchQueryCita(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
                 />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                )}
               </div>
 
-              {/* Botones de filtro de estado */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-                {ESTADOS.map(est => (
+                {ESTADOS_CITAS.map(est => (
                   <button
                     key={est.id}
-                    onClick={() => setFilterEstado(est.id)}
+                    onClick={() => setFilterEstadoCita(est.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                      filterEstado === est.id
+                      filterEstadoCita === est.id
                         ? 'bg-cyan-600 text-white shadow-sm'
                         : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
                     }`}
@@ -398,7 +737,7 @@ export default function TallerPage() {
             </div>
 
             {/* LISTADO DE CITAS */}
-            {loading ? (
+            {loadingCitas ? (
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
                 <div className="text-3xl mb-2 animate-spin inline-block">🔄</div>
                 <p>Cargando agendamientos...</p>
@@ -406,23 +745,23 @@ export default function TallerPage() {
             ) : citasFiltradas.length === 0 ? (
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
                 <div className="text-4xl mb-3">🚗</div>
-                <h3 className="text-lg font-bold text-white mb-1">No se encontraron agendamientos</h3>
+                <h3 className="text-lg font-bold text-white mb-1">No hay agendamientos con este filtro</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
-                  {searchQuery || filterEstado !== 'todos'
-                    ? 'No hay citas que coincidan con los filtros seleccionados.'
-                    : 'Aún no hay citas registradas. Los agendamientos que hagan los clientes en la web aparecerán aquí automáticamente.'}
+                  {searchQueryCita || filterEstadoCita !== 'todos'
+                    ? 'Prueba limpiando los filtros para ver todos los agendamientos.'
+                    : 'Aún no hay citas registradas.'}
                 </p>
                 <button
-                  onClick={() => setShowNewModal(true)}
+                  onClick={() => setShowNewCitaModal(true)}
                   className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all cursor-pointer"
                 >
-                  Registrar primera cita manual
+                  Registrar cita manual
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {citasFiltradas.map(cita => {
-                  const estadoObj = ESTADOS.find(e => e.id === cita.estado) || ESTADOS[1];
+                  const estadoObj = ESTADOS_CITAS.find(e => e.id === cita.estado) || ESTADOS_CITAS[1];
                   const esHoy = cita.fecha === hoyStr;
 
                   return (
@@ -434,22 +773,18 @@ export default function TallerPage() {
                           : 'border-slate-800'
                       }`}
                     >
-                      {/* Cabecera de la tarjeta: Patente + Estado */}
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-3">
-                          {/* Patente formato placa patente */}
                           <div className="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-100 font-mono font-bold tracking-widest text-sm shadow-inner">
                             <span className="text-[10px] text-cyan-400 mr-1.5 font-sans font-extrabold">CL</span>
                             {cita.patente || 'S/PATENTE'}
                           </div>
 
-                          {/* Badge estado */}
                           <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${estadoObj.color}`}>
                             {estadoObj.label}
                           </span>
                         </div>
 
-                        {/* Datos del Vehículo */}
                         <h4 className="text-base font-bold text-white mb-1">
                           {cita.marca} {cita.modelo}
                           {cita.km && (
@@ -459,13 +794,11 @@ export default function TallerPage() {
                           )}
                         </h4>
 
-                        {/* Servicio solicitado */}
                         <div className="text-xs font-semibold text-cyan-400 mb-3 flex items-center gap-1.5">
                           <span>🔧</span>
                           <span>{cita.servicio}</span>
                         </div>
 
-                        {/* Fecha y Horario */}
                         <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-3 mb-3 text-xs space-y-1.5">
                           <div className="flex items-center justify-between text-slate-300">
                             <span className="text-slate-500">Fecha:</span>
@@ -483,7 +816,6 @@ export default function TallerPage() {
                           </div>
                         </div>
 
-                        {/* Datos del Cliente */}
                         <div className="text-xs text-slate-300 space-y-1 mb-3">
                           <div className="font-semibold text-slate-200 flex items-center gap-1.5">
                             <span>👤</span>
@@ -492,9 +824,11 @@ export default function TallerPage() {
                           <div className="text-slate-400 flex items-center justify-between">
                             <span>📞 {cita.telefono}</span>
                             <button
-                              onClick={() => abrirWhatsAppCliente(cita)}
+                              onClick={() => {
+                                const msg = `Hola ${cita.nombre}, te contactamos desde AutoBooking respecto a tu cita para el ${cita.fecha} (${cita.horario}) de tu vehículo ${cita.marca} ${cita.modelo}.`;
+                                window.open(`https://wa.me/${(cita.telefono || '').replace(/\D/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+                              }}
                               className="text-emerald-400 hover:text-emerald-300 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-                              title="Abrir chat en WhatsApp"
                             >
                               <span>💬 WhatsApp</span>
                             </button>
@@ -512,13 +846,12 @@ export default function TallerPage() {
                         </div>
                       </div>
 
-                      {/* Botones de acción rápida por tarjeta */}
+                      {/* ACCIONES DE CITA */}
                       <div className="pt-3 border-t border-slate-800/80 space-y-2">
-                        {/* Selector rápido de estado */}
                         <div className="flex gap-1.5">
                           {cita.estado === 'pendiente' && (
                             <button
-                              onClick={() => handleCambiarEstado(cita.id, 'confirmada')}
+                              onClick={() => handleCambiarEstadoCita(cita.id, 'confirmada')}
                               className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
                             >
                               ✓ Confirmar Cita
@@ -526,15 +859,16 @@ export default function TallerPage() {
                           )}
                           {cita.estado === 'confirmada' && (
                             <button
-                              onClick={() => handleCambiarEstado(cita.id, 'en_taller')}
-                              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                              onClick={() => handleGenerarOTDesdeCita(cita)}
+                              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                             >
-                              🚘 Ingresar a Taller
+                              <span>📋</span>
+                              Generar OT
                             </button>
                           )}
                           {cita.estado === 'en_taller' && (
                             <button
-                              onClick={() => handleCambiarEstado(cita.id, 'completada')}
+                              onClick={() => handleCambiarEstadoCita(cita.id, 'completada')}
                               className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
                             >
                               ✅ Marcar Listo
@@ -544,11 +878,11 @@ export default function TallerPage() {
                           <button
                             onClick={() => {
                               setSelectedCita(cita);
-                              setNotasTemp(cita.notas_taller || '');
+                              setNotasCitaTemp(cita.notas_taller || '');
                             }}
                             className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                           >
-                            Detalle / Notas
+                            Detalle
                           </button>
                         </div>
                       </div>
@@ -560,88 +894,455 @@ export default function TallerPage() {
           </div>
         )}
 
-        {/* 2. VISTA DE ÓRDENES DE TRABAJO (OT) */}
+        {/* ========================================================= */}
+        {/* TAB 2: ÓRDENES DE TRABAJO (OT) - HABILITADO COMPLETO     */}
+        {/* ========================================================= */}
         {activeTab === 'ordenes' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center max-w-3xl mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-cyan-950 border border-cyan-800 flex items-center justify-center text-3xl mx-auto mb-4">
-              📋
+          <div className="space-y-6">
+
+            {/* KPIS DE ÓRDENES DE TRABAJO */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+              <div
+                onClick={() => setFilterEstadoOT('todos')}
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total OTs</div>
+                <div className="text-2xl font-extrabold text-white">{kpisOT.total}</div>
+                <div className="text-[11px] text-slate-500 mt-1">Activas e históricas</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoOT('ingresado')}
+                className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Ingresados</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-amber-300">{kpisOT.ingresado}</div>
+                <div className="text-[11px] text-amber-400/70 mt-1">Check-in listo</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoOT('en_proceso')}
+                className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-1">En Proceso</div>
+                <div className="text-2xl font-extrabold text-cyan-300">{kpisOT.enProceso}</div>
+                <div className="text-[11px] text-slate-500 mt-1">En banco de trabajo</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoOT('espera_repuestos')}
+                className="bg-slate-900 border border-slate-800 hover:border-purple-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mb-1">Repuestos</div>
+                <div className="text-2xl font-extrabold text-purple-300">{kpisOT.esperaRepuestos}</div>
+                <div className="text-[11px] text-purple-400/70 mt-1">En espera repuestos</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoOT('listo_entrega')}
+                className="bg-slate-900 border border-slate-800 hover:border-emerald-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">Listos</div>
+                <div className="text-2xl font-extrabold text-emerald-300">{kpisOT.listoEntrega}</div>
+                <div className="text-[11px] text-emerald-400/70 mt-1">Para entrega cliente</div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl col-span-2 sm:col-span-1">
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Facturado</div>
+                <div className="text-xl font-extrabold text-cyan-300">${kpisOT.totalFacturado.toLocaleString('es-CL')}</div>
+                <div className="text-[11px] text-slate-500 mt-1">Mano obra + Repuestos</div>
+              </div>
             </div>
-            <h3 className="text-2xl font-bold text-white mb-2">Órdenes de Trabajo (OT)</h3>
-            <p className="text-slate-300 text-sm mb-6 max-w-lg mx-auto">
-              Este módulo permitirá convertir cualquier cita confirmada en una orden de trabajo con checklist técnico, repuestos utilizados, costo total y firma de entrega.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left mb-8">
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <div className="text-cyan-400 font-bold text-sm mb-1">1. Checklist de Ingreso</div>
-                <div className="text-xs text-slate-400">Inspección de daños, nivel de combustible y pertenencias.</div>
+
+            {/* FILTROS Y BÚSQUEDA OT */}
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row gap-3 justify-between items-stretch md:items-center">
+              <div className="relative flex-1 max-w-md">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Buscar por #OT, patente, cliente, auto o mecánico..."
+                  value={searchQueryOT}
+                  onChange={e => setSearchQueryOT(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
               </div>
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <div className="text-cyan-400 font-bold text-sm mb-1">2. Repuestos y Horas</div>
-                <div className="text-xs text-slate-400">Cálculo de mano de obra y repuestos automáticos.</div>
-              </div>
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
-                <div className="text-cyan-400 font-bold text-sm mb-1">3. Hoja de Entrega</div>
-                <div className="text-xs text-slate-400">PDF de garantía y resumen para el cliente.</div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+                {ESTADOS_OT.map(est => (
+                  <button
+                    key={est.id}
+                    onClick={() => setFilterEstadoOT(est.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      filterEstadoOT === est.id
+                        ? 'bg-cyan-600 text-white shadow-sm'
+                        : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
+                  >
+                    {est.label}
+                  </button>
+                ))}
               </div>
             </div>
-            <button
-              onClick={() => setActiveTab('citas')}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold px-6 py-2.5 rounded-xl transition-colors cursor-pointer"
-            >
-              Volver a Citas y Agenda
-            </button>
+
+            {/* LISTADO DE ÓRDENES */}
+            {loadingOrdenes ? (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
+                <div className="text-3xl mb-2 animate-spin inline-block">🔄</div>
+                <p>Cargando órdenes de trabajo...</p>
+              </div>
+            ) : ordenesFiltradas.length === 0 ? (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center">
+                <div className="text-4xl mb-3">📋</div>
+                <h3 className="text-lg font-bold text-white mb-1">No se encontraron Órdenes de Trabajo</h3>
+                <p className="text-sm text-slate-400 max-w-md mx-auto mb-6">
+                  {searchQueryOT || filterEstadoOT !== 'todos'
+                    ? 'No hay órdenes que coincidan con la búsqueda.'
+                    : 'Crea tu primera Orden de Trabajo o genera una directamente desde las Citas confirmadas.'}
+                </p>
+                <button
+                  onClick={() => {
+                    setNewOTForm(initialOTForm);
+                    setShowNewOTModal(true);
+                  }}
+                  className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all cursor-pointer"
+                >
+                  ➕ Crear Nueva Orden de Trabajo
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {ordenesFiltradas.map(ot => {
+                  const estadoObj = ESTADOS_OT.find(e => e.id === ot.estado) || ESTADOS_OT[1];
+                  const trabajosList = ot.trabajos || [];
+                  const trabajosCompletados = trabajosList.filter(t => t.completado).length;
+
+                  return (
+                    <div
+                      key={ot.id}
+                      className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition-all shadow-sm"
+                    >
+                      <div>
+                        {/* Cabecera OT */}
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-extrabold text-sm text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-2 py-0.5 rounded-lg">
+                              {ot.numero_ot}
+                            </span>
+                            <div className="flex items-center bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-slate-100 font-mono font-bold text-xs tracking-wider">
+                              <span className="text-[9px] text-cyan-400 mr-1 font-sans">CL</span>
+                              {ot.patente}
+                            </div>
+                          </div>
+
+                          <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${estadoObj.color}`}>
+                            {estadoObj.label}
+                          </span>
+                        </div>
+
+                        {/* Vehículo */}
+                        <h4 className="text-base font-bold text-white mb-0.5">
+                          {ot.marca} {ot.modelo} {ot.ano && `(${ot.ano})`}
+                        </h4>
+                        <div className="text-xs text-slate-400 mb-3 flex items-center justify-between">
+                          <span>{ot.km ? `${Number(ot.km).toLocaleString('es-CL')} km` : 'Km no indicado'}</span>
+                          <span className="text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-[11px]">
+                            👨‍🔧 {ot.mecanico_asignado || 'Sin Asignar'}
+                          </span>
+                        </div>
+
+                        {/* Diagnóstico */}
+                        {ot.diagnostico && (
+                          <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 mb-3 text-xs text-slate-300">
+                            <span className="text-slate-500 block text-[10px] uppercase font-bold mb-0.5">Diagnóstico:</span>
+                            <p className="line-clamp-2">{ot.diagnostico}</p>
+                          </div>
+                        )}
+
+                        {/* Tareas checklist resumen */}
+                        <div className="mb-3 space-y-1">
+                          <div className="flex items-center justify-between text-xs text-slate-400">
+                            <span>Avance trabajos:</span>
+                            <span className="font-semibold text-slate-200">
+                              {trabajosCompletados} de {trabajosList.length} listos
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="bg-cyan-500 h-1.5 transition-all"
+                              style={{
+                                width: trabajosList.length > 0 ? `${(trabajosCompletados / trabajosList.length) * 100}%` : '0%'
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Datos Cliente y Total */}
+                        <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 text-xs flex justify-between items-center mb-3">
+                          <div>
+                            <div className="font-bold text-slate-200">{ot.cliente_nombre}</div>
+                            <div className="text-slate-500 text-[11px]">{ot.cliente_telefono}</div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-500 block uppercase">Total General</span>
+                            <span className="text-sm font-extrabold text-cyan-400">
+                              ${Number(ot.total_general || 0).toLocaleString('es-CL')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Botones de acción OT */}
+                      <div className="pt-3 border-t border-slate-800/80 space-y-2">
+                        {/* Selector de estado rápido */}
+                        <div className="flex gap-1.5">
+                          {ot.estado === 'ingresado' && (
+                            <button
+                              onClick={() => handleCambiarEstadoOT(ot.id, 'en_proceso')}
+                              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                            >
+                              ▶ Iniciar Reparación
+                            </button>
+                          )}
+                          {ot.estado === 'en_proceso' && (
+                            <button
+                              onClick={() => handleCambiarEstadoOT(ot.id, 'listo_entrega')}
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                            >
+                              ✅ Listo para Entrega
+                            </button>
+                          )}
+                          {ot.estado === 'espera_repuestos' && (
+                            <button
+                              onClick={() => handleCambiarEstadoOT(ot.id, 'en_proceso')}
+                              className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                            >
+                              ▶ Reanudar Trabajo
+                            </button>
+                          )}
+                          {ot.estado === 'listo_entrega' && (
+                            <button
+                              onClick={() => handleCambiarEstadoOT(ot.id, 'entregado')}
+                              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                            >
+                              🚗 Marcar Entregado
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => setSelectedOT(ot)}
+                            className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+                          >
+                            Editar OT
+                          </button>
+                        </div>
+
+                        {/* Botones secundarios: WhatsApp + Imprimir */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => notificarOTPorWhatsApp(ot)}
+                            className="flex-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-emerald-400 hover:text-emerald-300 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <span>💬</span>
+                            Notificar
+                          </button>
+                          <button
+                            onClick={() => handleImprimirOT(ot)}
+                            className="flex-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <span>🖨️</span>
+                            Imprimir
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
-        {/* 3. VISTA DE HISTORIAL POR PATENTE */}
+        {/* ========================================================= */}
+        {/* TAB 3: HISTORIAL POR PATENTE (COMPLETO)                   */}
+        {/* ========================================================= */}
         {activeTab === 'vehiculos' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-violet-950 border border-violet-800 flex items-center justify-center text-2xl">
-                🚗
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white">Historial de Vehículos por Patente</h3>
-                <p className="text-xs text-slate-400">Consulta el historial de servicios realizados a cada vehículo que ha visitado el taller.</p>
-              </div>
-            </div>
+          <div className="space-y-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-violet-950 border border-violet-800 flex items-center justify-center text-2xl">
+                    🚗
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">Historial Técnico por Vehículo</h3>
+                    <p className="text-xs text-slate-400">
+                      Selecciona o busca cualquier patente para ver todas sus citas, órdenes de trabajo, repuestos y costos acumulados.
+                    </p>
+                  </div>
+                </div>
 
-            {/* Selector de patentes registradas */}
-            <div className="space-y-4">
-              <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Patentes registradas recientemente</h4>
-              {citas.length === 0 ? (
-                <p className="text-xs text-slate-500">No hay vehículos registrados aún.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {Array.from(new Set(citas.map(c => c.patente))).filter(Boolean).map(patente => {
-                    const citasAuto = citas.filter(c => c.patente === patente);
-                    const ultimo = citasAuto[0];
-                    return (
-                      <div key={patente} className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex justify-between items-center">
-                        <div>
-                          <div className="font-mono font-bold text-cyan-400 tracking-wider text-sm">{patente}</div>
-                          <div className="text-xs text-slate-300 mt-0.5">{ultimo.marca} {ultimo.modelo}</div>
-                          <div className="text-[11px] text-slate-500">{citasAuto.length} servicio(s) registrado(s)</div>
+                {/* Buscador de patentes */}
+                <div className="relative w-full md:w-72">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Buscar patente o cliente..."
+                    value={busquedaHistorial}
+                    onChange={e => setBusquedaHistorial(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
+              {/* Selector de patentes */}
+              <div className="flex gap-2 overflow-x-auto pb-3 mb-6">
+                {vehiculosFiltrados.map(v => (
+                  <button
+                    key={v.patente}
+                    onClick={() => setPatenteSeleccionada(v.patente)}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      patenteSeleccionada === v.patente
+                        ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/30'
+                        : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <span>CL</span>
+                    <span>{v.patente}</span>
+                    <span className="font-sans font-normal text-slate-400 text-[11px]">({v.marca} {v.modelo})</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Ficha detallada del vehículo seleccionado */}
+              {patenteSeleccionada ? (
+                (() => {
+                  const citasAuto = citas.filter(c => c.patente?.toUpperCase() === patenteSeleccionada);
+                  const ordenesAuto = ordenes.filter(o => o.patente?.toUpperCase() === patenteSeleccionada);
+                  const autoInfo = todosLosVehiculos.find(v => v.patente === patenteSeleccionada) || {};
+                  const gastoTotal = ordenesAuto.reduce((acc, o) => acc + (Number(o.total_general) || 0), 0);
+
+                  return (
+                    <div className="space-y-6">
+                      {/* Tarjeta resumen del vehículo */}
+                      <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-2xl bg-cyan-950 border border-cyan-800 flex items-center justify-center font-mono font-extrabold text-xl text-cyan-400">
+                            {patenteSeleccionada.slice(0, 4)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-extrabold text-lg text-white">{patenteSeleccionada}</span>
+                              <span className="text-xs bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-semibold">Chile</span>
+                            </div>
+                            <div className="text-sm font-bold text-slate-300 mt-0.5">
+                              {autoInfo.marca} {autoInfo.modelo}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              Propietario registrado: <strong className="text-slate-300">{autoInfo.cliente}</strong> (📞 {autoInfo.telefono})
+                            </div>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => {
-                            setSearchQuery(patente);
-                            setActiveTab('citas');
-                          }}
-                          className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer"
-                        >
-                          Ver Citas
-                        </button>
+
+                        <div className="grid grid-cols-3 gap-4 w-full md:w-auto text-center border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase block">Visitas</span>
+                            <span className="text-lg font-extrabold text-white">{citasAuto.length + ordenesAuto.length}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase block">Órdenes OT</span>
+                            <span className="text-lg font-extrabold text-cyan-400">{ordenesAuto.length}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-500 uppercase block">Invertido</span>
+                            <span className="text-lg font-extrabold text-emerald-400">${gastoTotal.toLocaleString('es-CL')}</span>
+                          </div>
+                        </div>
                       </div>
-                    );
-                  })}
+
+                      {/* Línea de tiempo de servicios y OT */}
+                      <div className="space-y-4">
+                        <h4 className="text-sm font-bold text-slate-300 uppercase tracking-wider">Historial de Órdenes e Intervenciones</h4>
+
+                        {ordenesAuto.length === 0 && citasAuto.length === 0 ? (
+                          <div className="text-center p-8 bg-slate-950 rounded-xl text-slate-500 text-xs">
+                            No hay registros técnicos para este vehículo.
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {/* Mostrar OTs */}
+                            {ordenesAuto.map(ot => (
+                              <div key={ot.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row justify-between gap-4 items-start md:items-center">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-950 border border-cyan-800 px-2 py-0.5 rounded">
+                                      {ot.numero_ot}
+                                    </span>
+                                    <span className="text-xs text-slate-400">
+                                      {new Date(ot.created_at).toLocaleDateString('es-CL')}
+                                    </span>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-slate-700 bg-slate-900 text-slate-300">
+                                      Mecánico: {ot.mecanico_asignado}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-slate-300 font-semibold mb-1">
+                                    {ot.diagnostico || 'Sin diagnóstico detallado'}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500">
+                                    Trabajos realizados: {(ot.trabajos || []).map(t => t.descripcion).join(', ') || 'Mano de obra general'}
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <span className="text-xs font-bold text-cyan-400 block">${Number(ot.total_general || 0).toLocaleString('es-CL')}</span>
+                                    <span className="text-[10px] text-slate-500">{ot.estado}</span>
+                                  </div>
+                                  <button
+                                    onClick={() => setSelectedOT(ot)}
+                                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    Ver OT
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+
+                            {/* Mostrar Citas */}
+                            {citasAuto.map(c => (
+                              <div key={c.id} className="bg-slate-950/60 border border-slate-800/60 rounded-xl p-4 flex justify-between items-center text-xs">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <span className="text-slate-400 font-semibold">Agendamiento: {c.servicio}</span>
+                                    <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-400">{c.fecha}</span>
+                                  </div>
+                                  <div className="text-[11px] text-slate-500">Cliente: {c.nombre} (Comuna: {c.comuna})</div>
+                                </div>
+                                <span className="text-[11px] text-slate-400 capitalize bg-slate-900 px-2.5 py-1 rounded-full border border-slate-800">
+                                  {c.estado}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="text-center py-12 text-slate-500 text-xs">
+                  Selecciona una patente arriba para ver su expediente técnico completo.
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* 4. VISTA DE CONFIGURACIÓN / SUPABASE */}
+        {/* ========================================================= */}
+        {/* TAB 4: CONFIGURACIÓN SUPABASE                             */}
+        {/* ========================================================= */}
         {activeTab === 'config' && (
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-3xl mx-auto space-y-6">
             <div className="flex items-center gap-3">
@@ -650,7 +1351,7 @@ export default function TallerPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-white">Configuración de Base de Datos Supabase</h3>
-                <p className="text-xs text-slate-400">Conecta tu base de datos PostgreSQL en la nube para sincronizar todos los agendamientos.</p>
+                <p className="text-xs text-slate-400">Conecta tu base de datos PostgreSQL en la nube para sincronizar Citas y Órdenes de Trabajo.</p>
               </div>
             </div>
 
@@ -664,8 +1365,8 @@ export default function TallerPage() {
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
                 {hasSupabase
-                  ? 'Todas las citas y cambios de estado se guardan directamente en tu base de datos Supabase en tiempo real.'
-                  : 'Las citas se guardan en el navegador. Para que los agendamientos se sincronicen entre múltiples computadores y celulares, configura tu proyecto Supabase gratuito siguiendo los pasos a continuación.'}
+                  ? 'Todas las citas, órdenes de trabajo y cambios se guardan directamente en tu base de datos Supabase en tiempo real.'
+                  : 'Las citas y órdenes se guardan en el navegador. Para sincronizarlas entre computadores y celulares del taller, conecta tu proyecto Supabase gratis.'}
               </p>
             </div>
 
@@ -676,21 +1377,21 @@ export default function TallerPage() {
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                 <div className="font-bold text-cyan-400">Paso 1: Crear proyecto en Supabase</div>
                 <p className="text-slate-400">
-                  Ingresa a <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline font-semibold">supabase.com</a>, crea una cuenta gratis y crea un nuevo proyecto llamado <strong>AutoBooking</strong>.
+                  Ingresa a <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline font-semibold">supabase.com</a> y crea un proyecto gratuito.
                 </p>
               </div>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                 <div className="font-bold text-cyan-400">Paso 2: Ejecutar el script SQL</div>
                 <p className="text-slate-400">
-                  En el menú lateral de Supabase, ve a <strong>SQL Editor</strong>, abre una nueva consulta y pega el contenido del archivo <code className="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">supabase_schema.sql</code> que dejamos en la raíz de tu proyecto. Luego haz clic en <strong>Run</strong>.
+                  En el menú de Supabase ve a <strong>SQL Editor</strong>, abre una consulta y pega el contenido del archivo <code className="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">supabase_schema.sql</code> (incluye tablas de Citas y Órdenes de Trabajo). Haz clic en <strong>Run</strong>.
                 </p>
               </div>
 
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-400">Paso 3: Copiar las credenciales a .env.local</div>
+                <div className="font-bold text-cyan-400">Paso 3: Copiar credenciales a .env.local</div>
                 <p className="text-slate-400">
-                  Ve a <strong>Project Settings → API</strong> en Supabase y copia la <strong>URL del proyecto</strong> y la <strong>anon public key</strong>. Pégalas en tu archivo <code className="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">.env.local</code>:
+                  En Supabase ve a <strong>Project Settings → API</strong>, copia la URL del proyecto y la anon public key, y pégalas en <code className="text-cyan-300 bg-slate-900 px-1 py-0.5 rounded">.env.local</code>:
                 </p>
                 <pre className="bg-slate-900 p-3 rounded-lg text-slate-300 font-mono text-[11px] overflow-x-auto border border-slate-800">
 {`NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
@@ -703,11 +1404,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
 
       </main>
 
-      {/* MODAL DETALLE DE CITA & NOTAS TALLER */}
+      {/* ========================================================= */}
+      {/* MODAL DETALLE DE CITA & NOTAS                             */}
+      {/* ========================================================= */}
       {selectedCita && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full relative shadow-2xl max-h-[90vh] overflow-y-auto">
-            {/* Botón cerrar */}
             <button
               onClick={() => setSelectedCita(null)}
               className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
@@ -720,8 +1422,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 <span className="text-xs text-cyan-400 mr-2 font-sans">CL</span>
                 {selectedCita.patente || 'S/PATENTE'}
               </div>
-              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${ESTADOS.find(e => e.id === selectedCita.estado)?.color}`}>
-                {ESTADOS.find(e => e.id === selectedCita.estado)?.label}
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${ESTADOS_CITAS.find(e => e.id === selectedCita.estado)?.color}`}>
+                {ESTADOS_CITAS.find(e => e.id === selectedCita.estado)?.label}
               </span>
             </div>
 
@@ -732,7 +1434,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               Servicio: {selectedCita.servicio}
             </p>
 
-            {/* Grid datos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs mb-6">
               <div>
                 <span className="text-slate-500 block">Cliente:</span>
@@ -756,12 +1457,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                   <span className="font-semibold text-slate-200">{Number(selectedCita.km).toLocaleString('es-CL')} km</span>
                 </div>
               )}
-              {selectedCita.email && (
-                <div>
-                  <span className="text-slate-500 block">Correo electrónico:</span>
-                  <span className="font-semibold text-slate-200">{selectedCita.email}</span>
-                </div>
-              )}
             </div>
 
             {selectedCita.comentario && (
@@ -773,20 +1468,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               </div>
             )}
 
-            {/* Notas internas del taller */}
             <div className="mb-6">
-              <label className="text-xs text-cyan-400 font-bold block mb-1.5 flex items-center justify-between">
-                <span>Notas Internas del Taller (Mecánico asignado, repuestos, cotización):</span>
-              </label>
+              <label className="text-xs text-cyan-400 font-bold block mb-1.5">Notas Internas del Taller:</label>
               <textarea
-                value={notasTemp}
-                onChange={e => setNotasTemp(e.target.value)}
-                placeholder="Escribe notas de trabajo, mecánicos asignados o repuestos requeridos..."
+                value={notasCitaTemp}
+                onChange={e => setNotasCitaTemp(e.target.value)}
+                placeholder="Observaciones de trabajo, mecánicos asignados o repuestos..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-500 min-h-[90px]"
               />
               <div className="flex justify-end mt-2">
                 <button
-                  onClick={handleGuardarNotas}
+                  onClick={handleGuardarNotasCita}
                   disabled={savingNote}
                   className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors cursor-pointer"
                 >
@@ -795,14 +1487,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               </div>
             </div>
 
-            {/* Cambio de Estado */}
             <div className="border-t border-slate-800 pt-4">
               <span className="text-xs text-slate-400 font-semibold block mb-2">Cambiar estado del agendamiento:</span>
               <div className="flex flex-wrap gap-2 mb-4">
-                {ESTADOS.filter(e => e.id !== 'todos').map(est => (
+                {ESTADOS_CITAS.filter(e => e.id !== 'todos').map(est => (
                   <button
                     key={est.id}
-                    onClick={() => handleCambiarEstado(selectedCita.id, est.id)}
+                    onClick={() => handleCambiarEstadoCita(selectedCita.id, est.id)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       selectedCita.estado === est.id
                         ? 'bg-cyan-600 text-white ring-2 ring-cyan-400'
@@ -814,7 +1505,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 ))}
               </div>
 
-              {/* Botones inferiores */}
               <div className="flex justify-between items-center pt-2">
                 <button
                   onClick={() => handleEliminarCita(selectedCita.id)}
@@ -824,11 +1514,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 </button>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => abrirWhatsAppCliente(selectedCita)}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
+                    onClick={() => {
+                      handleGenerarOTDesdeCita(selectedCita);
+                      setSelectedCita(null);
+                    }}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <span>💬</span>
-                    Contactar Cliente
+                    <span>📋</span>
+                    Generar OT
                   </button>
                   <button
                     onClick={() => setSelectedCita(null)}
@@ -843,19 +1536,21 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
         </div>
       )}
 
-      {/* MODAL NUEVA CITA MANUAL */}
-      {showNewModal && (
+      {/* ========================================================= */}
+      {/* MODAL NUEVA CITA MANUAL                                   */}
+      {/* ========================================================= */}
+      {showNewCitaModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-xl w-full relative shadow-2xl max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setShowNewModal(false)}
+              onClick={() => setShowNewCitaModal(false)}
               className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
             >
               ✕
             </button>
 
             <h3 className="text-2xl font-bold text-white mb-1">Registrar Cita en Taller</h3>
-            <p className="text-xs text-slate-400 mb-6">Ingresa los datos del cliente y vehículo para agendar directamente en el sistema.</p>
+            <p className="text-xs text-slate-400 mb-6">Ingresa los datos para registrar un agendamiento directo.</p>
 
             <form onSubmit={handleCrearCitaManual} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
@@ -865,8 +1560,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                     type="text"
                     required
                     placeholder="Ej: ABCD-12"
-                    value={newForm.patente}
-                    onChange={e => setNewForm({ ...newForm, patente: e.target.value.toUpperCase() })}
+                    value={newCitaForm.patente}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, patente: e.target.value.toUpperCase() })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500 font-mono"
                   />
                 </div>
@@ -875,8 +1570,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                   <input
                     type="number"
                     placeholder="Ej: 50000"
-                    value={newForm.km}
-                    onChange={e => setNewForm({ ...newForm, km: e.target.value })}
+                    value={newCitaForm.km}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, km: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
@@ -889,8 +1584,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                     type="text"
                     required
                     placeholder="Ej: Toyota"
-                    value={newForm.marca}
-                    onChange={e => setNewForm({ ...newForm, marca: e.target.value })}
+                    value={newCitaForm.marca}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, marca: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
@@ -900,8 +1595,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                     type="text"
                     required
                     placeholder="Ej: RAV4"
-                    value={newForm.modelo}
-                    onChange={e => setNewForm({ ...newForm, modelo: e.target.value })}
+                    value={newCitaForm.modelo}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, modelo: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
@@ -910,8 +1605,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               <div>
                 <label className="block text-slate-400 font-semibold mb-1">Servicio *</label>
                 <select
-                  value={newForm.servicio}
-                  onChange={e => setNewForm({ ...newForm, servicio: e.target.value })}
+                  value={newCitaForm.servicio}
+                  onChange={e => setNewCitaForm({ ...newCitaForm, servicio: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                 >
                   {SERVICES.map(s => (
@@ -926,16 +1621,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                   <input
                     type="date"
                     required
-                    value={newForm.fecha}
-                    onChange={e => setNewForm({ ...newForm, fecha: e.target.value })}
+                    value={newCitaForm.fecha}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, fecha: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-400 font-semibold mb-1">Horario *</label>
                   <select
-                    value={newForm.horario}
-                    onChange={e => setNewForm({ ...newForm, horario: e.target.value })}
+                    value={newCitaForm.horario}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, horario: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   >
                     <option>Mañana (9:00–13:00)</option>
@@ -951,8 +1646,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                     type="text"
                     required
                     placeholder="Ej: Juan Pérez"
-                    value={newForm.nombre}
-                    onChange={e => setNewForm({ ...newForm, nombre: e.target.value })}
+                    value={newCitaForm.nombre}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, nombre: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
@@ -962,50 +1657,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                     type="tel"
                     required
                     placeholder="+56 9 1234 5678"
-                    value={newForm.telefono}
-                    onChange={e => setNewForm({ ...newForm, telefono: e.target.value })}
+                    value={newCitaForm.telefono}
+                    onChange={e => setNewCitaForm({ ...newCitaForm, telefono: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Comuna</label>
-                  <input
-                    type="text"
-                    placeholder="Ej: Providencia"
-                    value={newForm.comuna}
-                    onChange={e => setNewForm({ ...newForm, comuna: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-400 font-semibold mb-1">Email</label>
-                  <input
-                    type="email"
-                    placeholder="cliente@ejemplo.com"
-                    value={newForm.email}
-                    onChange={e => setNewForm({ ...newForm, email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-400 font-semibold mb-1">Notas internas del taller</label>
-                <textarea
-                  placeholder="Mecánico a cargo, observaciones..."
-                  value={newForm.notas_taller}
-                  onChange={e => setNewForm({ ...newForm, notas_taller: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 focus:outline-none focus:border-cyan-500 min-h-[70px]"
-                />
               </div>
 
               <div className="flex gap-3 pt-3">
                 <button
                   type="button"
-                  onClick={() => setShowNewModal(false)}
+                  onClick={() => setShowNewCitaModal(false)}
                   className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
                 >
                   Cancelar
@@ -1018,6 +1680,534 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL CREAR / EDITAR ORDEN DE TRABAJO (OT)                */}
+      {/* ========================================================= */}
+      {(showNewOTModal || selectedOT) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-3xl w-full relative shadow-2xl max-h-[92vh] overflow-y-auto">
+            <button
+              onClick={() => {
+                setShowNewOTModal(false);
+                setSelectedOT(null);
+              }}
+              className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            {/* Encabezado */}
+            <div className="flex items-center gap-3 mb-2">
+              <span className="font-mono font-extrabold text-base text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-3 py-1 rounded-lg">
+                {selectedOT ? selectedOT.numero_ot : 'NUEVA ORDEN DE TRABAJO'}
+              </span>
+              {selectedOT && (
+                <span className={`text-xs font-bold px-3 py-1 rounded-full border ${ESTADOS_OT.find(e => e.id === selectedOT.estado)?.color}`}>
+                  {ESTADOS_OT.find(e => e.id === selectedOT.estado)?.label}
+                </span>
+              )}
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">
+              {selectedOT ? `${selectedOT.marca} ${selectedOT.modelo} (${selectedOT.patente})` : 'Crear Orden de Trabajo (OT)'}
+            </h3>
+
+            {/* FORMULARIO CREACIÓN O EDICIÓN */}
+            {selectedOT ? (
+              // VISTA DE EDICIÓN DE OT EXISTENTE
+              <div className="space-y-6 text-xs">
+                {/* Selector rápido de estado */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <span className="text-slate-400 font-semibold block mb-2">Estado del vehículo en taller:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {ESTADOS_OT.filter(e => e.id !== 'todos').map(est => (
+                      <button
+                        key={est.id}
+                        onClick={() => handleCambiarEstadoOT(selectedOT.id, est.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          selectedOT.estado === est.id
+                            ? 'bg-cyan-600 text-white ring-2 ring-cyan-400'
+                            : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {est.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Datos del Cliente y Vehículo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <div>
+                    <span className="text-slate-500 block">Cliente:</span>
+                    <span className="font-bold text-slate-200 text-sm">{selectedOT.cliente_nombre}</span>
+                    <span className="text-slate-400 block mt-0.5">📞 {selectedOT.cliente_telefono}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Mecánico Asignado:</span>
+                    <select
+                      value={selectedOT.mecanico_asignado}
+                      onChange={async e => {
+                        const val = e.target.value;
+                        const updated = await updateOrden(selectedOT.id, { mecanico_asignado: val });
+                        setOrdenes(prev => prev.map(o => (o.id === selectedOT.id ? updated : o)));
+                        setSelectedOT(updated);
+                      }}
+                      className="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-slate-200 font-semibold mt-1"
+                    >
+                      {MECANICOS_TALLER.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Trabajos y Mano de Obra */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-bold text-white text-sm flex items-center gap-2">
+                      <span>🛠️</span> Mano de Obra & Trabajos
+                    </h4>
+                    <span className="text-cyan-400 font-bold">
+                      Subtotal: ${(selectedOT.total_mano_obra || 0).toLocaleString('es-CL')}
+                    </span>
+                  </div>
+
+                  {/* Lista de trabajos */}
+                  <div className="space-y-2">
+                    {(selectedOT.trabajos || []).map(t => (
+                      <div
+                        key={t.id}
+                        className="flex items-center justify-between gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-800"
+                      >
+                        <label className="flex items-center gap-2.5 cursor-pointer flex-1">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(t.completado)}
+                            onChange={() => handleToggleTrabajoOT(selectedOT.id, t.id)}
+                            className="w-4 h-4 accent-cyan-500 rounded"
+                          />
+                          <span className={`text-xs ${t.completado ? 'line-through text-slate-500' : 'text-slate-200 font-medium'}`}>
+                            {t.descripcion}
+                          </span>
+                        </label>
+                        <span className="font-mono text-slate-300 font-semibold">
+                          ${(t.precio || 0).toLocaleString('es-CL')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Agregar nuevo trabajo */}
+                  <div className="flex gap-2 pt-2 border-t border-slate-800/80">
+                    <input
+                      type="text"
+                      placeholder="Nueva labor o mantención..."
+                      value={nuevoTrabajoDesc}
+                      onChange={e => setNuevoTrabajoDesc(e.target.value)}
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Precio CLP"
+                      value={nuevoTrabajoPrecio}
+                      onChange={e => setNuevoTrabajoPrecio(e.target.value)}
+                      className="w-28 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500"
+                    />
+                    <button
+                      onClick={handleAgregarTrabajoEnSelectedOT}
+                      className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-2 rounded-xl text-xs cursor-pointer"
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Repuestos e Insumos */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-bold text-white text-sm flex items-center gap-2">
+                      <span>📦</span> Repuestos & Materiales
+                    </h4>
+                    <span className="text-cyan-400 font-bold">
+                      Subtotal: ${(selectedOT.total_repuestos || 0).toLocaleString('es-CL')}
+                    </span>
+                  </div>
+
+                  {/* Lista de repuestos */}
+                  <div className="space-y-2">
+                    {(selectedOT.repuestos || []).length === 0 ? (
+                      <p className="text-slate-500 text-xs py-1">No hay repuestos asociados a esta orden.</p>
+                    ) : (
+                      (selectedOT.repuestos || []).map(r => (
+                        <div
+                          key={r.id}
+                          className="flex items-center justify-between gap-3 bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs"
+                        >
+                          <span className="text-slate-200 font-medium">
+                            {r.repuesto} <span className="text-slate-500">x{r.cantidad}</span>
+                          </span>
+                          <span className="font-mono text-slate-300 font-semibold">
+                            ${((r.precio || 0) * (r.cantidad || 1)).toLocaleString('es-CL')}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Agregar nuevo repuesto */}
+                  <div className="flex gap-2 pt-2 border-t border-slate-800/80">
+                    <input
+                      type="text"
+                      placeholder="Nombre repuesto (ej: Filtro aceite)..."
+                      value={nuevoRepuestoNombre}
+                      onChange={e => setNuevoRepuestoNombre(e.target.value)}
+                      className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Cant."
+                      value={nuevoRepuestoCant}
+                      onChange={e => setNuevoRepuestoCant(e.target.value)}
+                      className="w-16 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Precio Unit."
+                      value={nuevoRepuestoPrecio}
+                      onChange={e => setNuevoRepuestoPrecio(e.target.value)}
+                      className="w-28 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500"
+                    />
+                    <button
+                      onClick={handleAgregarRepuestoEnSelectedOT}
+                      className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-2 rounded-xl text-xs cursor-pointer"
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Resumen Total y Acciones */}
+                <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <div>
+                    <span className="text-slate-400 text-xs block">Total Presupuestado (Mano de obra + Repuestos):</span>
+                    <span className="text-2xl font-extrabold text-cyan-400">
+                      ${Number(selectedOT.total_general || 0).toLocaleString('es-CL')} CLP
+                    </span>
+                  </div>
+
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => notificarOTPorWhatsApp(selectedOT)}
+                      className="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>💬</span> WhatsApp
+                    </button>
+                    <button
+                      onClick={() => handleImprimirOT(selectedOT)}
+                      className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>🖨️</span> Imprimir Hoja
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    onClick={() => handleEliminarOT(selectedOT.id)}
+                    className="text-rose-400 hover:text-rose-300 text-xs font-semibold hover:underline cursor-pointer"
+                  >
+                    Eliminar Orden de Trabajo
+                  </button>
+                  <button
+                    onClick={() => setSelectedOT(null)}
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-5 py-2 rounded-xl cursor-pointer"
+                  >
+                    Cerrar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // FORMULARIO DE CREACIÓN DE NUEVA OT
+              <form onSubmit={handleCrearOT} className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Patente *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="ABCD-12"
+                      value={newOTForm.patente}
+                      onChange={e => setNewOTForm({ ...newOTForm, patente: e.target.value.toUpperCase() })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Marca *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej: Toyota"
+                      value={newOTForm.marca}
+                      onChange={e => setNewOTForm({ ...newOTForm, marca: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Modelo *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ej: RAV4"
+                      value={newOTForm.modelo}
+                      onChange={e => setNewOTForm({ ...newOTForm, modelo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Año</label>
+                    <input
+                      type="text"
+                      placeholder="2020"
+                      value={newOTForm.ano}
+                      onChange={e => setNewOTForm({ ...newOTForm, ano: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Nombre Cliente *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Juan Pérez"
+                      value={newOTForm.cliente_nombre}
+                      onChange={e => setNewOTForm({ ...newOTForm, cliente_nombre: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Teléfono Cliente *</label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="+56 9 1234 5678"
+                      value={newOTForm.cliente_telefono}
+                      onChange={e => setNewOTForm({ ...newOTForm, cliente_telefono: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-semibold mb-1">Mecánico Asignado</label>
+                    <select
+                      value={newOTForm.mecanico_asignado}
+                      onChange={e => setNewOTForm({ ...newOTForm, mecanico_asignado: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                    >
+                      {MECANICOS_TALLER.map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 font-semibold mb-1">Diagnóstico / Motivo de Ingreso</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Describe los síntomas, fallas o requerimientos del cliente..."
+                    value={newOTForm.diagnostico}
+                    onChange={e => setNewOTForm({ ...newOTForm, diagnostico: e.target.value })}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-200"
+                  />
+                </div>
+
+                {/* Checklist rápido */}
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                  <span className="text-slate-400 font-bold block">Checklist de Recepción:</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={newOTForm.checklist.luces}
+                        onChange={e => setNewOTForm({
+                          ...newOTForm,
+                          checklist: { ...newOTForm.checklist, luces: e.target.checked }
+                        })}
+                        className="accent-cyan-500"
+                      />
+                      Luces operativas
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={newOTForm.checklist.ruedaRepuesto}
+                        onChange={e => setNewOTForm({
+                          ...newOTForm,
+                          checklist: { ...newOTForm.checklist, ruedaRepuesto: e.target.checked }
+                        })}
+                        className="accent-cyan-500"
+                      />
+                      Rueda repuesto
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={newOTForm.checklist.documentos}
+                        onChange={e => setNewOTForm({
+                          ...newOTForm,
+                          checklist: { ...newOTForm.checklist, documentos: e.target.checked }
+                        })}
+                        className="accent-cyan-500"
+                      />
+                      Documentos
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-400">Comb.:</span>
+                      <select
+                        value={newOTForm.checklist.combustible}
+                        onChange={e => setNewOTForm({
+                          ...newOTForm,
+                          checklist: { ...newOTForm.checklist, combustible: e.target.value }
+                        })}
+                        className="bg-slate-900 border border-slate-800 rounded p-1 text-slate-200"
+                      >
+                        <option>1/4</option>
+                        <option>1/2</option>
+                        <option>3/4</option>
+                        <option>Lleno</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewOTModal(false)}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-cyan-600/30 transition-colors cursor-pointer"
+                  >
+                    Guardar e Ingresar OT
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* VISTA DE IMPRESIÓN (HOJA DE TRABAJO TALLER)                */}
+      {/* ========================================================= */}
+      {showPrintModal && printOTData && (
+        <div className="fixed inset-0 z-50 bg-white text-slate-950 p-8 overflow-y-auto print:block">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="flex justify-between items-start border-b pb-4">
+              <div>
+                <h1 className="text-2xl font-black">AutoBooking — Taller Automotriz</h1>
+                <p className="text-xs text-slate-600">Hoja de Trabajo y Recepción de Vehículo</p>
+              </div>
+              <div className="text-right">
+                <span className="text-xl font-mono font-bold">{printOTData.numero_ot}</span>
+                <span className="block text-xs text-slate-500">Fecha: {new Date(printOTData.created_at).toLocaleDateString('es-CL')}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs border p-3 rounded-lg bg-slate-50">
+              <div>
+                <p><strong>Cliente:</strong> {printOTData.cliente_nombre}</p>
+                <p><strong>Teléfono:</strong> {printOTData.cliente_telefono}</p>
+                <p><strong>Mecánico a cargo:</strong> {printOTData.mecanico_asignado}</p>
+              </div>
+              <div>
+                <p><strong>Patente:</strong> <span className="font-mono font-bold text-sm">{printOTData.patente}</span></p>
+                <p><strong>Vehículo:</strong> {printOTData.marca} {printOTData.modelo} ({printOTData.ano || 'S/A'})</p>
+                <p><strong>Kilometraje:</strong> {printOTData.km ? `${printOTData.km} km` : 'No indicado'}</p>
+              </div>
+            </div>
+
+            <div className="text-xs">
+              <h3 className="font-bold border-b pb-1 mb-2">Diagnóstico Inicial:</h3>
+              <p className="italic text-slate-700">{printOTData.diagnostico || 'Sin observaciones'}</p>
+            </div>
+
+            <div className="text-xs">
+              <h3 className="font-bold border-b pb-1 mb-2">Labores y Trabajos:</h3>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b text-slate-500">
+                    <th className="py-1">Descripción</th>
+                    <th className="py-1 text-right">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(printOTData.trabajos || []).map((t, idx) => (
+                    <tr key={idx} className="border-b">
+                      <td className="py-1.5">[ ] {t.descripcion}</td>
+                      <td className="py-1.5 text-right font-mono">${(t.precio || 0).toLocaleString('es-CL')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="text-xs">
+              <h3 className="font-bold border-b pb-1 mb-2">Repuestos Requeridos:</h3>
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b text-slate-500">
+                    <th className="py-1">Repuesto</th>
+                    <th className="py-1 text-center">Cant.</th>
+                    <th className="py-1 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(printOTData.repuestos || []).map((r, idx) => (
+                    <tr key={idx} className="border-b">
+                      <td className="py-1.5">{r.repuesto}</td>
+                      <td className="py-1.5 text-center">{r.cantidad}</td>
+                      <td className="py-1.5 text-right font-mono">${((r.precio || 0) * (r.cantidad || 1)).toLocaleString('es-CL')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="border-t pt-3 flex justify-between items-center text-sm font-bold">
+              <span>Total Estimado a Pagar:</span>
+              <span className="text-lg font-mono">${Number(printOTData.total_general || 0).toLocaleString('es-CL')} CLP</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 pt-10 text-center text-xs">
+              <div className="border-t pt-2">Firma Mecánico a Cargo</div>
+              <div className="border-t pt-2">Firma y Aprobación Cliente</div>
+            </div>
+
+            <div className="flex justify-center gap-3 pt-6 print:hidden">
+              <button
+                onClick={() => window.print()}
+                className="bg-cyan-600 text-white font-bold px-5 py-2 rounded-xl text-xs"
+              >
+                Imprimir Ahora
+              </button>
+              <button
+                onClick={() => setShowPrintModal(false)}
+                className="bg-slate-300 text-slate-800 font-bold px-5 py-2 rounded-xl text-xs"
+              >
+                Cerrar Vista Previa
+              </button>
+            </div>
           </div>
         </div>
       )}
