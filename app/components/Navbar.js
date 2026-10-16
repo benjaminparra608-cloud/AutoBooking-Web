@@ -3,9 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCart } from '../context/CartContext';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { totalItems, setIsOpen } = useCart();
   const isTaller = pathname === '/taller';
   const isPlanes = pathname === '/planes';
   const isCliente = !isTaller && !isPlanes;
@@ -93,6 +95,21 @@ export default function Navbar() {
             <span>🇨🇱</span>
             <span>Santiago, CL</span>
           </span>
+
+          {/* Botón Carrito en Navbar */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="relative bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-400 text-slate-200 text-xs font-bold py-1.5 px-3 rounded-full flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Abrir Carrito de Repuestos"
+          >
+            <span>🛒</span>
+            <span className="hidden sm:inline">Carrito</span>
+            {totalItems > 0 && (
+              <span className="bg-amber-400 text-slate-950 font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {totalItems}
+              </span>
+            )}
+          </button>
 
           {isCliente ? (
             <a

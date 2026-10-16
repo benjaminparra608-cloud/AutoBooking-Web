@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { whatsappUrl } from '../lib/config';
+import { useCart } from '../context/CartContext';
 
 const PRODUCTOS_AUTOMOTRICES = [
   {
@@ -225,6 +226,7 @@ const CATEGORIAS = [
 ];
 
 export default function AutomotiveStore() {
+  const { addToCart, setIsOpen, totalItems } = useCart();
   const [categoriaActiva, setCategoriaActiva] = useState('todos');
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [conInstalacion, setConInstalacion] = useState({});
@@ -293,17 +295,32 @@ export default function AutomotiveStore() {
           </div>
 
           {/* Controles de Flechas para el Carrusel */}
+          {/* Controles de Flechas y Acceso al Carrito */}
           <div className="flex items-center gap-2 self-end">
             <button
+              onClick={() => setIsOpen(true)}
+              className="bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold text-xs py-2 px-3.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer mr-1"
+              title="Abrir Carrito de Repuestos"
+            >
+              <span>🛒</span>
+              <span>Carrito</span>
+              {totalItems > 0 && (
+                <span className="bg-amber-400 text-slate-950 font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+
+            <button
               onClick={() => handleScroll('left')}
-              className="w-11 h-11 rounded-full bg-slate-900 border border-slate-700/80 hover:border-cyan-400 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
+              className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700/80 hover:border-cyan-400 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
               aria-label="Anterior"
             >
               ←
             </button>
             <button
               onClick={() => handleScroll('right')}
-              className="w-11 h-11 rounded-full bg-slate-900 border border-slate-700/80 hover:border-cyan-400 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
+              className="w-10 h-10 rounded-full bg-slate-900 border border-slate-700/80 hover:border-cyan-400 text-slate-300 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-lg active:scale-95"
               aria-label="Siguiente"
             >
               →
@@ -415,14 +432,25 @@ export default function AutomotiveStore() {
                     )}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => comprarPorWhatsApp(producto, quiereInstalacion)}
-                    className="bg-white hover:bg-slate-200 text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center gap-1.5 cursor-pointer transform active:scale-95"
-                  >
-                    <span>Comprar</span>
-                    <span className="text-emerald-700">💬</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => addToCart(producto, quiereInstalacion)}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-3 rounded-xl shadow-lg transition-all flex items-center gap-1 cursor-pointer transform active:scale-95"
+                      title="Añadir a mi carrito"
+                    >
+                      <span>+ Carrito</span>
+                      <span>🛒</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => comprarPorWhatsApp(producto, quiereInstalacion)}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs py-2.5 px-2.5 rounded-xl transition-all cursor-pointer"
+                      title="Comprar directo por WhatsApp"
+                    >
+                      <span className="text-emerald-400">💬</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -511,29 +539,42 @@ export default function AutomotiveStore() {
                 )}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    addToCart(productoSeleccionado, false);
+                    setProductoSeleccionado(null);
+                  }}
+                  className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-3 px-4 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <span>Añadir al Carrito</span>
+                  <span>🛒</span>
+                </button>
+                {productoSeleccionado.precioInstalacion > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addToCart(productoSeleccionado, true);
+                      setProductoSeleccionado(null);
+                    }}
+                    className="flex-1 sm:flex-none bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-3 px-4 rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-600/25 flex items-center justify-center gap-1.5"
+                  >
+                    <span>Añadir + Instalación</span>
+                    <span>🔧</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
                     comprarPorWhatsApp(productoSeleccionado, false);
                     setProductoSeleccionado(null);
                   }}
-                  className="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs py-3 px-5 rounded-xl transition-all cursor-pointer"
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-3 px-3 rounded-xl transition-all cursor-pointer"
+                  title="Comprar directo por WhatsApp"
                 >
-                  Comprar con Despacho
+                  <span>💬 Directo</span>
                 </button>
-                {productoSeleccionado.precioInstalacion > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      comprarPorWhatsApp(productoSeleccionado, true);
-                      setProductoSeleccionado(null);
-                    }}
-                    className="flex-1 sm:flex-none bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-3 px-5 rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-600/25"
-                  >
-                    Comprar + Instalación
-                  </button>
-                )}
               </div>
             </div>
           </div>

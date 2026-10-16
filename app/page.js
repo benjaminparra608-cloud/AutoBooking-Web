@@ -14,6 +14,8 @@ import SymptomDiagnostic from "./components/SymptomDiagnostic";
 import CoverageChecker from "./components/CoverageChecker";
 import AutomotiveHero from "./components/AutomotiveHero";
 import AutomotiveStore from "./components/AutomotiveStore";
+import CartDrawer from "./components/CartDrawer";
+import { CartProvider } from "./context/CartContext";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
 // Diccionario con descripciones y detalles para el modal de cada servicio
@@ -79,9 +81,10 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
-      {/* Barra de navegación superior para pantallas grandes */}
-      <Navbar />
+    <CartProvider>
+      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
+        {/* Barra de navegación superior para pantallas grandes */}
+        <Navbar />
 
       {/* 1. HERO SECTION CINEMÁTICO AUTOMOTRIZ (ESTILO DELTA LUXURY) */}
       <AutomotiveHero />
@@ -255,6 +258,8 @@ export default function LandingPage() {
 
       <BottomNav />
       <FloatingBookButton />
+      <CartDrawer />
     </div>
-  );
+  </CartProvider>
+);
 }
