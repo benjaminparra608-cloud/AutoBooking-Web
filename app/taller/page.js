@@ -1996,6 +1996,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               </div>
             </div>
           </div>
+        )}
+
         {/* ========================================================= */}
         {/* TAB 5: PEDIDOS DE TIENDA ONLINE & BATERÍAS               */}
         {/* ========================================================= */}
@@ -2317,7 +2319,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                   <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
                 </div>
                 <div className="text-2xl font-extrabold text-rose-400">{kpisInventario.criticos}</div>
-                <div className="text-[11px] text-rose-400/70 mt-1">&le; 3 unidades restantes</div>
+                <div className="text-[11px] text-rose-400/70 mt-1">≤ 3 unidades restantes</div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">

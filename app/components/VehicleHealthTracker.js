@@ -517,7 +517,7 @@ export default function VehicleHealthTracker() {
             </div>
 
             <p className="text-xs text-slate-400 mb-4">
-              Indica cuántos kilómetros han pasado desde la última vez que cambiaste o revisaste esta pieza, o presiona <strong>"Reiniciar a 0 km"</strong> si acabas de instalar una nueva.
+              Indica cuántos kilómetros han pasado desde la última vez que cambiaste o revisaste esta pieza, o presiona <strong>&ldquo;Reiniciar a 0 km&rdquo;</strong> si acabas de instalar una nueva.
             </p>
 
             <div className="space-y-4">
