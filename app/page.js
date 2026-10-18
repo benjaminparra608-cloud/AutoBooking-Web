@@ -17,6 +17,7 @@ import AutomotiveStore from "./components/AutomotiveStore";
 import BatteryFinder from "./components/BatteryFinder";
 import BrandMarquee from "./components/BrandMarquee";
 import CartDrawer from "./components/CartDrawer";
+import VehicleHealthTracker from "./components/VehicleHealthTracker";
 import { CartProvider } from "./context/CartContext";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
@@ -124,6 +125,9 @@ export default function LandingPage() {
 
       {/* 2.2 DIAGNÓSTICO POR SÍNTOMAS (ASISTENTE INTELIGENTE) */}
       <SymptomDiagnostic onSelectService={handleAgendarServicio} />
+
+      {/* 2.3 HISTORIAL CLÍNICO & MONITOR DE DESGASTE EN TIEMPO REAL (GPS / TELEMETRÍA) */}
+      <VehicleHealthTracker />
 
       {/* 2.5 CARACTERÍSTICAS (tarjetas con mockup, estilo Bookr) */}
       <Features />

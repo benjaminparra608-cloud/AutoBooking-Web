@@ -85,6 +85,10 @@ export default function Navbar() {
                 <span>🩺</span>
                 <span>Diagnóstico</span>
               </a>
+              <a href="#monitor-desgaste" className="hover:text-cyan-400 transition-colors flex items-center gap-1 text-cyan-300 font-bold">
+                <span>📡</span>
+                <span>Telemetría</span>
+              </a>
               <a href="#tienda" className="hover:text-amber-400 transition-colors flex items-center gap-1 text-amber-300">
                 <span>🛍️</span>
                 <span>Tienda Online</span>

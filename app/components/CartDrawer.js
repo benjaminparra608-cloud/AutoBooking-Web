@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { ZONES } from '../lib/config';
+import { createStoreOrder } from '../lib/supabase';
 
 export default function CartDrawer() {
   const {
@@ -75,6 +76,25 @@ export default function CartDrawer() {
       `• Despacho: ${costoDespacho === 0 ? '¡GRATIS!' : `$${costoDespacho.toLocaleString('es-CL')} CLP`}\n` +
       `• *TOTAL A PAGAR: $${totalGeneral.toLocaleString('es-CL')} CLP*\n\n` +
       `¿Tienen disponibilidad para coordinar la entrega o instalación en mi domicilio?`;
+
+    try {
+      createStoreOrder({
+        cliente_nombre: clienteForm.nombre || 'Cliente Web',
+        cliente_telefono: clienteForm.telefono || '',
+        comuna: clienteForm.comuna,
+        patente: clienteForm.patente || '',
+        vehiculo: clienteForm.patente ? `Auto patente ${clienteForm.patente.toUpperCase()}` : 'Vehículo cliente',
+        items: items,
+        subtotal: subtotalProductos,
+        total_instalacion: totalInstalacion,
+        costo_despacho: costoDespacho,
+        total_general: totalGeneral,
+        requiere_instalacion: totalInstalacion > 0,
+        notas: clienteForm.notas || ''
+      });
+    } catch (err) {
+      console.warn("Error registrando pedido para /taller:", err);
+    }
 
     window.open(`https://wa.me/56912345678?text=${encodeURIComponent(msg)}`, '_blank');
   }

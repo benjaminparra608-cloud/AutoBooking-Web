@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { TOP_8_BATERIAS, buscarBateriasPorAutoOCodigo } from '../lib/batteryCatalog';
 import { useCart } from '../context/CartContext';
 import { whatsappUrl } from '../lib/config';
+import { createStoreOrder } from '../lib/supabase';
 
 export default function BatteryFinder() {
   const [busqueda, setBusqueda] = useState('');
@@ -32,6 +33,35 @@ export default function BatteryFinder() {
         : `🚚 *Servicio:* Solo despacho / entrega\n`) +
       `💳 *Total:* $${total.toLocaleString('es-CL')} CLP\n\n` +
       `¿Tienen disponibilidad para traerla e instalarla hoy en mi comuna?`;
+
+    try {
+      createStoreOrder({
+        cliente_nombre: 'Cliente Web (Baterías)',
+        cliente_telefono: '',
+        comuna: 'Santiago (Por coordinar)',
+        patente: '',
+        vehiculo: busqueda ? `Consulta por: ${busqueda}` : 'Batería a domicilio',
+        items: [
+          {
+            id: bateria.id,
+            nombre: `${bateria.nombre} (${bateria.codigo})`,
+            codigo: bateria.codigo,
+            cantidad: 1,
+            precio: bateria.precio,
+            conInstalacion: conInstalacion,
+            precioInstalacion: conInstalacion ? bateria.precioInstalacion : 0
+          }
+        ],
+        subtotal: bateria.precio,
+        total_instalacion: conInstalacion ? bateria.precioInstalacion : 0,
+        costo_despacho: 0,
+        total_general: total,
+        requiere_instalacion: conInstalacion,
+        notas: `Solicitud de batería ${bateria.codigo} vía WhatsApp.`
+      });
+    } catch (e) {
+      console.warn("Error guardando orden de batería:", e);
+    }
 
     window.open(`https://wa.me/56912345678?text=${encodeURIComponent(msg)}`, '_blank');
   }

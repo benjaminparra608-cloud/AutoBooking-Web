@@ -12,7 +12,14 @@ import {
   createOrden,
   updateOrden,
   deleteOrden,
-  isSupabaseConfigured
+  isSupabaseConfigured,
+  getStoreOrders,
+  updateStoreOrderStatus,
+  deleteStoreOrder,
+  convertStoreOrderToOT,
+  getInventory,
+  updateInventoryStock,
+  adjustInventoryStock
 } from '../lib/supabase';
 import { SERVICES, ZONES, whatsappUrl } from '../lib/config';
 
@@ -136,6 +143,24 @@ export default function TallerPage() {
   const [modalEditarMensaje, setModalEditarMensaje] = useState(null);
 
   // ==========================================
+  // ESTADOS - PEDIDOS DE TIENDA & BATERÍAS
+  // ==========================================
+  const [pedidosTienda, setPedidosTienda] = useState([]);
+  const [loadingPedidos, setLoadingPedidos] = useState(true);
+  const [filterEstadoPedido, setFilterEstadoPedido] = useState('todos');
+  const [searchQueryPedido, setSearchQueryPedido] = useState('');
+  const [modalConvertirOT, setModalConvertirOT] = useState(null);
+  const [mecanicoSeleccionadoParaOT, setMecanicoSeleccionadoParaOT] = useState(MECANICOS_TALLER[0]);
+
+  // ==========================================
+  // ESTADOS - INVENTARIO DE BATERÍAS & REPUESTOS
+  // ==========================================
+  const [inventarioList, setInventarioList] = useState([]);
+  const [loadingInventario, setLoadingInventario] = useState(true);
+  const [filterCategoriaInv, setFilterCategoriaInv] = useState('todas');
+  const [searchQueryInv, setSearchQueryInv] = useState('');
+
+  // ==========================================
   // CARGA INICIAL
   // ==========================================
   useEffect(() => {
@@ -144,7 +169,31 @@ export default function TallerPage() {
   }, []);
 
   async function cargarDatos() {
-    await Promise.all([cargarCitas(), cargarOrdenes()]);
+    await Promise.all([cargarCitas(), cargarOrdenes(), cargarPedidos(), cargarInventario()]);
+  }
+
+  async function cargarPedidos() {
+    setLoadingPedidos(true);
+    try {
+      const data = await getStoreOrders();
+      setPedidosTienda(data || []);
+    } catch (err) {
+      console.error('Error cargando pedidos:', err);
+    } finally {
+      setLoadingPedidos(false);
+    }
+  }
+
+  async function cargarInventario() {
+    setLoadingInventario(true);
+    try {
+      const data = await getInventory();
+      setInventarioList(data || []);
+    } catch (err) {
+      console.error('Error cargando inventario:', err);
+    } finally {
+      setLoadingInventario(false);
+    }
   }
 
   async function cargarCitas() {
@@ -417,6 +466,70 @@ export default function TallerPage() {
   }
 
   // ==========================================
+  // ACCIONES - PEDIDOS DE TIENDA & BATERÍAS
+  // ==========================================
+  async function handleCambiarEstadoPedido(id, nuevoEstado, mecanico = null) {
+    try {
+      const updated = await updateStoreOrderStatus(id, nuevoEstado, mecanico);
+      setPedidosTienda(prev => prev.map(p => (p.id === id ? updated : p)));
+    } catch (err) {
+      console.error('Error actualizando pedido:', err);
+    }
+  }
+
+  async function handleEliminarPedido(id) {
+    if (!confirm('¿Estás seguro de eliminar este pedido?')) return;
+    try {
+      await deleteStoreOrder(id);
+      setPedidosTienda(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error('Error eliminando pedido:', err);
+    }
+  }
+
+  async function handleConfirmarConversionOT() {
+    if (!modalConvertirOT) return;
+    try {
+      const nuevaOT = await convertStoreOrderToOT(modalConvertirOT.id, mecanicoSeleccionadoParaOT);
+      setOrdenes(prev => [nuevaOT, ...prev]);
+      setPedidosTienda(prev =>
+        prev.map(p =>
+          p.id === modalConvertirOT.id
+            ? { ...p, ot_generada_id: nuevaOT.numero_ot, estado: 'en_preparacion', mecanico_asignado: mecanicoSeleccionadoParaOT }
+            : p
+        )
+      );
+      setModalConvertirOT(null);
+      alert(`¡Orden de Trabajo ${nuevaOT.numero_ot} creada con éxito y asignada a ${mecanicoSeleccionadoParaOT}!`);
+      setActiveTab('ordenes');
+    } catch (err) {
+      console.error('Error convirtiendo pedido a OT:', err);
+      alert('Error convirtiendo pedido a Orden de Trabajo');
+    }
+  }
+
+  // ==========================================
+  // ACCIONES - CONTROL DE INVENTARIO
+  // ==========================================
+  async function handleAjustarStock(id, delta) {
+    try {
+      const updated = await adjustInventoryStock(id, delta);
+      setInventarioList(prev => prev.map(i => (i.id === id ? updated : i)));
+    } catch (err) {
+      console.error('Error ajustando stock:', err);
+    }
+  }
+
+  async function handleActualizarStock(id, nuevoStock) {
+    try {
+      const updated = await updateInventoryStock(id, nuevoStock);
+      setInventarioList(prev => prev.map(i => (i.id === id ? updated : i)));
+    } catch (err) {
+      console.error('Error actualizando stock:', err);
+    }
+  }
+
+  // ==========================================
   // FILTROS Y MEMOS
   // ==========================================
   const hoyStr = new Date().toISOString().split('T')[0];
@@ -616,6 +729,49 @@ export default function TallerPage() {
     });
   }, [fidelizacionData, filterFidelizacion, busquedaFidelizacion]);
 
+  const pedidosFiltrados = useMemo(() => {
+    return pedidosTienda.filter(p => {
+      const matchEstado = filterEstadoPedido === 'todos' || p.estado === filterEstadoPedido;
+      const matchQuery =
+        !searchQueryPedido.trim() ||
+        p.numero_pedido.toLowerCase().includes(searchQueryPedido.toLowerCase()) ||
+        p.cliente_nombre.toLowerCase().includes(searchQueryPedido.toLowerCase()) ||
+        (p.patente || '').toLowerCase().includes(searchQueryPedido.toLowerCase()) ||
+        (p.comuna || '').toLowerCase().includes(searchQueryPedido.toLowerCase());
+      return matchEstado && matchQuery;
+    });
+  }, [pedidosTienda, filterEstadoPedido, searchQueryPedido]);
+
+  const kpisPedidos = useMemo(() => {
+    return {
+      total: pedidosTienda.length,
+      nuevos: pedidosTienda.filter(p => p.estado === 'nuevo').length,
+      enRuta: pedidosTienda.filter(p => p.estado === 'en_ruta' || p.estado === 'en_preparacion').length,
+      instalaciones: pedidosTienda.filter(p => p.requiere_instalacion).length,
+      totalVentasCLP: pedidosTienda.reduce((acc, p) => acc + (p.total_general || 0), 0)
+    };
+  }, [pedidosTienda]);
+
+  const inventarioFiltrado = useMemo(() => {
+    return inventarioList.filter(item => {
+      const matchCat = filterCategoriaInv === 'todas' || item.categoria === filterCategoriaInv;
+      const matchQuery =
+        !searchQueryInv.trim() ||
+        item.nombre.toLowerCase().includes(searchQueryInv.toLowerCase()) ||
+        item.codigo.toLowerCase().includes(searchQueryInv.toLowerCase());
+      return matchCat && matchQuery;
+    });
+  }, [inventarioList, filterCategoriaInv, searchQueryInv]);
+
+  const kpisInventario = useMemo(() => {
+    return {
+      totalUnidades: inventarioList.reduce((acc, i) => acc + (i.stock || 0), 0),
+      bateriasTotal: inventarioList.filter(i => i.categoria.includes('Baterías')).reduce((acc, i) => acc + (i.stock || 0), 0),
+      criticos: inventarioList.filter(i => i.stock <= (i.stockMinimo || 3)).length,
+      valorTotalCLP: inventarioList.reduce((acc, i) => acc + ((i.stock || 0) * (i.precioVenta || 0)), 0)
+    };
+  }, [inventarioList]);
+
   function handleEnviarWhatsAppRecordatorio(item, textoPersonalizado = null) {
     const telefono = (item.telefono || '').replace(/\D/g, '');
     const cliente = item.cliente || 'Estimado/a cliente';
@@ -767,6 +923,36 @@ export default function TallerPage() {
             Fidelización & Recordatorios
             <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300 border border-amber-800/40">
               {kpisFidelizacion.requierenAtencion}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('pedidos')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'pedidos'
+                ? 'border-amber-400 text-amber-400 bg-amber-950/30 rounded-t-lg'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>🛒</span>
+            Pedidos Tienda & Baterías
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300 border border-amber-800/40 font-bold">
+              {kpisPedidos.nuevos > 0 ? `${kpisPedidos.nuevos} nuevos` : kpisPedidos.total}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('inventario')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'inventario'
+                ? 'border-cyan-400 text-cyan-400 bg-cyan-950/30 rounded-t-lg'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>📦</span>
+            Inventario & Stock
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono">
+              {kpisInventario.totalUnidades} un.
             </span>
           </button>
 
@@ -1810,9 +1996,559 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               </div>
             </div>
           </div>
+        {/* ========================================================= */}
+        {/* TAB 5: PEDIDOS DE TIENDA ONLINE & BATERÍAS               */}
+        {/* ========================================================= */}
+        {activeTab === 'pedidos' && (
+          <div className="space-y-6">
+            {/* KPIS DE PEDIDOS TIENDA */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div
+                onClick={() => setFilterEstadoPedido('todos')}
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Pedidos</div>
+                <div className="text-2xl font-extrabold text-white">{kpisPedidos.total}</div>
+                <div className="text-[11px] text-slate-500 mt-1">Registrados en tienda</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoPedido('nuevo')}
+                className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Nuevos</span>
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-amber-300">{kpisPedidos.nuevos}</div>
+                <div className="text-[11px] text-amber-400/70 mt-1">Por procesar o asignar</div>
+              </div>
+
+              <div
+                onClick={() => setFilterEstadoPedido('en_ruta')}
+                className="bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-1">En Ruta / Taller</div>
+                <div className="text-2xl font-extrabold text-cyan-300">{kpisPedidos.enRuta}</div>
+                <div className="text-[11px] text-slate-500 mt-1">Con mecánico o despacho</div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">Ventas Tienda</div>
+                <div className="text-2xl font-extrabold text-emerald-300">
+                  ${Math.round(kpisPedidos.totalVentasCLP / 1000)}k <span className="text-xs font-normal text-slate-400">CLP</span>
+                </div>
+                <div className="text-[11px] text-emerald-400/70 mt-1">{kpisPedidos.instalaciones} con instalación</div>
+              </div>
+            </div>
+
+            {/* BARRA DE FILTROS Y BÚSQUEDA */}
+            <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+              {/* Filtro por Estado */}
+              <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                {[
+                  { id: 'todos', label: 'Todos' },
+                  { id: 'nuevo', label: 'Nuevos' },
+                  { id: 'en_preparacion', label: 'En Preparación' },
+                  { id: 'en_ruta', label: 'En Ruta' },
+                  { id: 'completado', label: 'Completados' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setFilterEstadoPedido(tab.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      filterEstadoPedido === tab.id
+                        ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input de Búsqueda */}
+              <div className="w-full sm:w-80">
+                <input
+                  type="text"
+                  placeholder="Buscar por cliente, pedido, patente o comuna..."
+                  value={searchQueryPedido}
+                  onChange={e => setSearchQueryPedido(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* LISTADO DE PEDIDOS DE TIENDA */}
+            {pedidosFiltrados.length === 0 ? (
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-400">
+                <span className="text-4xl block mb-2">🛒</span>
+                <h4 className="text-lg font-bold text-white mb-1">No hay pedidos con este filtro</h4>
+                <p className="text-xs text-slate-400">
+                  Los pedidos generados por clientes desde la Tienda Online o el Catálogo de Baterías aparecerán automáticamente aquí.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {pedidosFiltrados.map(pedido => {
+                  let badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                  let estadoTexto = 'Nuevo Pedido';
+                  if (pedido.estado === 'en_preparacion') {
+                    badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                    estadoTexto = 'En Preparación';
+                  } else if (pedido.estado === 'en_ruta') {
+                    badgeColor = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+                    estadoTexto = 'En Ruta de Despacho';
+                  } else if (pedido.estado === 'completado') {
+                    badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                    estadoTexto = 'Completado';
+                  }
+
+                  const waMsg = `¡Hola ${pedido.cliente_nombre}! Te escribimos de AutoBooking para coordinar tu pedido *${pedido.numero_pedido}* (${(pedido.items || []).map(i => i.nombre).join(', ')}). ¿En qué horario te acomoda recibir la visita o entrega en ${pedido.comuna}?`;
+                  const waUrl = `https://wa.me/${(pedido.cliente_telefono || '').replace(/\D/g, '')}?text=${encodeURIComponent(waMsg)}`;
+
+                  return (
+                    <div
+                      key={pedido.id}
+                      className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl transition-all hover:border-slate-700"
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">🛍️</span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-black text-sm text-white">
+                                {pedido.numero_pedido}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${badgeColor}`}>
+                                {estadoTexto}
+                              </span>
+                              {pedido.requiere_instalacion && (
+                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-800 text-cyan-300">
+                                  🔧 Con Instalación
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-500 mt-0.5 block">
+                              Recibido el {new Date(pedido.created_at).toLocaleString('es-CL')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Total y Selector de Estado */}
+                        <div className="flex items-center gap-3 self-end md:self-auto">
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-500 block uppercase">Total Pedido:</span>
+                            <span className="text-lg font-mono font-black text-amber-300">
+                              ${Number(pedido.total_general || 0).toLocaleString('es-CL')} CLP
+                            </span>
+                          </div>
+
+                          <select
+                            value={pedido.estado}
+                            onChange={e => handleCambiarEstadoPedido(pedido.id, e.target.value)}
+                            className="bg-slate-950 border border-slate-700 text-xs text-slate-200 rounded-xl px-3 py-2 font-semibold"
+                          >
+                            <option value="nuevo">Nuevo</option>
+                            <option value="en_preparacion">En Preparación</option>
+                            <option value="en_ruta">En Ruta</option>
+                            <option value="completado">Completado</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* DATOS DEL CLIENTE Y PRODUCTOS */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 py-4 text-xs">
+                        {/* Columna Cliente */}
+                        <div className="md:col-span-5 bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 space-y-1.5">
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase font-bold">Cliente:</span>
+                            <strong className="text-white text-sm block">{pedido.cliente_nombre}</strong>
+                          </div>
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase font-bold">Contacto & Destino:</span>
+                            <span className="text-slate-300 font-mono block">📞 {pedido.cliente_telefono || 'Sin teléfono'}</span>
+                            <span className="text-slate-300 block">📍 Comuna: {pedido.comuna} {pedido.direccion ? `(${pedido.direccion})` : ''}</span>
+                          </div>
+                          {pedido.patente && (
+                            <div>
+                              <span className="text-slate-500 block text-[10px] uppercase font-bold">Vehículo / Patente:</span>
+                              <span className="font-mono text-cyan-300 font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-800 inline-block">
+                                {pedido.patente}
+                              </span>
+                            </div>
+                          )}
+                          {pedido.mecanico_asignado && (
+                            <div>
+                              <span className="text-slate-500 block text-[10px] uppercase font-bold">Mecánico asignado:</span>
+                              <span className="text-emerald-400 font-bold">👨‍🔧 {pedido.mecanico_asignado}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Columna Items del Pedido */}
+                        <div className="md:col-span-7 bg-slate-950/70 p-4 rounded-2xl border border-slate-800/80 flex flex-col justify-between">
+                          <div>
+                            <span className="text-slate-500 block text-[10px] uppercase font-bold mb-2">
+                              Productos Solicitados:
+                            </span>
+                            <div className="space-y-2">
+                              {(pedido.items || []).map((it, idx) => (
+                                <div key={idx} className="flex justify-between items-start border-b border-slate-900 pb-1.5">
+                                  <div>
+                                    <strong className="text-white font-medium block">
+                                      {it.nombre}
+                                    </strong>
+                                    {it.codigo && (
+                                      <span className="text-[10px] font-mono text-amber-400">
+                                        Código: {it.codigo}
+                                      </span>
+                                    )}
+                                    {it.conInstalacion && (
+                                      <span className="text-[10px] text-cyan-400 block">
+                                        + Con Instalación a Domicilio (${(it.precioInstalacion || 0).toLocaleString('es-CL')})
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-right shrink-0 ml-3">
+                                    <span className="text-slate-400 font-mono">x{it.cantidad || 1}</span>
+                                    <span className="text-white font-mono font-bold block">
+                                      ${((it.precio || 0) * (it.cantidad || 1)).toLocaleString('es-CL')}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          {pedido.notas && (
+                            <div className="mt-3 pt-2 border-t border-slate-800 text-[11px] text-slate-400 italic">
+                              Observaciones: &ldquo;{pedido.notas}&rdquo;
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* BARRA DE ACCIÓN INFERIOR */}
+                      <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div>
+                          {pedido.ot_generada_id ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800/60 px-3 py-1.5 rounded-xl">
+                              <span>✓</span> Orden de Trabajo Vinculada: <strong>{pedido.ot_generada_id}</strong>
+                            </span>
+                          ) : (
+                            <span className="text-xs text-slate-500">
+                              Sin Orden de Trabajo técnica generada aún.
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 self-stretch sm:self-auto">
+                          {/* Botón WhatsApp */}
+                          {pedido.cliente_telefono && (
+                            <a
+                              href={waUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 px-3.5 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <span>💬</span> WhatsApp
+                            </a>
+                          )}
+
+                          {/* Botón Convertir a OT */}
+                          {!pedido.ot_generada_id && (
+                            <button
+                              onClick={() => {
+                                setModalConvertirOT(pedido);
+                                setMecanicoSeleccionadoParaOT(MECANICOS_TALLER[0]);
+                              }}
+                              className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <span>📋</span> Convertir a OT
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => handleEliminarPedido(pedido.id)}
+                            className="bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 text-xs p-2 rounded-xl transition-colors cursor-pointer"
+                            title="Eliminar pedido"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 6: CONTROL DE INVENTARIO BATERÍAS & REPUESTOS          */}
+        {/* ========================================================= */}
+        {activeTab === 'inventario' && (
+          <div className="space-y-6">
+            {/* KPIS DE INVENTARIO */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div
+                onClick={() => setFilterCategoriaInv('todas')}
+                className="bg-slate-900 border border-slate-800 hover:border-slate-700 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Total Unidades</div>
+                <div className="text-2xl font-extrabold text-white">{kpisInventario.totalUnidades}</div>
+                <div className="text-[11px] text-slate-500 mt-1">En bodega activa</div>
+              </div>
+
+              <div
+                onClick={() => setFilterCategoriaInv('Baterías')}
+                className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-4 rounded-2xl cursor-pointer transition-all"
+              >
+                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">Baterías Top 8 Chile</div>
+                <div className="text-2xl font-extrabold text-amber-300">{kpisInventario.bateriasTotal}</div>
+                <div className="text-[11px] text-amber-400/70 mt-1">DIN, JIS y Start-Stop</div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                <div className="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Stock Crítico</span>
+                  <span className="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+                </div>
+                <div className="text-2xl font-extrabold text-rose-400">{kpisInventario.criticos}</div>
+                <div className="text-[11px] text-rose-400/70 mt-1">&le; 3 unidades restantes</div>
+              </div>
+
+              <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+                <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-1">Valoración Bodega</div>
+                <div className="text-2xl font-extrabold text-emerald-300">
+                  ${Math.round(kpisInventario.valorTotalCLP / 1000).toLocaleString('es-CL')}k
+                </div>
+                <div className="text-[11px] text-emerald-400/70 mt-1">Precio venta proyectado</div>
+              </div>
+            </div>
+
+            {/* FILTROS Y BÚSQUEDA DE INVENTARIO */}
+            <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+              {/* Categorías */}
+              <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+                {[
+                  { id: 'todas', label: 'Todo' },
+                  { id: 'Baterías', label: 'Baterías Top 8' },
+                  { id: 'Baterías Start-Stop', label: 'Start-Stop' },
+                  { id: 'Lubricantes', label: 'Aceites' },
+                  { id: 'Frenos', label: 'Frenos' },
+                  { id: 'Accesorios', label: 'Accesorios' }
+                ].map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setFilterCategoriaInv(cat.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      filterCategoriaInv === cat.id
+                        ? 'bg-cyan-500 text-slate-950 shadow-md font-black'
+                        : 'bg-slate-950 text-slate-400 hover:text-white border border-slate-800'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input de Búsqueda */}
+              <div className="w-full sm:w-80">
+                <input
+                  type="text"
+                  placeholder="Buscar por código (ej: DIN 55, 55D23L, Motul)..."
+                  value={searchQueryInv}
+                  onChange={e => setSearchQueryInv(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                />
+              </div>
+            </div>
+
+            {/* TABLA / GRILLA DE CONTROL DE STOCK */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-300">
+                  <thead className="bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                    <tr>
+                      <th className="py-3.5 px-4 font-bold">Producto / Repuesto</th>
+                      <th className="py-3.5 px-3 font-bold font-mono">Código Comercial</th>
+                      <th className="py-3.5 px-3 font-bold">Categoría & Ubicación</th>
+                      <th className="py-3.5 px-3 font-bold text-right">Precio Venta</th>
+                      <th className="py-3.5 px-3 font-bold text-center">Control de Stock</th>
+                      <th className="py-3.5 px-4 font-bold text-center">Estado</th>
+                      <th className="py-3.5 px-3 font-bold text-center">Reposición</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {inventarioFiltrado.map(item => {
+                      const esCritico = item.stock <= (item.stockMinimo || 3);
+                      const esMedio = !esCritico && item.stock <= (item.stockMinimo || 3) * 2;
+
+                      let statusBadge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                      let statusText = 'Stock Normal';
+                      if (esCritico) {
+                        statusBadge = 'bg-rose-500/20 text-rose-300 border-rose-500/30 animate-pulse';
+                        statusText = '🚨 Crítico';
+                      } else if (esMedio) {
+                        statusBadge = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                        statusText = '⚠️ Medio';
+                      }
+
+                      const reposicionMsg = `Hola distribuidor, necesitamos cotizar reposición de stock para nuestro taller AutoBooking:\n\n📦 *Producto:* ${item.nombre}\n🏷️ *Código:* ${item.codigo}\n📊 *Stock actual:* ${item.stock} unidades\n¿Tienen disponibilidad para despacho esta semana?`;
+                      const reposicionUrl = whatsappUrl(reposicionMsg);
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xl">{item.icono || '📦'}</span>
+                              <strong className="text-white font-medium block">
+                                {item.nombre}
+                              </strong>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-3 font-mono font-bold text-amber-300 text-xs">
+                            {item.codigo}
+                          </td>
+
+                          <td className="py-3.5 px-3">
+                            <span className="text-slate-200 block font-medium">{item.categoria}</span>
+                            <span className="text-[10px] text-slate-500 block">{item.ubicacion}</span>
+                          </td>
+
+                          <td className="py-3.5 px-3 text-right font-mono font-bold text-white">
+                            ${item.precioVenta.toLocaleString('es-CL')}
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            <div className="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-1 shadow-inner">
+                              <button
+                                onClick={() => handleAjustarStock(item.id, -1)}
+                                className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs flex items-center justify-center cursor-pointer transition-colors"
+                                title="Descontar 1 unidad"
+                              >
+                                -
+                              </button>
+                              <span className="w-9 font-mono font-black text-sm text-center text-white">
+                                {item.stock}
+                              </span>
+                              <button
+                                onClick={() => handleAjustarStock(item.id, 1)}
+                                className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs flex items-center justify-center cursor-pointer transition-colors"
+                                title="Agregar 1 unidad"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 text-center">
+                            <span className={`inline-block text-[10px] font-bold px-2.5 py-1 rounded-full border ${statusBadge}`}>
+                              {statusText}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-3 text-center">
+                            <a
+                              href={reposicionUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-950/60 border border-emerald-800/40 px-2.5 py-1 rounded-lg transition-colors"
+                              title="Pedir reposición por WhatsApp"
+                            >
+                              <span>📦</span> Pedir
+                            </a>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
 
       </main>
+
+      {/* ========================================================= */}
+      {/* MODAL CONVERTIR PEDIDO DE TIENDA A ORDEN DE TRABAJO (OT)  */}
+      {/* ========================================================= */}
+      {modalConvertirOT && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-lg w-full relative shadow-2xl">
+            <button
+              onClick={() => setModalConvertirOT(null)}
+              className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">📋</span>
+              <h3 className="text-xl font-bold text-white">Convertir Pedido a Orden de Trabajo</h3>
+            </div>
+            <p className="text-xs text-slate-400 mb-4">
+              Se creará automáticamente una OT técnica oficial en el taller para coordinar la instalación en terreno.
+            </p>
+
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-xs space-y-2 mb-5">
+              <div>
+                <span className="text-slate-500 block">Pedido:</span>
+                <strong className="text-white font-mono text-sm">{modalConvertirOT.numero_pedido}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Cliente:</span>
+                <span className="text-slate-200 font-bold">{modalConvertirOT.cliente_nombre}</span> ({modalConvertirOT.cliente_telefono})
+              </div>
+              <div>
+                <span className="text-slate-500 block">Comuna y Destino:</span>
+                <span className="text-slate-200">{modalConvertirOT.comuna}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Total a facturar:</span>
+                <span className="text-amber-400 font-mono font-bold">${Number(modalConvertirOT.total_general || 0).toLocaleString('es-CL')} CLP</span>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                Asignar Mecánico Responsable:
+              </label>
+              <select
+                value={mecanicoSeleccionadoParaOT}
+                onChange={e => setMecanicoSeleccionadoParaOT(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white font-semibold"
+              >
+                {MECANICOS_TALLER.map(m => (
+                  <option key={m} value={m}>{m} (Mecánico Terreno)</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setModalConvertirOT(null)}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmarConversionOT}
+                className="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-cyan-600/30 transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <span>✓</span> Crear Orden de Trabajo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* MODAL DETALLE DE CITA & NOTAS                             */}
