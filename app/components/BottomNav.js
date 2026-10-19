@@ -120,19 +120,19 @@ export default function BottomNav() {
         ) : (
           <>
             {/* Accesos rápidos del taller */}
-            <Link href="/taller" className="flex flex-col items-center p-2 text-cyan-400 hover:text-cyan-300 transition-colors">
+            <Link href="/taller?tab=citas" className="flex flex-col items-center p-2 text-cyan-400 hover:text-cyan-300 transition-colors">
               <span className="text-base mb-0.5">📅</span>
               <span className="text-[10px] font-medium">Citas</span>
             </Link>
-            <Link href="/taller" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
+            <Link href="/taller?tab=ordenes" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
               <span className="text-base mb-0.5">📋</span>
               <span className="text-[10px] font-medium">OTs</span>
             </Link>
-            <Link href="/taller" className="flex flex-col items-center p-2 text-amber-400 hover:text-amber-300 transition-colors">
-              <span className="text-base mb-0.5">🛒</span>
-              <span className="text-[10px] font-medium font-bold">Pedidos</span>
+            <Link href="/taller?tab=detailing" className="flex flex-col items-center p-2 text-amber-400 hover:text-amber-300 transition-colors">
+              <span className="text-base mb-0.5">✨</span>
+              <span className="text-[10px] font-medium font-bold">Detailing</span>
             </Link>
-            <Link href="/taller" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
+            <Link href="/taller?tab=inventario" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
               <span className="text-base mb-0.5">📦</span>
               <span className="text-[10px] font-medium">Stock</span>
             </Link>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import DetailingWorkstation from '../components/DetailingWorkstation';
 import {
   getCitas,
   createCita,
@@ -166,6 +167,13 @@ export default function TallerPage() {
   useEffect(() => {
     setHasSupabase(isSupabaseConfigured());
     cargarDatos();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    }
   }, []);
 
   async function cargarDatos() {
@@ -957,6 +965,21 @@ export default function TallerPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('detailing')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'detailing'
+                ? 'border-amber-400 text-amber-400 bg-amber-950/30 rounded-t-lg font-black'
+                : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>✨</span>
+            Detailing & Checklist Pro
+            <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black">
+              7 Fases
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('config')}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'config'
@@ -1480,6 +1503,15 @@ export default function TallerPage() {
                             Imprimir
                           </button>
                         </div>
+
+                        {/* Botón rápido Checklist Detailing */}
+                        <button
+                          onClick={() => setActiveTab('detailing')}
+                          className="w-full bg-slate-950 hover:bg-slate-800 border border-amber-500/25 text-amber-300 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <span>✨</span>
+                          <span>Checklist Detailing & Diluciones</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -2473,6 +2505,13 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               </div>
             </div>
           </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 7: DETAILING & CONTROL DE CALIDAD (7 FASES)           */}
+        {/* ========================================================= */}
+        {activeTab === 'detailing' && (
+          <DetailingWorkstation onBackToOverview={() => setActiveTab('ordenes')} />
         )}
 
       </main>
