@@ -132,7 +132,16 @@ export default function LandingPage() {
   const [selectedService, setSelectedService] = useState(null);
   const [preselectedService, setPreselectedService] = useState(null);
   const [preselectedComuna, setPreselectedComuna] = useState(null);
+  const [preselectedPatente, setPreselectedPatente] = useState(null);
   const heroWa = whatsappUrl('Hola, quiero cotizar un servicio para mi auto');
+
+  function handleQuickStart({ patente, comuna, servicio }) {
+    if (patente) setPreselectedPatente(patente);
+    if (comuna) setPreselectedComuna(comuna);
+    if (servicio) setPreselectedService(servicio);
+    const elem = document.getElementById('agendar');
+    if (elem) elem.scrollIntoView({ behavior: 'smooth' });
+  }
 
   function handleAgendarServicio(servicio) {
     setPreselectedService(servicio);
@@ -154,7 +163,7 @@ export default function LandingPage() {
       <Navbar />
 
       {/* ── HERO ── */}
-      <AutomotiveHero />
+      <AutomotiveHero onQuickStart={handleQuickStart} />
 
       {/* ── MARCAS ── */}
       <BrandMarquee />
@@ -182,23 +191,50 @@ export default function LandingPage() {
           </div>
 
           {/* Carrusel */}
-          <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {SERVICES.map((servicio, index) => {
               const details = SERVICE_DETAILS[servicio];
               return (
-                <button
+                <div
                   key={index}
-                  type="button"
-                  onClick={() => setSelectedService(servicio)}
-                  className="snap-start shrink-0 w-44 sm:w-48 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.07] hover:border-blue-500/30 rounded-2xl p-6 flex flex-col items-start text-left transition-all duration-200 cursor-pointer group"
+                  className="snap-start shrink-0 w-64 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] hover:border-blue-500/40 rounded-2xl p-5 flex flex-col justify-between transition-all duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center mb-4 group-hover:border-blue-500/30 transition-colors">
-                    {details?.icon}
+                  <div>
+                    <div className="flex items-center justify-between mb-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.08] flex items-center justify-center group-hover:border-blue-500/30 transition-colors">
+                        {details?.icon}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedService(servicio)}
+                        className="text-[11px] text-white/50 hover:text-blue-400 font-medium transition-colors cursor-pointer"
+                        title="Ver detalles del servicio"
+                      >
+                        Detalles
+                      </button>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider text-blue-400 font-semibold block mb-1">
+                      {details?.badge || 'A domicilio'}
+                    </span>
+                    <h3 className="text-sm font-bold text-white group-hover:text-blue-200 transition-colors leading-snug mb-2">
+                      {servicio}
+                    </h3>
+                    <p className="text-xs text-white/60 line-clamp-2 leading-relaxed font-light mb-4">
+                      {details?.description}
+                    </p>
                   </div>
-                  <span className="text-sm font-medium text-white/70 group-hover:text-white/90 leading-snug transition-colors">
-                    {servicio}
-                  </span>
-                </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAgendarServicio(servicio)}
+                    className="w-full bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/30 hover:border-blue-500 text-xs font-semibold py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <span>Agendar este servicio</span>
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                  </button>
+                </div>
               );
             })}
           </div>
@@ -293,8 +329,8 @@ export default function LandingPage() {
                     {step.icon}
                   </div>
                 </div>
-                <h3 className="text-base font-semibold text-white/80 mb-2">{step.title}</h3>
-                <p className="text-sm text-white/35 leading-relaxed font-light">{step.desc}</p>
+                <h3 className="text-base font-semibold text-white mb-2">{step.title}</h3>
+                <p className="text-sm text-white/70 leading-relaxed font-light">{step.desc}</p>
               </div>
             ))}
           </div>
@@ -313,7 +349,7 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               Soluciones Especializadas
             </h2>
-            <p className="text-sm text-white/35 mt-3 font-light">
+            <p className="text-sm text-white/70 mt-3 font-light">
               Accede directamente a nuestros módulos dedicados: tienda, baterías, diagnóstico y telemetría.
             </p>
           </div>
@@ -328,18 +364,18 @@ export default function LandingPage() {
                 <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-5 group-hover:border-blue-500/25 transition-colors">
                   {mod.icon}
                 </div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">
+                <span className="text-[11px] font-mono uppercase tracking-widest text-blue-400 font-semibold mb-1">
                   {mod.subtitle}
                 </span>
-                <h3 className="text-sm font-semibold text-white/80 group-hover:text-white leading-snug mb-3 transition-colors">
+                <h3 className="text-sm font-semibold text-white/90 group-hover:text-white leading-snug mb-2.5 transition-colors">
                   {mod.title}
                 </h3>
-                <p className="text-xs text-white/30 leading-relaxed font-light flex-1">
+                <p className="text-xs text-white/65 leading-relaxed font-light flex-1">
                   {mod.description}
                 </p>
-                <div className="mt-6 flex items-center gap-1.5 text-xs font-medium text-blue-400/60 group-hover:text-blue-300 transition-colors">
+                <div className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">
                   {mod.action}
-                  <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <svg className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
                 </div>
@@ -361,7 +397,7 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               ¿Dónde operamos?
             </h2>
-            <p className="text-sm text-white/35 mt-3 max-w-lg mx-auto font-light">
+            <p className="text-sm text-white/70 mt-3 max-w-lg mx-auto font-light">
               Cubrimos las comunas principales de la Región Metropolitana con talleres móviles equipados.
             </p>
           </div>
@@ -373,7 +409,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {ZONES.map((zone) => (
               <div key={zone.name} className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-6">
-                <h4 className="text-xs font-semibold uppercase tracking-widest text-blue-400/70 mb-4 flex items-center gap-2">
+                <h4 className="text-xs font-semibold uppercase tracking-widest text-blue-400 mb-4 flex items-center gap-2">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
@@ -384,7 +420,7 @@ export default function LandingPage() {
                   {zone.comunas.map((comuna) => (
                     <span
                       key={comuna}
-                      className="text-[11px] bg-white/[0.04] border border-white/[0.07] rounded-full px-2.5 py-1 text-white/45"
+                      className="text-xs bg-white/[0.04] border border-white/[0.08] rounded-full px-3 py-1 text-white/75"
                     >
                       {comuna}
                     </span>
@@ -394,13 +430,13 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <p className="text-center text-white/25 text-xs mt-8">
+          <p className="text-center text-white/60 text-xs mt-8 font-light">
             ¿No ves tu comuna?{' '}
             <a
               href={whatsappUrl('Hola AutoBooking, consulto cobertura para mi comuna')}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400/60 hover:text-blue-300 underline underline-offset-2"
+              className="text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2"
             >
               Consúltanos por WhatsApp
             </a>{' '}
@@ -427,11 +463,15 @@ export default function LandingPage() {
             <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
               Agenda tu hora
             </h2>
-            <p className="text-sm text-white/35 mt-3 font-light">
-              Confirma tu cita en simples pasos. El taller llega a tu puerta.
+            <p className="text-sm text-white/65 mt-2.5 font-light">
+              Confirma tu cita en simples pasos. El taller móvil llega directamente a tu puerta.
             </p>
           </div>
-          <BookingWizard preselectedService={preselectedService} preselectedComuna={preselectedComuna} />
+          <BookingWizard
+            preselectedService={preselectedService}
+            preselectedComuna={preselectedComuna}
+            preselectedPatente={preselectedPatente}
+          />
         </div>
       </section>
 

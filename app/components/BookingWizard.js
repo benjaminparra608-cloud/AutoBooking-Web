@@ -35,7 +35,7 @@ const initialForm = {
   botcheck: false,
 };
 
-export default function BookingWizard({ preselectedService, preselectedComuna }) {
+export default function BookingWizard({ preselectedService, preselectedComuna, preselectedPatente }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -55,6 +55,12 @@ export default function BookingWizard({ preselectedService, preselectedComuna })
       setForm((f) => ({ ...f, comuna: preselectedComuna }));
     }
   }, [preselectedComuna]);
+
+  useEffect(() => {
+    if (preselectedPatente) {
+      setForm((f) => ({ ...f, patente: preselectedPatente }));
+    }
+  }, [preselectedPatente]);
 
   useEffect(() => {
     const now = new Date();
