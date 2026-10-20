@@ -7,7 +7,6 @@ export default function CoverageChecker({ onSelectComuna }) {
   const [comunaInput, setComunaInput] = useState('');
   const [resultado, setResultado] = useState(null);
 
-  // Aplanar comunas con su zona
   const todasLasComunas = ZONES.flatMap(z =>
     z.comunas.map(c => ({ comuna: c, zona: z.name }))
   );
@@ -15,32 +14,24 @@ export default function CoverageChecker({ onSelectComuna }) {
   function verificarComuna(texto) {
     const q = texto.trim().toLowerCase();
     setComunaInput(texto);
-    if (!q) {
-      setResultado(null);
-      return;
-    }
-
-    const match = todasLasComunas.find(c => c.comuna.toLowerCase() === q || c.comuna.toLowerCase().includes(q));
-
+    if (!q) { setResultado(null); return; }
+    const match = todasLasComunas.find(
+      c => c.comuna.toLowerCase() === q || c.comuna.toLowerCase().includes(q)
+    );
     if (match) {
       setResultado({
         encontrado: true,
         comuna: match.comuna,
         zona: match.zona,
-        tiempo: match.zona === 'Oriente' ? '30–45 min' : '45–60 min'
+        tiempo: match.zona === 'Oriente' ? '30–45 min' : '45–60 min',
       });
     } else {
-      setResultado({
-        encontrado: false,
-        comuna: texto.trim()
-      });
+      setResultado({ encontrado: false, comuna: texto.trim() });
     }
   }
 
   function handleAgendarEnComuna(comunaNombre) {
-    if (onSelectComuna) {
-      onSelectComuna(comunaNombre);
-    }
+    if (onSelectComuna) onSelectComuna(comunaNombre);
     const elem = document.getElementById('agendar');
     if (elem) elem.scrollIntoView({ behavior: 'smooth' });
   }
@@ -48,98 +39,104 @@ export default function CoverageChecker({ onSelectComuna }) {
   const comunasPopulares = ['Providencia', 'Las Condes', 'Ñuñoa', 'Santiago Centro', 'La Florida', 'Puente Alto', 'Maipú'];
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-3xl mx-auto shadow-xl">
-      <div className="text-center max-w-xl mx-auto mb-6">
-        <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider bg-cyan-950/60 border border-cyan-800/40 px-3 py-1 rounded-full">
-          📍 Verificador en tiempo real
-        </span>
-        <h4 className="text-2xl font-bold text-white mt-2">¿Llegamos a tu domicilio?</h4>
-        <p className="text-xs text-slate-400 mt-1">
-          Escribe tu comuna o selecciona una para verificar disponibilidad y tiempos estimados de llegada.
+    <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-7 md:p-9 max-w-3xl mx-auto">
+      {/* Header */}
+      <div className="text-center mb-7">
+        <p className="text-[11px] font-semibold tracking-[0.16em] uppercase text-blue-400/80 mb-2">
+          Verificador en tiempo real
+        </p>
+        <h4 className="text-xl font-bold text-white">¿Llegamos a tu domicilio?</h4>
+        <p className="text-xs text-white/35 mt-1.5 font-light">
+          Escribe tu comuna o selecciona una para verificar disponibilidad y tiempos estimados.
         </p>
       </div>
 
-      {/* Input de búsqueda */}
+      {/* Input */}
       <div className="relative max-w-md mx-auto mb-4">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">📍</span>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+          </svg>
+        </div>
         <input
           type="text"
-          placeholder="Escribe tu comuna (ej: Ñuñoa, Las Condes)..."
+          placeholder="Ej: Providencia, Las Condes, Ñuñoa..."
           value={comunaInput}
           onChange={e => verificarComuna(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400 shadow-inner"
+          className="w-full bg-white/[0.04] border border-white/[0.10] rounded-xl pl-10 pr-10 py-3 text-sm text-white/80 placeholder-white/20 transition-all"
         />
         {comunaInput && (
           <button
             onClick={() => { setComunaInput(''); setResultado(null); }}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition-colors cursor-pointer"
           >
-            ✕
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         )}
       </div>
 
       {/* Chips de comunas rápidas */}
-      <div className="flex flex-wrap justify-center gap-1.5 mb-6">
-        <span className="text-xs text-slate-500 py-1 mr-1">Comunas frecuentes:</span>
+      <div className="flex flex-wrap justify-center gap-2 mb-6">
+        <span className="text-[10px] text-white/25 py-1.5 self-center uppercase tracking-wider">Sugeridas:</span>
         {comunasPopulares.map(cp => (
           <button
             key={cp}
             type="button"
             onClick={() => verificarComuna(cp)}
-            className="text-xs bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 px-3 py-1 rounded-full transition-colors cursor-pointer"
+            className="text-[11px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-blue-500/30 text-white/50 hover:text-white/80 px-3 py-1.5 rounded-full transition-all cursor-pointer"
           >
             {cp}
           </button>
         ))}
       </div>
 
-      {/* Resultado de la verificación */}
+      {/* Resultado */}
       {resultado && (
-        <div className="transition-all">
+        <div className="mt-2">
           {resultado.encontrado ? (
-            <div className="bg-emerald-950/40 border border-emerald-600/50 rounded-2xl p-5 text-emerald-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-900 border border-emerald-500/50 flex items-center justify-center text-xl shrink-0">
-                  ✓
+            <div className="bg-emerald-950/30 border border-emerald-700/40 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-900/60 border border-emerald-600/40 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
                 </div>
                 <div>
-                  <h5 className="font-bold text-white text-sm">
-                    ¡Excelente! Atendemos a domicilio en {resultado.comuna}
-                  </h5>
-                  <p className="text-xs text-emerald-300/80 mt-0.5">
-                    Zona {resultado.zona} de Santiago • Tiempo estimado: {resultado.tiempo} • Traslado sin costo extra
+                  <p className="text-sm font-semibold text-white">¡Atendemos en {resultado.comuna}!</p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    Zona {resultado.zona} · Tiempo estimado: {resultado.tiempo} · Sin costo de traslado
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => handleAgendarEnComuna(resultado.comuna)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-emerald-950 whitespace-nowrap cursor-pointer"
+                className="bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold px-5 py-2.5 rounded-full transition-all whitespace-nowrap cursor-pointer shrink-0"
               >
-                Agendar en {resultado.comuna} ➔
+                Agendar aquí →
               </button>
             </div>
           ) : (
-            <div className="bg-amber-950/40 border border-amber-600/50 rounded-2xl p-5 text-amber-200 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-900 border border-amber-500/50 flex items-center justify-center text-xl shrink-0">
-                  ℹ️
+            <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/[0.05] border border-white/[0.10] flex items-center justify-center shrink-0 mt-0.5">
+                  <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                  </svg>
                 </div>
                 <div>
-                  <h5 className="font-bold text-white text-sm">
-                    &ldquo;{resultado.comuna}&rdquo; está fuera de la zona habitual
-                  </h5>
-                  <p className="text-xs text-amber-300/80 mt-0.5">
-                    Podemos coordinar visitas especiales a comunas periféricas o recibir tu vehículo en taller.
-                  </p>
+                  <p className="text-sm font-semibold text-white/70">"{resultado.comuna}" fuera de zona habitual</p>
+                  <p className="text-xs text-white/35 mt-0.5">Podemos coordinar visitas especiales. Consúltanos.</p>
                 </div>
               </div>
               <a
-                href={whatsappUrl(`Hola, estoy en la comuna de ${resultado.comuna} y me gustaría consultar si pueden atenderme a domicilio.`)}
+                href={whatsappUrl(`Hola, estoy en ${resultado.comuna} y quiero consultar cobertura.`)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-amber-950 whitespace-nowrap cursor-pointer"
+                className="bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] text-white/70 text-xs font-semibold px-5 py-2.5 rounded-full transition-all whitespace-nowrap cursor-pointer shrink-0"
               >
                 Consultar por WhatsApp
               </a>
