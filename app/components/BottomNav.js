@@ -76,45 +76,37 @@ export default function BottomNav() {
         ) : isCliente ? (
           <>
             {/* 1. Inicio */}
-            <a href="#" className="flex flex-col items-center p-2 text-slate-400 hover:text-blue-400 transition-colors">
+            <Link href="/" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
               <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
               <span className="text-[10px] font-medium">Inicio</span>
-            </a>
+            </Link>
 
-            {/* 2. Telemetría & Desgaste */}
-            <a href="#monitor-desgaste" className="flex flex-col items-center p-2 text-cyan-400 hover:text-cyan-300 transition-colors">
-              <span className="text-base mb-0.5">📡</span>
-              <span className="text-[10px] font-bold">Desgaste</span>
-            </a>
-
-            {/* 3. Tienda Online */}
-            <a href="#tienda" className="flex flex-col items-center p-2 text-amber-400 hover:text-amber-300 transition-colors">
+            {/* 2. Tienda Online */}
+            <Link href="/tienda" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
               <span className="text-base mb-0.5">🛍️</span>
-              <span className="text-[10px] font-medium font-bold">Tienda</span>
-            </a>
+              <span className="text-[10px] font-medium">Tienda</span>
+            </Link>
 
-            {/* 4. Cotizar */}
-            <a href="#cotizador" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
-              <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span className="text-[10px] font-medium">Cotizar</span>
-            </a>
+            {/* 3. Baterías */}
+            <Link href="/baterias" className="flex flex-col items-center p-2 text-amber-400 hover:text-amber-300 transition-colors">
+              <span className="text-base mb-0.5">🔋</span>
+              <span className="text-[10px] font-bold">Baterías</span>
+            </Link>
+
+            {/* 4. Diagnóstico */}
+            <Link href="/diagnostico" className="flex flex-col items-center p-2 text-slate-400 hover:text-cyan-400 transition-colors">
+              <span className="text-base mb-0.5">🩺</span>
+              <span className="text-[10px] font-medium">Diagnóstico</span>
+            </Link>
 
             {/* 5. Agendar */}
-            <a href="#agendar" className="flex flex-col items-center p-2 text-slate-400 hover:text-blue-400 transition-colors">
+            <a href="/#agendar" className="flex flex-col items-center p-2 text-cyan-400 hover:text-cyan-300 transition-colors">
               <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="text-[10px] font-medium">Agendar</span>
-            </a>
-
-            {/* 6. Chat / WhatsApp */}
-            <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center p-2 text-slate-400 hover:text-green-400 transition-colors">
-              <span className="text-base mb-0.5">💬</span>
-              <span className="text-[10px] font-medium">Chat</span>
+              <span className="text-[10px] font-bold">Agendar</span>
             </a>
           </>
         ) : (

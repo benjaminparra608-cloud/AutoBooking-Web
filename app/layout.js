@@ -1,4 +1,5 @@
 import "./globals.css";
+import ClientProviders from "./components/ClientProviders";
 
 export const metadata = {
   title: "AutoBooking — Mecánica automotriz a domicilio en Santiago",
@@ -19,7 +20,11 @@ export default function RootLayout({ children }) {
       lang="es"
       className="h-full antialiased font-sans"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
+        <ClientProviders>
+          {children}
+        </ClientProviders>
+      </body>
     </html>
   );
 }

@@ -108,7 +108,7 @@ export default function Navbar() {
           {/* Botón Agendar en Móvil */}
           {isCliente && (
             <a
-              href="#agendar"
+              href="/#agendar"
               className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-xs py-1.5 px-3 rounded-full shadow-md transition-all flex items-center gap-1"
             >
               <span>Agendar</span>
@@ -169,28 +169,28 @@ export default function Navbar() {
             {mobileExpandedSection === 'servicios' && (
               <div className="p-3 pt-0 space-y-2 border-t border-slate-800/50">
                 <a
-                  href="#servicios"
+                  href="/#servicios"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-cyan-400"
                 >
                   🚗 Nuestros Servicios a Domicilio
                 </a>
-                <a
-                  href="#diagnostico-sintomas"
+                <Link
+                  href="/diagnostico"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-cyan-400"
                 >
                   💻 Diagnóstico con Escáner OBD2
-                </a>
+                </Link>
                 <a
-                  href="#cotizador"
+                  href="/#agendar"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-cyan-400"
                 >
-                  ⚡ Cotizador Rápido de Mantenciones
+                  ⚡ Cotizar y Agendar Servicio
                 </a>
                 <a
-                  href="#cobertura"
+                  href="/#cobertura"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-cyan-400"
                 >
@@ -216,34 +216,34 @@ export default function Navbar() {
             </button>
             {mobileExpandedSection === 'tienda' && (
               <div className="p-3 pt-0 space-y-2 border-t border-slate-800/50">
-                <a
-                  href="#tienda"
+                <Link
+                  href="/tienda"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-amber-400"
                 >
                   🛍️ Tienda de Repuestos & Upgrades
-                </a>
-                <a
-                  href="#catalogo-baterias"
+                </Link>
+                <Link
+                  href="/baterias"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-amber-400"
                 >
                   🔋 Baterías Más Frecuentes con Instalación
-                </a>
-                <a
-                  href="#monitor-desgaste"
+                </Link>
+                <Link
+                  href="/telemetria"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-cyan-400"
                 >
                   📡 Monitor de Desgaste & Odómetro GPS
-                </a>
+                </Link>
               </div>
             )}
           </div>
 
           <div className="pt-2">
             <a
-              href="#agendar"
+              href="/#agendar"
               onClick={handleNavLinkClick}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-black py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg"
             >
@@ -305,7 +305,7 @@ export default function Navbar() {
                       </div>
 
                       <a
-                        href="#servicios"
+                        href="/#servicios"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -322,8 +322,8 @@ export default function Navbar() {
                         </div>
                       </a>
 
-                      <a
-                        href="#diagnostico-sintomas"
+                      <Link
+                        href="/diagnostico"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -338,10 +338,10 @@ export default function Navbar() {
                             Detección computarizada de fallas y códigos de motor.
                           </span>
                         </div>
-                      </a>
+                      </Link>
 
                       <a
-                        href="#cotizador"
+                        href="/#agendar"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -359,7 +359,7 @@ export default function Navbar() {
                       </a>
 
                       <a
-                        href="#cobertura"
+                        href="/#cobertura"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -408,8 +408,8 @@ export default function Navbar() {
                         Repuestos & Monitoreo Inteligente
                       </div>
 
-                      <a
-                        href="#tienda"
+                      <Link
+                        href="/tienda"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -424,10 +424,10 @@ export default function Navbar() {
                             Aceite Motul 5W30, frenos Brembo, CarPlay y bujías.
                           </span>
                         </div>
-                      </a>
+                      </Link>
 
-                      <a
-                        href="#catalogo-baterias"
+                      <Link
+                        href="/baterias"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -442,10 +442,10 @@ export default function Navbar() {
                             Formatos DIN, JIS y AGM con instalación a domicilio.
                           </span>
                         </div>
-                      </a>
+                      </Link>
 
-                      <a
-                        href="#monitor-desgaste"
+                      <Link
+                        href="/telemetria"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-900/90 transition-all group"
                       >
@@ -460,7 +460,7 @@ export default function Navbar() {
                             Historial clínico, consumo de combustible y odómetro.
                           </span>
                         </div>
-                      </a>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -567,7 +567,7 @@ export default function Navbar() {
             {/* Botón CTA Principal */}
             {isCliente ? (
               <a
-                href="#agendar"
+                href="/#agendar"
                 className="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-500 hover:from-blue-500 hover:to-cyan-400 text-white font-extrabold text-xs py-2 px-5 rounded-full shadow-lg shadow-cyan-600/25 transition-all flex items-center gap-1.5 cursor-pointer transform hover:scale-105 active:scale-95 whitespace-nowrap"
               >
                 <span>Agendar Visita</span>

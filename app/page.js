@@ -1,24 +1,14 @@
 'use client';
 
 import React, { useState } from "react";
+import Link from "next/link";
 import Navbar from "./components/Navbar";
-import BookingWizard from "./components/BookingWizard";
-import BottomNav from "./components/BottomNav";
-import FAQ from "./components/FAQ";
-import Features from "./components/Features";
-import Gallery from "./components/Gallery";
-import Reviews from "./components/Reviews";
-import FloatingBookButton from "./components/FloatingBookButton";
-import QuickQuote from "./components/QuickQuote";
-import SymptomDiagnostic from "./components/SymptomDiagnostic";
-import CoverageChecker from "./components/CoverageChecker";
 import AutomotiveHero from "./components/AutomotiveHero";
-import AutomotiveStore from "./components/AutomotiveStore";
-import BatteryFinder from "./components/BatteryFinder";
 import BrandMarquee from "./components/BrandMarquee";
-import CartDrawer from "./components/CartDrawer";
-import VehicleHealthTracker from "./components/VehicleHealthTracker";
-import { CartProvider } from "./context/CartContext";
+import CoverageChecker from "./components/CoverageChecker";
+import BookingWizard from "./components/BookingWizard";
+import Reviews from "./components/Reviews";
+import FAQ from "./components/FAQ";
 import { SERVICES, ZONES, whatsappUrl } from "./lib/config";
 
 // Diccionario con descripciones y detalles para el modal de cada servicio
@@ -60,6 +50,58 @@ const SERVICE_DETAILS = {
   }
 };
 
+// 4 Portales Especializados
+const SPECIALIZED_MODULES = [
+  {
+    title: "Tienda de Repuestos & Upgrades",
+    subtitle: "Catálogo Online Certificado",
+    icon: "🛍️",
+    badge: "Despacho & Instalación",
+    description: "Aceites sintéticos Motul 5W30, pastillas cerámicas Brembo, pantallas multimedia CarPlay/Android y bujías Iridium.",
+    href: "/tienda",
+    action: "Explorar Tienda →",
+    color: "from-blue-600/20 via-cyan-500/10 to-transparent",
+    border: "hover:border-cyan-500/60",
+    badgeColor: "bg-cyan-950/80 text-cyan-300 border-cyan-800/60"
+  },
+  {
+    title: "Baterías de Mayor Rotación",
+    subtitle: "Parque Automotriz Chileno",
+    icon: "🔋",
+    badge: "Auxilio & Test de Alternador",
+    description: "Catálogo maestro con los formatos DIN, JIS y AGM más utilizados en Chile (Hankook, Bosch, Varta) instalados en tu casa.",
+    href: "/baterias",
+    action: "Ver Baterías & Precios →",
+    color: "from-amber-600/20 via-orange-500/10 to-transparent",
+    border: "hover:border-amber-500/60",
+    badgeColor: "bg-amber-950/80 text-amber-300 border-amber-800/60"
+  },
+  {
+    title: "Diagnóstico por Síntomas",
+    subtitle: "Asistente Mecánico Virtual",
+    icon: "🩺",
+    badge: "Escáner OBD2",
+    description: "¿Ruidos al frenar, vibraciones en ralentí o luces en el panel? Descubre la posible falla y su nivel de urgencia antes de agendar.",
+    href: "/diagnostico",
+    action: "Diagnosticar Fallas →",
+    color: "from-sky-600/20 via-blue-500/10 to-transparent",
+    border: "hover:border-sky-500/60",
+    badgeColor: "bg-sky-950/80 text-sky-300 border-sky-800/60"
+  },
+  {
+    title: "Historial Clínico & Odómetro GPS",
+    subtitle: "Telemetría Preventiva",
+    icon: "📡",
+    badge: "Monitoreo en Vivo",
+    description: "Seguimiento en tiempo real de desgaste de componentes, vida útil del aceite, estado de la batería y avisos por kilometraje.",
+    href: "/telemetria",
+    action: "Ver Mi Odómetro →",
+    color: "from-indigo-600/20 via-purple-500/10 to-transparent",
+    border: "hover:border-indigo-500/60",
+    badgeColor: "bg-indigo-950/80 text-indigo-300 border-indigo-800/60"
+  }
+];
+
 export default function LandingPage() {
   const [selectedService, setSelectedService] = useState(null);
   const [preselectedService, setPreselectedService] = useState(null);
@@ -84,61 +126,31 @@ export default function LandingPage() {
   }
 
   return (
-    <CartProvider>
-      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-32 md:pb-12 relative">
-        {/* Barra de navegación superior para pantallas grandes */}
-        <Navbar />
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-32 md:pb-12 relative">
+      {/* Barra de navegación superior */}
+      <Navbar />
 
-      {/* 1. HERO SECTION CINEMÁTICO AUTOMOTRIZ (ESTILO DELTA LUXURY) */}
+      {/* 1. HERO SECTION CINEMÁTICO AUTOMOTRIZ */}
       <AutomotiveHero />
 
-      {/* 1.5 TIENDA ONLINE & CARRUSEL DE PRODUCTOS AUTOMOTRICES */}
-      <AutomotiveStore />
-
-      {/* 1.6 CATÁLOGO MAESTRO DE BATERÍAS MÁS FRECUENTES DEL PARQUE AUTOMOTRIZ */}
-      <BatteryFinder />
-
-      {/* 1.7 MARCAS OFICIALES & OEM PARTNERS */}
+      {/* 1.2 MARCAS OFICIALES & OEM PARTNERS */}
       <BrandMarquee />
 
-      {/* 2. ¿CÓMO FUNCIONA? */}
-      <section id="como-funciona" className="py-16 px-4 max-w-5xl mx-auto text-center">
-        <h3 className="text-3xl font-bold mb-10 text-white">¿Cómo funciona?</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800">
-            <div className="text-blue-400 text-4xl mb-4">📱</div>
-            <h4 className="text-xl font-bold mb-2 text-white">1. Cotiza y Agenda</h4>
-            <p className="text-slate-400">Elige tu servicio y el horario que más te acomode.</p>
-          </div>
-          <div className="p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800">
-            <div className="text-blue-400 text-4xl mb-4">🔧</div>
-            <h4 className="text-xl font-bold mb-2 text-white">2. Confirmación</h4>
-            <p className="text-slate-400">Asignamos un mecánico experto para tu vehículo.</p>
-          </div>
-          <div className="p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800">
-            <div className="text-blue-400 text-4xl mb-4">🚗</div>
-            <h4 className="text-xl font-bold mb-2 text-white">3. Reparación</h4>
-            <p className="text-slate-400">Vamos a tu casa u oficina para realizar el trabajo.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 2.2 DIAGNÓSTICO POR SÍNTOMAS (ASISTENTE INTELIGENTE) */}
-      <SymptomDiagnostic onSelectService={handleAgendarServicio} />
-
-      {/* 2.3 HISTORIAL CLÍNICO & MONITOR DE DESGASTE EN TIEMPO REAL (GPS / TELEMETRÍA) */}
-      <VehicleHealthTracker />
-
-      {/* 2.5 CARACTERÍSTICAS (tarjetas con mockup, estilo Bookr) */}
-      <Features />
-
-      {/* 3. NUESTROS SERVICIOS (Carrusel Interactivo con Modal) */}
-      <section id="servicios" className="py-12 bg-slate-900/40 border-y border-slate-800/80">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="flex justify-between items-end mb-6">
-            <h3 className="text-2xl font-bold text-white">Encuentra servicios</h3>
-            <a href="#agendar" className="text-sm font-semibold text-cyan-400 hover:underline">
-              Ver todos
+      {/* 2. NUESTROS SERVICIOS PRINCIPALES (Carrusel Interactivo con Modal) */}
+      <section id="servicios" className="py-14 bg-slate-900/40 border-y border-slate-800/80">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-2">
+            <div>
+              <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold">
+                Atención Mecánica a Domicilio
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                Servicios Técnicos Especializados
+              </h2>
+            </div>
+            <a href="#agendar" className="text-xs sm:text-sm font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
+              <span>Agendar cualquier servicio</span>
+              <span>↓</span>
             </a>
           </div>
 
@@ -150,10 +162,12 @@ export default function LandingPage() {
                 <div
                   key={index}
                   onClick={() => setSelectedService(servicio)}
-                  className="snap-start shrink-0 w-36 sm:w-40 bg-slate-900 rounded-3xl p-5 flex flex-col items-center justify-center text-center border border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer shadow-lg hover:scale-105"
+                  className="snap-start shrink-0 w-36 sm:w-44 bg-slate-900/90 rounded-3xl p-5 flex flex-col items-center justify-center text-center border border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer shadow-lg hover:scale-105 group"
                 >
-                  <div className="text-5xl mb-4 drop-shadow-md">{details.icon}</div>
-                  <span className="font-medium text-sm text-slate-200 leading-tight">
+                  <div className="text-5xl mb-4 drop-shadow-md group-hover:scale-110 transition-transform">
+                    {details.icon}
+                  </div>
+                  <span className="font-semibold text-xs sm:text-sm text-slate-200 leading-tight group-hover:text-cyan-300 transition-colors">
                     {servicio}
                   </span>
                 </div>
@@ -166,11 +180,12 @@ export default function LandingPage() {
       {/* MODAL / MENÚ FLOTANTE AL HACER CLIC EN UN SERVICIO */}
       {selectedService && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full relative shadow-2xl flex flex-col md:flex-row gap-6 items-center">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full relative shadow-2xl flex flex-col md:flex-row gap-6 items-center animate-in fade-in zoom-in-95 duration-150">
             {/* Botón de cerrar */}
             <button 
               onClick={() => setSelectedService(null)}
-              className="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+              className="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Cerrar modal"
             >
               ✕
             </button>
@@ -195,39 +210,132 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => handleAgendarServicio(selectedService)}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl text-center transition-all shadow-lg shadow-blue-600/30 cursor-pointer"
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3 px-6 rounded-xl text-center transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
               >
-                Agendar este servicio
+                Agendar este servicio →
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 3.5 COTIZADOR RÁPIDO INTERACTIVO */}
-      <QuickQuote onSelectService={handleAgendarServicio} />
+      {/* 3. ¿CÓMO FUNCIONA? */}
+      <section id="como-funciona" className="py-16 px-4 max-w-5xl mx-auto text-center">
+        <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold">
+          Simple, rápido y confiable
+        </span>
+        <h3 className="text-3xl font-black mb-10 text-white mt-1">¿Cómo funciona AutoBooking?</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 bg-slate-900/80 rounded-3xl shadow-sm border border-slate-800 text-left hover:border-slate-700 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-cyan-950/60 border border-cyan-800/50 text-cyan-400 flex items-center justify-center text-2xl mb-4">
+              📱
+            </div>
+            <h4 className="text-lg font-bold mb-2 text-white">1. Cotiza y Agenda</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Elige tu servicio o repuesto y agenda la fecha y hora que más te acomode en minutos.
+            </p>
+          </div>
+          <div className="p-6 bg-slate-900/80 rounded-3xl shadow-sm border border-slate-800 text-left hover:border-slate-700 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-blue-950/60 border border-blue-800/50 text-blue-400 flex items-center justify-center text-2xl mb-4">
+              👨‍🔧
+            </div>
+            <h4 className="text-lg font-bold mb-2 text-white">2. Confirmación & Técnico</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Te asignamos un mecánico calificado con herramientas profesionales e instrumental de diagnóstico.
+            </p>
+          </div>
+          <div className="p-6 bg-slate-900/80 rounded-3xl shadow-sm border border-slate-800 text-left hover:border-slate-700 transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-950/60 border border-emerald-800/50 text-emerald-400 flex items-center justify-center text-2xl mb-4">
+              🚗
+            </div>
+            <h4 className="text-lg font-bold mb-2 text-white">3. Servicio en tu Domicilio</h4>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Llegamos a tu casa u oficina para realizar el trabajo sin que pierdas tiempo en traslados.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* 4. COBERTURA */}
+      {/* 4. HUB DE SOLUCIONES Y SECCIONES ESPECIALIZADAS */}
+      <section className="py-16 px-4 bg-gradient-to-b from-slate-950 via-slate-900/30 to-slate-950 border-t border-slate-800/60">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">
+              <span>⚡</span> Ecosistema AutoBooking
+            </div>
+            <h3 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              Soluciones & Secciones Especializadas
+            </h3>
+            <p className="text-slate-400 text-sm mt-2 font-light">
+              Accede directamente a nuestros módulos dedicados para repuestos, recambio de baterías, diagnóstico guiado por síntomas y control de kilometraje.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {SPECIALIZED_MODULES.map((mod, idx) => (
+              <Link
+                key={idx}
+                href={mod.href}
+                className={`p-6 rounded-3xl bg-slate-900/70 border border-slate-800/90 ${mod.border} transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col justify-between group relative overflow-hidden`}
+              >
+                {/* Gradiente sutil de fondo */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${mod.color} opacity-40 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-3xl">{mod.icon}</span>
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${mod.badgeColor}`}>
+                      {mod.badge}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+                    {mod.subtitle}
+                  </span>
+                  <h4 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-tight mb-2.5">
+                    {mod.title}
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed font-light">
+                    {mod.description}
+                  </p>
+                </div>
+
+                <div className="relative z-10 mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs font-bold text-cyan-400 group-hover:text-cyan-300">
+                  <span>{mod.action}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. COBERTURA COMUNAL */}
       <section id="cobertura" className="py-16 px-4 max-w-5xl mx-auto">
-        <h3 className="text-3xl font-bold mb-3 text-center text-white">¿Dónde operamos?</h3>
-        <p className="text-center text-slate-400 mb-8">
-          Atendemos las comunas más importantes de Santiago directamente en tu domicilio.
-        </p>
+        <div className="text-center mb-8">
+          <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold">
+            Red de Atención en Santiago
+          </span>
+          <h3 className="text-3xl font-black text-white mt-1">¿Dónde operamos?</h3>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto mt-2">
+            Llegamos a las comunas principales de la Región Metropolitana con talleres móviles equipados.
+          </p>
+        </div>
 
         {/* Verificador Inteligente de Cobertura */}
-        <div className="mb-12">
+        <div className="mb-10">
           <CoverageChecker onSelectComuna={handleSelectComuna} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {ZONES.map((zone) => (
-            <div key={zone.name} className="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-              <h4 className="text-cyan-400 font-bold text-lg mb-3">Zona {zone.name}</h4>
+            <div key={zone.name} className="bg-slate-900/80 p-6 rounded-3xl border border-slate-800">
+              <h4 className="text-cyan-400 font-bold text-base mb-3 flex items-center gap-2">
+                <span>📍</span> Zona {zone.name}
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {zone.comunas.map((comuna) => (
                   <span
                     key={comuna}
-                    className="bg-slate-950 border border-slate-800 rounded-full px-3 py-1 text-sm text-slate-300 shadow-sm"
+                    className="bg-slate-950 border border-slate-800/80 rounded-full px-3 py-1 text-xs text-slate-300 shadow-sm"
                   >
                     {comuna}
                   </span>
@@ -236,41 +344,51 @@ export default function LandingPage() {
             </div>
           ))}
         </div>
-        <p className="text-center text-slate-500 text-sm mt-8">
-          ¿No ves tu comuna en la lista? Escríbenos por WhatsApp igual y te confirmamos.
+        <p className="text-center text-slate-500 text-xs mt-6">
+          ¿Tu comuna no figura en la lista?{' '}
+          <a
+            href={whatsappUrl("Hola AutoBooking, me gustaría consultar cobertura para mi comuna")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cyan-400 underline font-semibold"
+          >
+            Consúltanos por WhatsApp
+          </a>{' '}
+          y coordinamos tu visita.
         </p>
       </section>
 
-      {/* 4.5 GALERÍA ANTES/DESPUÉS */}
-      <Gallery />
-
-      {/* 4.6 RESEÑAS DE CLIENTES */}
+      {/* 6. RESEÑAS DE CLIENTES */}
       <Reviews />
 
-      {/* 5. PREGUNTAS FRECUENTES (NUEVO) */}
+      {/* 7. PREGUNTAS FRECUENTES */}
       <FAQ />
 
-      {/* 6. AGENDA TU HORA */}
+      {/* 8. AGENDA TU HORA (WIZARD DE RESERVA) */}
       <section id="agendar" className="py-16 px-4 bg-slate-900/40 border-t border-slate-800/80">
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold mb-3 text-center text-white">Agenda tu hora</h3>
-          <p className="text-center text-slate-400 mb-10">
-            ¿Nos escribes fuera de horario? Deja tus datos y te confirmamos apenas abramos.
-          </p>
+          <div className="text-center mb-8">
+            <span className="text-xs uppercase tracking-wider text-cyan-400 font-bold">
+              Reserva 100% Online
+            </span>
+            <h3 className="text-3xl font-black text-white mt-1">Agenda tu hora</h3>
+            <p className="text-slate-400 text-sm mt-1">
+              Confirma tu cita en simples pasos y nosotros llevamos el taller a tu casa.
+            </p>
+          </div>
           <BookingWizard preselectedService={preselectedService} preselectedComuna={preselectedComuna} />
         </div>
       </section>
 
-      {/* 7. FOOTER */}
+      {/* 9. FOOTER PROFESIONAL */}
       <footer className="bg-black text-slate-400 border-t border-slate-900 mt-8">
-        {/* Franja de Redes Sociales (Estilo Delta Luxury / Referencia exacta del usuario) */}
+        {/* Franja de Redes Sociales */}
         <div className="border-b border-slate-800/80 bg-slate-950/80 py-6 px-4">
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <span className="text-white text-base sm:text-lg font-bold tracking-tight">
               Síguenos en Redes sociales
             </span>
             <div className="flex items-center gap-3">
-              {/* Facebook Icon */}
               <a
                 href="https://facebook.com"
                 target="_blank"
@@ -283,7 +401,6 @@ export default function LandingPage() {
                 </svg>
               </a>
 
-              {/* Instagram Icon */}
               <a
                 href="https://instagram.com"
                 target="_blank"
@@ -317,27 +434,28 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Servicios Populares</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Servicios & Secciones</h4>
               <ul className="text-xs space-y-2 text-slate-400">
-                <li><a href="#catalogo-baterias" className="hover:text-amber-400 transition-colors">Baterías Más Frecuentes a Domicilio</a></li>
-                <li><a href="#servicios" className="hover:text-cyan-400 transition-colors">Cambio de Frenos Cerámicos</a></li>
-                <li><a href="#servicios" className="hover:text-cyan-400 transition-colors">Mantención por Kilometraje</a></li>
-                <li><a href="#diagnostico-sintomas" className="hover:text-cyan-400 transition-colors">Diagnóstico con Escáner OBD2</a></li>
+                <li><Link href="/baterias" className="hover:text-amber-400 transition-colors">Baterías Más Frecuentes</Link></li>
+                <li><Link href="/tienda" className="hover:text-cyan-400 transition-colors">Tienda de Repuestos & Upgrades</Link></li>
+                <li><Link href="/diagnostico" className="hover:text-cyan-400 transition-colors">Diagnóstico por Síntomas OBD2</Link></li>
+                <li><Link href="/telemetria" className="hover:text-cyan-400 transition-colors">Telemetría & Odómetro GPS</Link></li>
+                <li><a href="#servicios" className="hover:text-cyan-400 transition-colors">Servicios Mecánicos Generales</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Tienda & Repuestos</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Plataforma & SaaS</h4>
               <ul className="text-xs space-y-2 text-slate-400">
-                <li><a href="#tienda" className="hover:text-cyan-400 transition-colors">Catálogo de Repuestos</a></li>
-                <li><a href="#catalogo-baterias" className="hover:text-amber-400 transition-colors">Baterías DIN / JIS / AGM</a></li>
-                <li><a href="#tienda" className="hover:text-cyan-400 transition-colors">Aceite Sintético Motul 5W30</a></li>
-                <li><a href="#tienda" className="hover:text-cyan-400 transition-colors">CarPlay & Android Auto</a></li>
+                <li><Link href="/taller" className="hover:text-cyan-400 transition-colors">Panel de Gestión para Talleres</Link></li>
+                <li><Link href="/planes" className="hover:text-amber-400 transition-colors">Planes & Suscripciones SaaS</Link></li>
+                <li><a href="#cobertura" className="hover:text-cyan-400 transition-colors">Cobertura en Santiago</a></li>
+                <li><a href="#faq" className="hover:text-cyan-400 transition-colors">Preguntas Frecuentes</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Atención & Cobertura</h4>
+              <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Atención Directa</h4>
               <p className="text-xs text-slate-400 mb-2">
                 📍 Santiago, Región Metropolitana (Zona Oriente, Central y Poniente).
               </p>
@@ -365,11 +483,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      <BottomNav />
-      <FloatingBookButton />
-      <CartDrawer />
     </div>
-  </CartProvider>
-);
+  );
 }
