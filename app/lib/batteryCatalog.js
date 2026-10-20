@@ -1,14 +1,14 @@
-// CATÁLOGO MAESTRO DE BATERÍAS AUTOMOTRICES (MERCADO CHILENO)
-// Basado en el ranking oficial de rotación, normas JIS / DIN y compatibilidad vehicular.
+// CATÁLOGO MAESTRO DE BATERÍAS AUTOMOTRICES DE ALTA ROTACIÓN (CHILE)
+// Basado en el ranking de frecuencia técnica del parque automotriz chileno, normas JIS / DIN y compatibilidad vehicular.
 // Precios referenciales con margen técnico ajustado de $30.000 CLP incluido.
 
-export const TOP_8_BATERIAS = [
+export const BATERIAS_FRECUENTES = [
   {
     id: 'bat-din55',
     codigo: 'DIN 55 / 55530 / 55457',
     formatoCaja: 'Caja DIN L2 (242x175x175 mm)',
     ranking: 1,
-    rankingLabel: '🏆 #1 Más Vendida en Chile (19.2% Parque)',
+    rankingLabel: '🏆 #1 Mayor Frecuencia Parque Nacional (19.2%)',
     nombre: 'Batería DIN 55 (55Ah - 460 CCA)',
     segmento: 'Sedanes y Hatchbacks Populares',
     norma: 'DIN (Europea)',
@@ -19,10 +19,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Embutido (Norma DIN)',
     anclaje: 'Pestaña Inferior B13',
     dimensiones: '242 x 175 x 175 mm',
-    // Base mercado ~$59.900 + $30.000 extra = $89.900 CLP
     precio: 89900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Chevrolet Sail (todos los años)',
       'Chevrolet Corsa',
@@ -34,7 +34,7 @@ export const TOP_8_BATERIAS = [
       'Fiat Punto / Cronos',
       'Citroën C3 (Bencina)'
     ],
-    descripcion: 'El formato de batería más vendido en Chile. Diseñada para vehículos europeos y Mercosur con caja baja L2 y pestaña de fijación inferior B13.',
+    descripcion: 'El formato de batería de mayor recambio en Chile. Diseñada para vehículos europeos y Mercosur con caja baja L2 y pestaña de fijación inferior B13.',
     icono: '🔋',
     colorCard: 'from-amber-950/80 via-yellow-950/60 to-slate-900',
     borderCard: 'border-amber-600/40 hover:border-amber-400',
@@ -45,7 +45,7 @@ export const TOP_8_BATERIAS = [
     codigo: '55D23L / MF55D23L',
     formatoCaja: 'Caja JIS D23 (230x173x225 mm)',
     ranking: 2,
-    rankingLabel: '⭐ #2 Más Vendida en Chile (12.2% Parque)',
+    rankingLabel: '⭐ #2 Mayor Frecuencia Asiática (12.2%)',
     nombre: 'Batería 55D23L (60Ah - 550 CCA)',
     segmento: 'Sedanes Medianos y SUVs Asiáticos',
     norma: 'JIS (Asiática)',
@@ -56,10 +56,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Superior Cónico (Tipo A)',
     anclaje: 'Pestaña base B01 / Puente superior',
     dimensiones: '230 x 173 x 225 mm',
-    // Base ~$69.900 + $30.000 = $98.900 CLP
     precio: 98900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Hyundai Accent (todas las generaciones)',
       'Hyundai Elantra / Tucson / Creta',
@@ -70,7 +70,7 @@ export const TOP_8_BATERIAS = [
       'Nissan Sentra / Tiida',
       'Mitsubishi ASX / Lancer'
     ],
-    descripcion: 'La batería asiática por excelencia en el parque automotriz chileno. Alto poder de partida en frío para motores 1.4L a 2.0L.',
+    descripcion: 'La batería asiática estándar por excelencia en el parque automotriz chileno. Alto poder de partida en frío para motores 1.4L a 2.0L.',
     icono: '🔋',
     colorCard: 'from-blue-950/80 via-cyan-950/60 to-slate-900',
     borderCard: 'border-blue-600/40 hover:border-blue-400',
@@ -81,7 +81,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'NS60L / 46B24L / 55B24L',
     formatoCaja: 'Caja JIS B24 Angosta (235x127x220 mm)',
     ranking: 3,
-    rankingLabel: '🇯🇵 Top #3 Citycars y Sedanes Japoneses',
+    rankingLabel: '🇯🇵 #3 Citycars y Sedanes Japoneses',
     nombre: 'Batería NS60L / 55B24L (45Ah - 430 CCA)',
     segmento: 'Citycars y Sedanes Livianos',
     norma: 'JIS (Asiática)',
@@ -92,10 +92,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Delgado (Lápiz) o Estándar (NS60LS)',
     anclaje: 'B00 (Base plana con puente superior)',
     dimensiones: '235 x 127 x 220 mm',
-    // Base ~$54.900 + $30.000 = $84.900 CLP
     precio: 84900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Suzuki Swift (todos los años)',
       'Suzuki Baleno / Dzire / Ciaz',
@@ -116,7 +116,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'NS40ZL / 38B19L',
     formatoCaja: 'Caja JIS B19 Compacta (187x127x220 mm)',
     ranking: 4,
-    rankingLabel: '⚡ Top #4 Citycars Compactos 1.0L - 1.2L',
+    rankingLabel: '⚡ #4 Citycars Compactos 1.0L - 1.2L',
     nombre: 'Batería NS40ZL (35Ah - 330 CCA)',
     segmento: 'Citycars Ultra-Compactos',
     norma: 'JIS (Asiática)',
@@ -127,10 +127,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Delgado (Lápiz) o Estándar (NS40ZLS)',
     anclaje: 'B00 (Sin pestaña inferior)',
     dimensiones: '187 x 127 x 220 mm',
-    // Base ~$48.900 + $30.000 = $78.900 CLP
     precio: 78900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Kia Morning (motores 1.0 y 1.2)',
       'Suzuki Alto 800 / K10',
@@ -150,7 +150,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'DIN 60 / 56030',
     formatoCaja: 'Caja DIN L2 Alta (242x175x190 mm)',
     ranking: 5,
-    rankingLabel: '🇩🇪 Top #5 Sedanes y SUVs Europeos',
+    rankingLabel: '🇩🇪 #5 Sedanes y SUVs Europeos',
     nombre: 'Batería DIN 60 (60Ah - 540 CCA)',
     segmento: 'Sedanes y Crossovers Europeos',
     norma: 'DIN (Europea)',
@@ -161,10 +161,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Embutido (Norma DIN)',
     anclaje: 'Pestaña Inferior B13',
     dimensiones: '242 x 175 x 190 mm',
-    // Base ~$68.900 + $30.000 = $98.900 CLP
     precio: 98900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Volkswagen Golf / Bora / Vento',
       'Volkswagen Tiguan 1.4 TSI',
@@ -185,7 +185,7 @@ export const TOP_8_BATERIAS = [
     codigo: '105D31L / 105D31R / NX120-7',
     formatoCaja: 'Caja JIS D31 Heavy (303x172x220 mm)',
     ranking: 6,
-    rankingLabel: '🛞 Top #6 Pick-Ups Diésel y Camionetas',
+    rankingLabel: '🛞 #6 Pick-Ups Diésel y Camionetas',
     nombre: 'Batería 105D31L / R (90Ah - 750 CCA)',
     segmento: 'Camionetas Pick-Up Diésel y Furgones',
     norma: 'JIS (Asiática)',
@@ -196,10 +196,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Cónico Grueso Reforzado',
     anclaje: 'Pestaña Base B01',
     dimensiones: '303 x 172 x 220 mm',
-    // Base ~$109.900 + $30.000 = $139.900 CLP
     precio: 139900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Toyota Hilux 2.4 / 2.8 / 3.0 Diésel (PI 105D31R)',
       'Mitsubishi L200 / Montero Sport (PD 105D31L)',
@@ -221,7 +221,7 @@ export const TOP_8_BATERIAS = [
     codigo: '80D26L / NX110-5L',
     formatoCaja: 'Caja JIS D26 (258x172x220 mm)',
     ranking: 7,
-    rankingLabel: '🚙 Top #7 SUVs Medianos y Autos Chinos',
+    rankingLabel: '🚙 #7 SUVs Medianos y Crossovers',
     nombre: 'Batería 80D26L (70Ah - 600 CCA)',
     segmento: 'SUVs Medianos y Motores 2.0L - 2.5L',
     norma: 'JIS (Asiática)',
@@ -232,10 +232,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Superior',
     anclaje: 'Pestaña base B01',
     dimensiones: '258 x 172 x 220 mm',
-    // Base ~$89.900 + $30.000 = $118.900 CLP
     precio: 118900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Nissan Qashqai / X-Trail / Juke',
       'Chery Tiggo 2 / Tiggo 3 / Tiggo 7 / Tiggo 8',
@@ -256,7 +256,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'DIN 72 / 57113 / 57220',
     formatoCaja: 'Caja DIN L3 Larga (278x175x175 mm)',
     ranking: 8,
-    rankingLabel: '🚚 Top #8 Utilitarios Diésel HDi y SUVs Euro',
+    rankingLabel: '🚚 #8 Utilitarios Diésel HDi y Flotas',
     nombre: 'Batería DIN 72 (72Ah - 660 CCA)',
     segmento: 'Furgones Comerciales y Camionetas Euro',
     norma: 'DIN (Europea)',
@@ -267,10 +267,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Embutido (Norma DIN)',
     anclaje: 'Pestaña Inferior B13',
     dimensiones: '278 x 175 x 175 mm',
-    // Base ~$98.900 + $30.000 = $128.900 CLP
     precio: 128900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
+    imagen: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Peugeot Partner Diésel (motores HDi / BlueHDi)',
       'Citroën Berlingo Diésel (HDi)',
@@ -291,7 +291,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'Q85 / N55 / 95D23L EFB',
     formatoCaja: 'Caja JIS D23 EFB Start-Stop',
     ranking: 9,
-    rankingLabel: '🔄 Especial Start-Stop Asiático (i-Stop)',
+    rankingLabel: '🔄 Línea Start-Stop Asiático (i-Stop / EFB)',
     nombre: 'Batería Q85 EFB Start-Stop (65Ah - 650 CCA)',
     segmento: 'Vehículos con Sistema Start-Stop Básico',
     norma: 'JIS Start-Stop',
@@ -302,10 +302,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Superior',
     anclaje: 'Pestaña Base B01',
     dimensiones: '230 x 173 x 225 mm',
-    // Base ~$145.000 + $24.900 = $169.900 CLP
     precio: 169900,
     precioInstalacion: 15000,
     garantia: '24 meses de garantía',
+    imagen: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Mazda 3 (con sistema i-Stop)',
       'Mazda 6 / CX-3 / CX-5 / CX-30 (con i-Stop)',
@@ -323,7 +323,7 @@ export const TOP_8_BATERIAS = [
     codigo: 'LN3 / H6 / DIN 70 AGM',
     formatoCaja: 'Caja DIN L3 AGM Sellada (278x175x190 mm)',
     ranking: 10,
-    rankingLabel: '💎 Gama Alta & Start-Stop Regenerativo',
+    rankingLabel: '💎 Gama Alta & Start-Stop Regenerativo (AGM)',
     nombre: 'Batería LN3 AGM Start-Stop (70Ah - 760 CCA)',
     segmento: 'Vehículos Premium y Start-Stop Avanzado',
     norma: 'DIN AGM (Alemana)',
@@ -334,10 +334,10 @@ export const TOP_8_BATERIAS = [
     tipoBorne: 'Estándar Embutido',
     anclaje: 'Pestaña Inferior B13',
     dimensiones: '278 x 175 x 190 mm',
-    // Base ~$189.900 + $30.000 = $219.900 CLP
     precio: 219900,
     precioInstalacion: 15000,
     garantia: '24 meses de garantía',
+    imagen: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'BMW Serie 1 / Serie 2 / Serie 3 / X1',
       'Mercedes-Benz Clase A / CLA / GLA / Clase C',
@@ -354,12 +354,15 @@ export const TOP_8_BATERIAS = [
   }
 ];
 
+// Alias para retrocompatibilidad con importaciones previas
+export const TOP_8_BATERIAS = BATERIAS_FRECUENTES;
+
 // Helper para búsqueda rápida de compatibilidad por texto (auto o código)
 export function buscarBateriasPorAutoOCodigo(query) {
-  if (!query || !query.trim()) return TOP_8_BATERIAS;
+  if (!query || !query.trim()) return BATERIAS_FRECUENTES;
   const q = query.toLowerCase().trim();
 
-  return TOP_8_BATERIAS.filter((bat) => {
+  return BATERIAS_FRECUENTES.filter((bat) => {
     const matchCodigo = bat.codigo.toLowerCase().includes(q);
     const matchNombre = bat.nombre.toLowerCase().includes(q);
     const matchSegmento = bat.segmento.toLowerCase().includes(q);

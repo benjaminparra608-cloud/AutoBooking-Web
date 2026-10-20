@@ -29,6 +29,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '⚡ Top Ventas Invierno',
     icono: '🔋',
     packshot: '⚡ 65Ah AGM',
+    imagen: 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?auto=format&fit=crop&w=600&q=80',
     colorHex: '#d97706'
   },
   {
@@ -55,6 +56,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '🛡️ Máxima Protección Motor',
     icono: '🛢️',
     packshot: '100% SINTÉTICO 5W30',
+    imagen: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80',
     colorHex: '#059669'
   },
   {
@@ -81,6 +83,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '🛑 Frenado de Competición',
     icono: '🛑',
     packshot: 'BREMBO CERAMIC',
+    imagen: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80',
     colorHex: '#2563eb'
   },
   {
@@ -107,6 +110,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '📱 Inalámbrico + Cámara HD',
     icono: '🔊',
     packshot: 'CARPLAY 9" IPS',
+    imagen: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80',
     colorHex: '#9333ea'
   },
   {
@@ -133,6 +137,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '💻 Diagnóstico en Vivo',
     icono: '💻',
     packshot: 'OBD2 PRO CHIP v2.2',
+    imagen: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=600&q=80',
     colorHex: '#06b6d4'
   },
   {
@@ -159,6 +164,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '💡 300% Más Visibilidad',
     icono: '💡',
     packshot: 'LED CANBUS 24.000LM',
+    imagen: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=600&q=80',
     colorHex: '#e11d48'
   },
   {
@@ -185,6 +191,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '🛞 Imprescindible en tu Auto',
     icono: '🛞',
     packshot: 'COMPRESOR 150 PSI',
+    imagen: 'https://images.unsplash.com/photo-1580274455191-1c62238fa333?auto=format&fit=crop&w=600&q=80',
     colorHex: '#64748b'
   },
   {
@@ -211,6 +218,7 @@ const PRODUCTOS_AUTOMOTRICES = [
     badge: '🇩🇪 Ingeniería Alemana',
     icono: '🧪',
     packshot: 'LIQUI MOLY CERA TEC',
+    imagen: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=600&q=80',
     colorHex: '#ca8a04'
   }
 ];
@@ -356,7 +364,7 @@ export default function AutomotiveStore() {
                   ¿Buscas la batería exacta para tu modelo de auto?
                 </strong>
                 <span className="text-xs text-amber-200/90 leading-relaxed block mt-0.5">
-                  Revisa nuestro Catálogo Maestro con el Top 8 de baterías más utilizadas en Chile (DIN 55, 55D23L, NS60L, NS40ZL, DIN 60, 105D31L, 80D26L, DIN 72).
+                  Revisa nuestro Catálogo Maestro con las baterías más frecuentes y de mayor rotación en Chile (DIN 55, 55D23L, NS60L, NS40ZL, DIN 60, 105D31L, 80D26L, DIN 72 y Start-Stop).
                 </span>
               </div>
             </div>
@@ -364,7 +372,7 @@ export default function AutomotiveStore() {
               href="#catalogo-baterias"
               className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-5 rounded-full transition-all shrink-0 text-center shadow-lg shadow-amber-500/20"
             >
-              Ver Catálogo Top 8 Chile ↓
+              Ver Baterías Más Frecuentes ↓
             </a>
           </div>
         )}
@@ -392,20 +400,28 @@ export default function AutomotiveStore() {
                   <span className="text-xs text-slate-400 font-semibold">{producto.marca}</span>
                 </div>
 
-                {/* PACKSHOT CENTRAL / VISUAL DEL PRODUCTO */}
+                {/* PACKSHOT CENTRAL / VISUAL DEL PRODUCTO CON FOTOGRAFÍA PROFESIONAL */}
                 <div
                   onClick={() => setProductoSeleccionado(producto)}
-                  className="w-full h-48 rounded-2xl bg-slate-950/60 border border-white/5 flex flex-col items-center justify-center p-4 my-2 cursor-pointer relative overflow-hidden group-hover:border-white/20 transition-all shadow-inner"
+                  className="w-full h-48 rounded-2xl bg-slate-950/80 border border-white/10 relative overflow-hidden cursor-pointer group-hover:border-cyan-500/40 transition-all duration-300 my-2 shadow-inner group/img"
                 >
-                  <div className="text-6xl mb-3 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)] transform group-hover:scale-110 transition-transform duration-300">
-                    {producto.icono}
+                  <img
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    loading="lazy"
+                    className="w-full h-full object-cover object-center group-hover/img:scale-108 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent pointer-events-none" />
+                  
+                  {/* Badge flotante inferior con packshot */}
+                  <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
+                    <span className="text-[10px] font-mono font-black tracking-wider text-slate-100 uppercase px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md border border-white/15 shadow-md">
+                      {producto.packshot}
+                    </span>
+                    <span className="text-[10px] text-cyan-300 bg-slate-950/85 backdrop-blur-md px-2 py-0.5 rounded-md border border-cyan-500/30 font-semibold flex items-center gap-1 shadow-sm">
+                      Ficha 🔍
+                    </span>
                   </div>
-                  <span className="text-xs font-mono font-black tracking-widest text-slate-200 uppercase px-3 py-1 rounded-md bg-black/60 border border-white/10 shadow-sm">
-                    {producto.packshot}
-                  </span>
-                  <span className="absolute bottom-2 right-3 text-[10px] text-slate-400 group-hover:text-cyan-400 transition-colors flex items-center gap-1 font-semibold">
-                    Ver ficha 🔍
-                  </span>
                 </div>
 
                 {/* DETALLES DEL PRODUCTO */}
@@ -511,12 +527,32 @@ export default function AutomotiveStore() {
               ✕
             </button>
 
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-3">
               <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${productoSeleccionado.accentTag}`}>
                 {productoSeleccionado.badge}
               </span>
               <span className="text-xs text-slate-400 font-semibold">{productoSeleccionado.marca}</span>
             </div>
+
+            {/* Fotografía del producto en alta resolución */}
+            {productoSeleccionado.imagen && (
+              <div className="relative w-full h-52 sm:h-64 rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-xl group">
+                <img
+                  src={productoSeleccionado.imagen}
+                  alt={productoSeleccionado.nombre}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-black/20 pointer-events-none" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                  <span className="text-xs font-mono font-black text-white bg-black/80 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20">
+                    {productoSeleccionado.packshot}
+                  </span>
+                  <span className="text-xs text-amber-300 font-bold bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-amber-500/30">
+                    Repuesto 100% Certificado
+                  </span>
+                </div>
+              </div>
+            )}
 
             <h3 className="text-2xl font-black text-white mb-2 leading-tight">
               {productoSeleccionado.nombre}

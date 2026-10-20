@@ -95,7 +95,7 @@ export default function LandingPage() {
       {/* 1.5 TIENDA ONLINE & CARRUSEL DE PRODUCTOS AUTOMOTRICES */}
       <AutomotiveStore />
 
-      {/* 1.6 CATÁLOGO MAESTRO DE BATERÍAS TOP 8 CHILE CON CÓDIGOS DIFERENCIADORES */}
+      {/* 1.6 CATÁLOGO MAESTRO DE BATERÍAS MÁS FRECUENTES DEL PARQUE AUTOMOTRIZ */}
       <BatteryFinder />
 
       {/* 1.7 MARCAS OFICIALES & OEM PARTNERS */}
@@ -319,7 +319,7 @@ export default function LandingPage() {
             <div>
               <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Servicios Populares</h4>
               <ul className="text-xs space-y-2 text-slate-400">
-                <li><a href="#catalogo-baterias" className="hover:text-amber-400 transition-colors">Baterías Top 8 a Domicilio</a></li>
+                <li><a href="#catalogo-baterias" className="hover:text-amber-400 transition-colors">Baterías Más Frecuentes a Domicilio</a></li>
                 <li><a href="#servicios" className="hover:text-cyan-400 transition-colors">Cambio de Frenos Cerámicos</a></li>
                 <li><a href="#servicios" className="hover:text-cyan-400 transition-colors">Mantención por Kilometraje</a></li>
                 <li><a href="#diagnostico-sintomas" className="hover:text-cyan-400 transition-colors">Diagnóstico con Escáner OBD2</a></li>

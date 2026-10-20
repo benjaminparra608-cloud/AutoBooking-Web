@@ -2340,7 +2340,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
                 onClick={() => setFilterCategoriaInv('Baterías')}
                 className="bg-slate-900 border border-slate-800 hover:border-amber-500/50 p-4 rounded-2xl cursor-pointer transition-all"
               >
-                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">Baterías Top 8 Chile</div>
+                <div className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1">Baterías Frecuentes</div>
                 <div className="text-2xl font-extrabold text-amber-300">{kpisInventario.bateriasTotal}</div>
                 <div className="text-[11px] text-amber-400/70 mt-1">DIN, JIS y Start-Stop</div>
               </div>
@@ -2369,7 +2369,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               <div className="flex gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
                 {[
                   { id: 'todas', label: 'Todo' },
-                  { id: 'Baterías', label: 'Baterías Top 8' },
+                  { id: 'Baterías', label: 'Baterías Frecuentes' },
                   { id: 'Baterías Start-Stop', label: 'Start-Stop' },
                   { id: 'Lubricantes', label: 'Aceites' },
                   { id: 'Frenos', label: 'Frenos' },

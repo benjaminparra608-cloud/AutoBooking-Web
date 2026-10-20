@@ -228,7 +228,7 @@ export default function Navbar() {
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-xl bg-slate-950/60 text-xs font-medium text-slate-300 hover:text-amber-400"
                 >
-                  🔋 Baterías Top 8 con Instalación
+                  🔋 Baterías Más Frecuentes con Instalación
                 </a>
                 <a
                   href="#monitor-desgaste"
@@ -436,10 +436,10 @@ export default function Navbar() {
                         </div>
                         <div>
                           <strong className="text-xs font-bold text-white group-hover:text-amber-400 block transition-colors leading-tight">
-                            Baterías Top 8 Chile
+                            Baterías Más Frecuentes (Alta Rotación)
                           </strong>
                           <span className="text-[11px] text-slate-400 font-light leading-snug">
-                            Modelos DIN, JIS y AGM con instalación a domicilio.
+                            Formatos DIN, JIS y AGM con instalación a domicilio.
                           </span>
                         </div>
                       </a>

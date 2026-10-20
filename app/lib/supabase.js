@@ -732,7 +732,7 @@ export async function convertStoreOrderToOT(orderId, mecanicoAsignado = "Carlos 
 }
 
 // ==========================================
-// 4. CONTROL DE INVENTARIO DE BATERÍAS TOP 8 Y REPUESTOS
+// 4. CONTROL DE INVENTARIO DE BATERÍAS FRECUENTES Y REPUESTOS
 // ==========================================
 export const LOCAL_STORAGE_INVENTORY_KEY = "autobooking_inventario_v1";
 
