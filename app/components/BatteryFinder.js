@@ -211,47 +211,27 @@ export default function BatteryFinder() {
                 className={`bg-gradient-to-b ${bat.colorCard} border ${bat.borderCard} rounded-3xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative transition-all duration-300 hover:-translate-y-1`}
               >
                 <div>
-                  {/* FOTOGRAFÍA PROFESIONAL DEL PRODUCTO & CÓDIGO */}
-                  <div
-                    onClick={() => setBateriaModal(bat)}
-                    className="w-full h-44 rounded-2xl bg-slate-950/80 border border-white/10 relative overflow-hidden cursor-pointer group-hover:border-amber-400/50 transition-all duration-300 mb-3 shadow-inner group/img"
-                  >
-                    <img
-                      src={bat.imagen}
-                      alt={bat.nombre}
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center group-hover/img:scale-108 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-black/40 pointer-events-none" />
-
-                    {/* Badge superior sobre la foto */}
-                    <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none gap-2">
-                      <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full backdrop-blur-md border ${bat.tagColor}`}>
-                        {bat.rankingLabel}
-                      </span>
-                      <span className="text-[10px] font-mono font-bold text-white bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 shrink-0">
-                        {bat.norma}
-                      </span>
-                    </div>
-
-                    {/* Código sobre la imagen en la parte inferior */}
-                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between pointer-events-none">
-                      <div className="bg-black/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/15">
-                        <span className="text-[8px] text-slate-400 font-mono block uppercase">Código:</span>
-                        <div className="text-xs sm:text-sm font-mono font-black text-amber-300 tracking-wider">
-                          {bat.codigo}
-                        </div>
-                      </div>
-                      <span className="text-[10px] text-cyan-300 bg-slate-950/85 backdrop-blur-md px-2 py-1 rounded-md border border-cyan-500/30 font-semibold flex items-center gap-1 shadow-sm">
-                        Ficha 🔍
-                      </span>
-                    </div>
+                  {/* Etiqueta de Ranking y Segmento */}
+                  <div className="flex justify-between items-start mb-3 gap-2">
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border ${bat.tagColor}`}>
+                      {bat.rankingLabel}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-mono font-semibold shrink-0">
+                      {bat.norma}
+                    </span>
                   </div>
 
-                  {/* Formato de caja estandarizado */}
-                  <div className="bg-slate-950/70 border border-white/5 rounded-xl px-3 py-1.5 mb-2.5 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span className="truncate pr-2">{bat.formatoCaja}</span>
-                    <span className="text-amber-400 font-bold shrink-0">{bat.anclaje}</span>
+                  {/* CÓDIGO COMERCIAL DESTACADO (Diferenciador Clave) */}
+                  <div className="bg-slate-950/90 border border-white/10 rounded-2xl p-3 my-2 text-center shadow-inner">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                      Código Estandarizado:
+                    </span>
+                    <div className="text-lg sm:text-xl font-mono font-black text-amber-300 tracking-wider">
+                      {bat.codigo}
+                    </div>
+                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                      {bat.formatoCaja}
+                    </span>
                   </div>
 
                   <h3 className="text-lg font-bold text-white mt-3 leading-snug">
@@ -402,29 +382,9 @@ export default function BatteryFinder() {
               ✕
             </button>
 
-            <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${bateriaModal.tagColor} inline-block mb-3`}>
+            <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${bateriaModal.tagColor} inline-block mb-2`}>
               {bateriaModal.rankingLabel}
             </span>
-
-            {/* Fotografía de batería */}
-            {bateriaModal.imagen && (
-              <div className="relative w-full h-48 sm:h-56 rounded-2xl overflow-hidden mb-4 border border-white/10 shadow-xl group">
-                <img
-                  src={bateriaModal.imagen}
-                  alt={bateriaModal.nombre}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-black/30 pointer-events-none" />
-                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-                  <span className="text-xs font-mono font-black text-amber-300 bg-black/85 backdrop-blur-md px-3 py-1 rounded-lg border border-amber-500/30">
-                    Código {bateriaModal.codigo}
-                  </span>
-                  <span className="text-xs text-slate-200 bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/15">
-                    {bateriaModal.norma}
-                  </span>
-                </div>
-              </div>
-            )}
 
             <h3 className="text-2xl font-black text-white mb-1">
               {bateriaModal.nombre}

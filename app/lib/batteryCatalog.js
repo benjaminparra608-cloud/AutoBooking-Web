@@ -22,7 +22,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 89900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1625047509248-ec889cbff17f?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Chevrolet Sail (todos los años)',
       'Chevrolet Corsa',
@@ -59,7 +58,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 98900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Hyundai Accent (todas las generaciones)',
       'Hyundai Elantra / Tucson / Creta',
@@ -95,7 +93,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 84900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1517524206127-48bbd363f3d7?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Suzuki Swift (todos los años)',
       'Suzuki Baleno / Dzire / Ciaz',
@@ -130,7 +127,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 78900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Kia Morning (motores 1.0 y 1.2)',
       'Suzuki Alto 800 / K10',
@@ -164,7 +160,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 98900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Volkswagen Golf / Bora / Vento',
       'Volkswagen Tiguan 1.4 TSI',
@@ -199,7 +194,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 139900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Toyota Hilux 2.4 / 2.8 / 3.0 Diésel (PI 105D31R)',
       'Mitsubishi L200 / Montero Sport (PD 105D31L)',
@@ -235,7 +229,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 118900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Nissan Qashqai / X-Trail / Juke',
       'Chery Tiggo 2 / Tiggo 3 / Tiggo 7 / Tiggo 8',
@@ -270,7 +263,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 128900,
     precioInstalacion: 15000,
     garantia: '18 meses de garantía directa',
-    imagen: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Peugeot Partner Diésel (motores HDi / BlueHDi)',
       'Citroën Berlingo Diésel (HDi)',
@@ -305,7 +297,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 169900,
     precioInstalacion: 15000,
     garantia: '24 meses de garantía',
-    imagen: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'Mazda 3 (con sistema i-Stop)',
       'Mazda 6 / CX-3 / CX-5 / CX-30 (con i-Stop)',
@@ -337,7 +328,6 @@ export const BATERIAS_FRECUENTES = [
     precio: 219900,
     precioInstalacion: 15000,
     garantia: '24 meses de garantía',
-    imagen: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80',
     modelosCompatibles: [
       'BMW Serie 1 / Serie 2 / Serie 3 / X1',
       'Mercedes-Benz Clase A / CLA / GLA / Clase C',
