@@ -1,74 +1,97 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SERVICES } from '../lib/config';
 
 const SINTOMAS = [
   {
     id: 'frenos-chillido',
-    icono: '🛑',
     titulo: 'Chillido agudo o vibración al frenar',
-    descripcion: 'Al pisar el pedal de freno escuchas un silbido metálico o sientes vibración en el volante.',
-    causaProbable: 'Pastillas de freno desgastadas al límite o discos cristalizados/alabeados.',
+    descripcion: 'Al pisar el pedal de freno escuchas un silbido metálico o notas vibración en el volante.',
+    causaProbable: 'Pastillas de freno desgastadas al límite o discos cristalizados / alabeados.',
     servicioRecomendado: 'Servicio de frenos',
     precioDesde: 45000,
-    riesgo: 'Alto: El desgaste excesivo puede rayar los discos de freno y duplicar la distancia de frenado.',
-    categoria: 'Seguridad'
+    riesgo: 'Alto: El desgaste excesivo puede rayar los discos y duplicar la distancia de frenado.',
+    categoria: 'Frenos',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+      </svg>
+    )
   },
   {
     id: 'bateria-no-arranca',
-    icono: '⚡',
     titulo: 'No parte en frío o hace un "clic" seco',
-    descripcion: 'Al girar la llave o presionar el botón de encendido las luces se atenúan y el motor no gira.',
-    causaProbable: 'Batería agotada por fin de vida útil (más de 2–3 años) o falla en el alternador.',
+    descripcion: 'Al girar la llave o pulsar Start las luces se atenúan y el motor de arranque no gira.',
+    causaProbable: 'Batería agotada por fin de vida útil (más de 2–3 años) o alternador defectuoso.',
     servicioRecomendado: 'Instalación y Venta de Baterías',
     precioDesde: 69000,
-    riesgo: 'Medio: Riesgo inminente de quedar en panne sin poder mover el vehículo.',
-    categoria: 'Eléctrico'
+    riesgo: 'Medio: Riesgo inminente de quedar en panne sin poder encender el vehículo.',
+    categoria: 'Eléctrico',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+      </svg>
+    )
   },
   {
     id: 'check-engine',
-    icono: '💻',
-    titulo: 'Luz Check Engine encendida en el tablero',
-    descripcion: 'Se encendió el testigo amarillo del motor de forma fija o parpadeante.',
-    causaProbable: 'Falla detectada por la computadora en sensores (oxígeno, MAF), bujías, bobinas o inyección.',
+    titulo: 'Luz Check Engine encendida en el panel',
+    descripcion: 'Se encendió el testigo amarillo de motor de forma fija o parpadeante.',
+    causaProbable: 'Código de falla registrado en la ECU (sensores de oxígeno, MAF, encendido o inyección).',
     servicioRecomendado: 'Escaner Automotriz',
     precioDesde: 25000,
-    riesgo: 'Moderado: Mayor consumo de combustible y potencial daño catalítico a mediano plazo.',
-    categoria: 'Motor'
+    riesgo: 'Moderado: Mayor consumo de combustible y potencial daño catalítico con el tiempo.',
+    categoria: 'Electrónica',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0H3" />
+      </svg>
+    )
   },
   {
     id: 'mantencion-km',
-    icono: '🛠️',
-    titulo: 'Cumplí kilometraje y toca mantención',
-    descripcion: 'Pasaron más de 10.000 km o 12 meses desde el último cambio de aceite y filtros.',
-    causaProbable: 'Degradación natural de los lubricantes y saturación de filtros de aire y aceite.',
+    titulo: 'Kilometraje cumplido para mantención',
+    descripcion: 'Transcurrieron más de 10.000 km o 12 meses desde el último cambio de aceite y filtros.',
+    causaProbable: 'Degradación térmica natural de lubricantes y saturación de filtros de aire y aceite.',
     servicioRecomendado: 'Mantenciones por KM',
     precioDesde: 65000,
-    riesgo: 'Crítico: El aceite vencido genera lodos internos y acelera el desgaste interno del motor.',
-    categoria: 'Mantenimiento'
+    riesgo: 'Crítico: El aceite degradado genera lodos internos y acelera el desgaste del motor.',
+    categoria: 'Mantención',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03" />
+      </svg>
+    )
   },
   {
     id: 'tirones-electrico',
-    icono: '⚡',
-    titulo: 'Auto da tirones o pierde fuerza al acelerar',
-    descripcion: 'Sientes pérdida de potencia al adelantar o el motor tironea en bajas revoluciones.',
+    titulo: 'Tirones o pérdida de potencia al acelerar',
+    descripcion: 'Sientes pérdida de respuesta al adelantar o el motor tironea a bajas revoluciones.',
     causaProbable: 'Falla en bobinas de encendido, bujías desgastadas o inyectores sucios.',
     servicioRecomendado: 'Diagnósticos Eléctricos',
     precioDesde: 35000,
-    riesgo: 'Medio: Afecta la respuesta del auto en situaciones de tráfico y sobrecalienta el catalizador.',
-    categoria: 'Eléctrico'
+    riesgo: 'Medio: Afecta la respuesta del auto en adelantamientos y satura el catalizador.',
+    categoria: 'Encendido',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    )
   },
   {
     id: 'auto-usado',
-    icono: '🔍',
-    titulo: 'Voy a comprar un auto usado y quiero revisarlo',
-    descripcion: 'Necesito que un mecánico profesional evalúe el auto antes de transferir el dinero.',
+    titulo: 'Inspección técnica pre-compra de auto usado',
+    descripcion: 'Evaluación profesional de más de 100 puntos antes de transferir dinero por un auto.',
     causaProbable: 'Verificación de choque estructural, kilometraje adulterado y fugas ocultas.',
     servicioRecomendado: 'Inspección Técnica Pre-Compra',
     precioDesde: 49000,
-    riesgo: 'Económico: Evita comprar un auto con vicios ocultos que requiera millones en reparaciones.',
-    categoria: 'Inspección'
+    riesgo: 'Económico: Evita comprar un vehículo con fallas estructurales o mecánicas ocultas.',
+    categoria: 'Inspección',
+    icon: (
+      <svg className="w-5 h-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+    )
   }
 ];
 
@@ -84,103 +107,111 @@ export default function SymptomDiagnostic({ onSelectService }) {
   }
 
   return (
-    <section id="diagnostico-sintomas" className="py-16 px-4 max-w-5xl mx-auto">
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-800/40 px-3 py-1 rounded-full mb-3 inline-block">
-          🩺 Asistente Inteligente
-        </span>
-        <h3 className="text-3xl font-extrabold text-white tracking-tight">
-          ¿Qué le pasa a tu auto? Diagnóstico por Síntomas
-        </h3>
-        <p className="text-slate-400 text-sm mt-2">
-          Si no sabes qué servicio necesitas, selecciona el síntoma que notas en tu auto y te diremos la causa probable y la solución técnica adecuada.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Lista interactiva de síntomas */}
-        <div className="lg:col-span-6 space-y-2.5">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-            Selecciona el síntoma más parecido:
-          </label>
-          {SINTOMAS.map(s => {
-            const isSelected = selectedSintoma.id === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setSelectedSintoma(s)}
-                className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer flex items-start gap-3.5 ${
-                  isSelected
-                    ? 'bg-blue-600/15 border-blue-500 shadow-md shadow-blue-500/10 ring-1 ring-blue-500'
-                    : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-                }`}
-              >
-                <span className="text-2xl mt-0.5">{s.icono}</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white">{s.titulo}</h4>
-                    <span className="text-[10px] text-cyan-400 font-semibold uppercase bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                      {s.categoria}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">{s.descripcion}</p>
-                </div>
-              </button>
-            );
-          })}
+    <section id="diagnostico-sintomas" className="bg-[#080a0d] border-b border-white/[0.06] py-20 px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 mb-2">
+            Asistente Virtual
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            ¿Qué síntoma notas en tu vehículo?
+          </h2>
+          <p className="text-sm text-white/35 mt-2 font-light">
+            Selecciona el síntoma para conocer la causa probable y la solución técnica recomendada antes de agendar.
+          </p>
         </div>
 
-        {/* Ficha de diagnóstico y recomendación */}
-        <div className="lg:col-span-6 bg-gradient-to-b from-slate-900 to-slate-950 border border-cyan-800/50 rounded-3xl p-6 sm:p-7 shadow-xl sticky top-20">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-4xl">{selectedSintoma.icono}</span>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
-                Diagnóstico Preliminar
-              </span>
-              <h4 className="text-lg font-bold text-white">{selectedSintoma.titulo}</h4>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Lista interactiva de síntomas */}
+          <div className="lg:col-span-6 space-y-2.5">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-white/30 block mb-3">
+              Selecciona un síntoma:
+            </span>
+            {SINTOMAS.map(s => {
+              const isSelected = selectedSintoma.id === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSelectedSintoma(s)}
+                  className={`w-full p-4 rounded-xl border text-left transition-all cursor-pointer flex items-start gap-4 ${
+                    isSelected
+                      ? 'bg-white/[0.05] border-blue-500/50 shadow-lg shadow-blue-500/5 ring-1 ring-blue-500/30'
+                      : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12]'
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0 mt-0.5">
+                    {s.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <h4 className="text-sm font-semibold text-white/90 truncate">{s.titulo}</h4>
+                      <span className="text-[10px] text-white/40 font-mono uppercase px-2 py-0.5 rounded bg-white/[0.03] border border-white/[0.06] shrink-0">
+                        {s.categoria}
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/35 line-clamp-2 leading-relaxed font-light">{s.descripcion}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Causa probable */}
-          <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 mb-4 text-xs space-y-2">
-            <div>
-              <span className="text-slate-500 block uppercase font-bold text-[10px] mb-0.5">Causa Probable:</span>
-              <p className="text-slate-200 leading-relaxed">{selectedSintoma.causaProbable}</p>
+          {/* Ficha de diagnóstico y recomendación */}
+          <div className="lg:col-span-6 bg-[#0d1117] border border-white/[0.08] rounded-2xl p-7 shadow-2xl sticky top-24">
+            <div className="flex items-center gap-3.5 mb-6">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-blue-400">
+                {selectedSintoma.icon}
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-mono tracking-widest text-blue-400/80 block">
+                  Diagnóstico Preliminar
+                </span>
+                <h3 className="text-base font-bold text-white leading-snug">{selectedSintoma.titulo}</h3>
+              </div>
             </div>
-            <div className="pt-2 border-t border-slate-800/80">
-              <span className="text-amber-400 block uppercase font-bold text-[10px] mb-0.5">Riesgo si no se atiende:</span>
-              <p className="text-slate-400 leading-relaxed text-[11px]">{selectedSintoma.riesgo}</p>
-            </div>
-          </div>
 
-          {/* Servicio recomendado */}
-          <div className="bg-cyan-950/40 border border-cyan-800/60 rounded-2xl p-4 mb-6 flex justify-between items-center">
-            <div>
-              <span className="text-[10px] text-cyan-400 uppercase font-bold block">Servicio Recomendado:</span>
-              <span className="text-base font-extrabold text-white">{selectedSintoma.servicioRecomendado}</span>
-              <span className="text-xs text-slate-400 block mt-0.5">Diagnóstico y mano de obra profesional</span>
+            {/* Causa probable */}
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 mb-4 text-xs space-y-3 font-light">
+              <div>
+                <span className="text-white/30 block uppercase font-mono text-[10px] mb-1">Causa Probable:</span>
+                <p className="text-white/70 leading-relaxed">{selectedSintoma.causaProbable}</p>
+              </div>
+              <div className="pt-3 border-t border-white/[0.04]">
+                <span className="text-amber-400/80 block uppercase font-mono text-[10px] mb-1">Riesgo si no se atiende:</span>
+                <p className="text-white/45 leading-relaxed text-xs">{selectedSintoma.riesgo}</p>
+              </div>
             </div>
-            <div className="text-right">
-              <span className="text-[10px] text-slate-500 uppercase block">Desde</span>
-              <span className="text-xl font-extrabold text-cyan-300">
-                ${selectedSintoma.precioDesde.toLocaleString('es-CL')}
-              </span>
-            </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={() => handleAgendar(selectedSintoma.servicioRecomendado)}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
-          >
-            <span>Agendar {selectedSintoma.servicioRecomendado}</span>
-            <span>➔</span>
-          </button>
-          <p className="text-[11px] text-slate-500 text-center mt-2">
-            El servicio se auto-seleccionará en el formulario para tu comodidad.
-          </p>
+            {/* Servicio recomendado */}
+            <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 mb-6 flex justify-between items-center">
+              <div>
+                <span className="text-[10px] text-blue-400 uppercase font-mono tracking-wider block mb-0.5">
+                  Servicio Recomendado
+                </span>
+                <span className="text-sm font-bold text-white block">{selectedSintoma.servicioRecomendado}</span>
+                <span className="text-[11px] text-white/30 font-light">Mano de obra técnica e instrumental OBD2</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-white/30 uppercase font-mono block">Desde</span>
+                <span className="text-lg font-bold text-white font-mono">
+                  ${selectedSintoma.precioDesde.toLocaleString('es-CL')}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleAgendar(selectedSintoma.servicioRecomendado)}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-full shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer text-xs"
+            >
+              <span>Agendar {selectedSintoma.servicioRecomendado}</span>
+              <span>→</span>
+            </button>
+            <p className="text-[11px] text-white/25 text-center mt-3 font-light">
+              El servicio quedará preseleccionado en tu formulario de reserva.
+            </p>
+          </div>
         </div>
       </div>
     </section>

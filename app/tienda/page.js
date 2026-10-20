@@ -6,56 +6,69 @@ import AutomotiveStore from '../components/AutomotiveStore';
 import { whatsappUrl } from '../lib/config';
 
 export default function TiendaPage() {
+  const waUrl = whatsappUrl("Hola AutoBooking, tengo dudas sobre compatibilidad de un repuesto de la tienda");
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-32 md:pb-12">
+    <div className="min-h-screen bg-[#080a0d] text-white font-sans pb-32 md:pb-12">
       <Navbar />
 
       {/* HEADER DEDICADO DE LA TIENDA */}
-      <section className="pt-28 pb-10 px-4 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border-b border-slate-800/80">
+      <section className="pt-32 pb-14 px-6 lg:px-8 border-b border-white/[0.06] bg-gradient-to-b from-[#0c1424]/60 via-[#080a0d] to-[#080a0d]">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-300 text-xs font-bold uppercase tracking-wider mb-3">
-            <span>🛍️</span> Tienda Oficial AutoBooking
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 mb-3">
+            Catálogo Oficial · AutoBooking
+          </p>
+          <div className="space-y-2 mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.08]">
+              Repuestos & Upgrades
+            </h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white/40 tracking-tight leading-[1.08] italic">
+              con instalación in situ.
+            </h1>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-            Repuestos & Upgrades Automotrices{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-300 font-serif italic font-normal">
-              con Instalación a Domicilio
-            </span>
-          </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mt-3 font-light">
-            Selecciona tus repuestos certificados con entrega rápida en Santiago o solicita la visita de un mecánico especializado para instalarlo en la puerta de tu casa.
+          <p className="text-sm sm:text-base text-white/40 max-w-2xl mx-auto font-light leading-relaxed">
+            Repuestos nuevos sellados con certificación de fabricante para entrega rápida en Santiago o instalación profesional en tu domicilio.
           </p>
 
           {/* BADGES DE CONFIANZA */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mt-6 text-xs text-slate-300">
-            <span className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full">
-              <span className="text-emerald-400">✓</span> 100% Repuestos Originales
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 mt-8 text-xs text-white/60">
+            <span className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-4 py-2 rounded-full font-light">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              100% Repuestos Originales
             </span>
-            <span className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full">
-              <span className="text-cyan-400">⚡</span> Despacho Express en Santiago
+            <span className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-4 py-2 rounded-full font-light">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
+              Despacho Express Santiago
             </span>
-            <span className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full">
-              <span className="text-amber-400">🔧</span> Opción de Instalación Profesional
+            <span className="flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] px-4 py-2 rounded-full font-light">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03" />
+              </svg>
+              Instalación a Domicilio Opcional
             </span>
           </div>
         </div>
       </section>
 
       {/* CATÁLOGO DE LA TIENDA */}
-      <main className="py-6">
+      <main className="py-12">
         <AutomotiveStore />
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-black text-slate-400 border-t border-slate-900 py-10 px-4 text-center text-xs">
-        <p className="mb-2">© 2026 AutoBooking Chile — Tienda Oficial de Repuestos & Upgrades.</p>
-        <p className="text-slate-500">
-          ¿Dudas sobre compatibilidad?{' '}
+      <footer className="border-t border-white/[0.06] py-12 px-6 lg:px-8 text-center text-xs text-white/30 font-light">
+        <p className="mb-2">© 2026 AutoBooking Chile — Catálogo Oficial de Repuestos & Upgrades Automotrices.</p>
+        <p>
+          ¿Dudas sobre compatibilidad para tu vehículo?{' '}
           <a
-            href={whatsappUrl("Hola AutoBooking, tengo dudas sobre compatibilidad de un repuesto de la tienda")}
+            href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan-400 underline font-semibold"
+            className="text-blue-400 hover:text-blue-300 underline underline-offset-2 font-medium"
           >
             Consúltanos por WhatsApp
           </a>

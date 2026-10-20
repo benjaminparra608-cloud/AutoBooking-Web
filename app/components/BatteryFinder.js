@@ -23,15 +23,15 @@ export default function BatteryFinder() {
     const total = bateria.precio + (conInstalacion ? bateria.precioInstalacion : 0);
     const msg =
       `¡Hola AutoBooking! 🚗 Necesito una batería para mi auto:\n\n` +
-      `🔋 *Batería solicitada:* ${bateria.nombre}\n` +
-      `🏷️ *Código comercial:* ${bateria.codigo}\n` +
-      `⚡ *Capacidad:* ${bateria.capacidadAh}Ah | Arranque CCA: ${bateria.cca}A\n` +
-      `📍 *Polaridad:* ${bateria.polaridad} (${bateria.tipoBorne})\n` +
-      `💰 *Precio:* $${bateria.precio.toLocaleString('es-CL')} CLP\n` +
+      `• Batería: *${bateria.nombre}*\n` +
+      `• Código: ${bateria.codigo}\n` +
+      `• Capacidad: ${bateria.capacidadAh}Ah | Arranque CCA: ${bateria.cca}A\n` +
+      `• Polaridad: ${bateria.polaridad} (${bateria.tipoBorne})\n` +
+      `• Precio: $${bateria.precio.toLocaleString('es-CL')} CLP\n` +
       (conInstalacion
-        ? `🔧 *Servicio:* Con Instalación a Domicilio y Test de Alternador (+ $${bateria.precioInstalacion.toLocaleString('es-CL')} CLP)\n`
-        : `🚚 *Servicio:* Solo despacho / entrega\n`) +
-      `💳 *Total:* $${total.toLocaleString('es-CL')} CLP\n\n` +
+        ? `• Servicio: Con Instalación a Domicilio y Test de Alternador (+ $${bateria.precioInstalacion.toLocaleString('es-CL')} CLP)\n`
+        : `• Servicio: Solo despacho / entrega\n`) +
+      `• Total: *$${total.toLocaleString('es-CL')} CLP*\n\n` +
       `¿Tienen disponibilidad para traerla e instalarla hoy en mi comuna?`;
 
     try {
@@ -78,62 +78,61 @@ export default function BatteryFinder() {
   ];
 
   return (
-    <section id="catalogo-baterias" className="py-20 bg-slate-950 border-t border-slate-800/80 relative overflow-hidden">
-      {/* Luces y texturas de fondo */}
-      <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
-      <div className="absolute top-1/4 right-5 w-80 h-80 rounded-full blur-[140px] bg-amber-500/10 pointer-events-none" />
-
-      <div className="max-w-6xl mx-auto px-4 relative z-10">
+    <section id="catalogo-baterias" className="bg-[#080a0d] border-b border-white/[0.06] py-20 px-6 lg:px-8 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto">
 
         {/* ENCABEZADO DE LA SECCIÓN */}
-        <div className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-950/80 border border-amber-800/60 text-amber-300 text-xs font-bold uppercase tracking-wider mb-3">
-            <span>🔋</span> Catálogo de Baterías de Mayor Rotación Automotriz
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-            Encuentra la Batería Exacta para tu{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-200 font-serif italic font-normal">
-              Marca y Modelo
-            </span>
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 mb-2">
+            Catálogo Maestro · Parque Automotriz Chileno
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Encuentra la Batería Exacta
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 mt-2 font-light">
-            Especialistas en las <strong>Baterías más frecuentes y de alta rotación en Chile</strong> (DIN, JIS y AGM Start-Stop). Instalación a domicilio, diagnóstico de alternador computarizado y garantía formal por escrito.
+          <p className="text-sm text-white/35 mt-2 font-light">
+            Modelos de alta rotación en Chile (DIN, JIS y AGM Start-Stop) con instalación a domicilio, diagnóstico computarizado de alternador y garantía por escrito.
           </p>
         </div>
 
         {/* BUSCADOR INTELIGENTE EN TIEMPO REAL */}
         <div className="max-w-2xl mx-auto mb-6">
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base">🔍</span>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <svg className="w-4 h-4 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
             <input
               type="text"
-              placeholder="Escribe tu auto (ej: Sail, Swift, Hilux, Morning, RAV4) o código (ej: DIN 55, 55D23L, NS60)..."
+              placeholder="Escribe tu auto (ej: Sail, Swift, Hilux, Morning) o código (DIN 55, 55D23L)..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700/90 rounded-2xl pl-11 pr-10 py-3.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 shadow-xl"
+              className="w-full bg-white/[0.04] border border-white/[0.10] rounded-xl pl-11 pr-10 py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-500/50 transition-all"
             />
             {busqueda && (
               <button
                 onClick={() => setBusqueda('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 text-xs p-1 cursor-pointer"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white text-xs p-1 cursor-pointer"
               >
-                ✕
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
           </div>
 
           {/* CHIPS DE AUTOS FRECUENTES */}
           <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3">
-            <span className="text-[11px] text-slate-500 mr-1 font-medium">Búsquedas rápidas:</span>
+            <span className="text-[10px] text-white/25 mr-1 font-mono uppercase tracking-wider">Populares:</span>
             {chipsPopulares.map((chip) => (
               <button
                 key={chip.label}
                 type="button"
                 onClick={() => setBusqueda(chip.q)}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+                className={`text-[11px] px-3 py-1 rounded-full border transition-all cursor-pointer ${
                   busqueda.toLowerCase() === chip.q.toLowerCase()
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-bold'
-                    : 'bg-slate-900/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    ? 'bg-white text-black font-semibold border-white'
+                    : 'bg-white/[0.03] border-white/[0.06] text-white/40 hover:text-white hover:border-white/20'
                 }`}
               >
                 {chip.label}
@@ -143,43 +142,43 @@ export default function BatteryFinder() {
         </div>
 
         {/* FILTROS POR TIPO DE NORMA */}
-        <div className="flex justify-start sm:justify-center gap-2 mb-8 overflow-x-auto pb-2 px-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex justify-start sm:justify-center gap-2 mb-10 overflow-x-auto pb-2 px-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setFiltroNorma('todas')}
-            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs transition-all cursor-pointer ${
               filtroNorma === 'todas'
-                ? 'bg-white text-slate-950 shadow-md'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]'
             }`}
           >
             Todas ({TOP_8_BATERIAS.length})
           </button>
           <button
             onClick={() => setFiltroNorma('din')}
-            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs transition-all cursor-pointer ${
               filtroNorma === 'din'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]'
             }`}
           >
             Norma DIN (Europeas / Mercosur)
           </button>
           <button
             onClick={() => setFiltroNorma('jis')}
-            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs transition-all cursor-pointer ${
               filtroNorma === 'jis'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]'
             }`}
           >
             Norma JIS (Asiáticas / Japonesas)
           </button>
           <button
             onClick={() => setFiltroNorma('startstop')}
-            className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            className={`shrink-0 px-4 py-2 rounded-full text-xs transition-all cursor-pointer ${
               filtroNorma === 'startstop'
-                ? 'bg-cyan-500 text-slate-950 shadow-md'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-white text-black font-semibold shadow-sm'
+                : 'bg-white/[0.03] text-white/50 hover:text-white border border-white/[0.06]'
             }`}
           >
             Start-Stop (EFB / AGM)
@@ -188,19 +187,18 @@ export default function BatteryFinder() {
 
         {/* GRILLA DE TARJETAS DE BATERÍAS */}
         {resultados.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-400 max-w-xl mx-auto">
-            <span className="text-4xl block mb-2">🔍</span>
-            <h4 className="text-lg font-bold text-white mb-1">No encontramos una batería con ese término</h4>
-            <p className="text-xs text-slate-400 mb-4">
-              Consúltanos directamente por WhatsApp con tu patente o modelo y te confirmaremos el código exacto en menos de 5 minutos.
+          <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl p-12 text-center text-white/40 max-w-xl mx-auto">
+            <h4 className="text-base font-semibold text-white mb-1">No encontramos una batería con ese término</h4>
+            <p className="text-xs text-white/35 mb-5 font-light">
+              Consúltanos por WhatsApp con tu patente o modelo y te confirmamos el código exacto en minutos.
             </p>
             <a
               href={whatsappUrl(`Hola AutoBooking, qué batería le sirve a mi auto (${busqueda})?`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 px-5 rounded-full transition-all"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-5 rounded-full transition-all"
             >
-              Consultar Compatibilidad por WhatsApp →
+              Consultar por WhatsApp →
             </a>
           </div>
         ) : (
@@ -208,67 +206,67 @@ export default function BatteryFinder() {
             {resultados.map((bat) => (
               <div
                 key={bat.id}
-                className={`bg-gradient-to-b ${bat.colorCard} border ${bat.borderCard} rounded-3xl p-4 sm:p-6 flex flex-col justify-between shadow-xl relative transition-all duration-300 hover:-translate-y-1`}
+                className="bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.08] hover:border-blue-500/30 rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 group"
               >
                 <div>
-                  {/* Etiqueta de Ranking y Segmento */}
+                  {/* Etiqueta de Segmento */}
                   <div className="flex justify-between items-start mb-3 gap-2">
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border ${bat.tagColor}`}>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full text-blue-400 bg-blue-950/40 border border-blue-800/40">
                       {bat.rankingLabel}
                     </span>
-                    <span className="text-[11px] text-slate-400 font-mono font-semibold shrink-0">
+                    <span className="text-[10px] text-white/30 font-mono tracking-wider">
                       {bat.norma}
                     </span>
                   </div>
 
-                  {/* CÓDIGO COMERCIAL DESTACADO (Diferenciador Clave) */}
-                  <div className="bg-slate-950/90 border border-white/10 rounded-2xl p-3 my-2 text-center shadow-inner">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
-                      Código Estandarizado:
+                  {/* CÓDIGO COMERCIAL DESTACADO */}
+                  <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3 my-2 text-center">
+                    <span className="text-[10px] text-white/30 font-mono uppercase tracking-widest block">
+                      Código Estandarizado
                     </span>
-                    <div className="text-lg sm:text-xl font-mono font-black text-amber-300 tracking-wider">
+                    <div className="text-lg font-mono font-bold text-white tracking-wider">
                       {bat.codigo}
                     </div>
-                    <span className="text-[10px] text-slate-500 font-mono block mt-0.5">
+                    <span className="text-[10px] text-white/30 font-mono block mt-0.5">
                       {bat.formatoCaja}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-white mt-3 leading-snug">
+                  <h3 className="text-base font-semibold text-white/90 mt-3 leading-snug">
                     {bat.nombre}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                  <p className="text-xs text-white/35 mt-1 line-clamp-2 font-light">
                     {bat.descripcion}
                   </p>
 
-                  {/* ESPECIFICACIONES TÉCNICAS CLAVE */}
-                  <div className="grid grid-cols-3 gap-2 bg-slate-950/60 border border-white/5 rounded-xl p-2.5 my-3.5 text-center text-xs">
+                  {/* ESPECIFICACIONES TÉCNICAS */}
+                  <div className="grid grid-cols-3 gap-2 bg-white/[0.02] border border-white/[0.05] rounded-xl p-2.5 my-3.5 text-center text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-500 block uppercase">Capacidad:</span>
-                      <strong className="text-white font-mono text-xs">{bat.capacidadAh} Ah</strong>
+                      <span className="text-[10px] text-white/30 block font-mono uppercase">Capacidad:</span>
+                      <strong className="text-white/80 font-mono text-xs font-semibold">{bat.capacidadAh} Ah</strong>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500 block uppercase">Arranque:</span>
-                      <strong className="text-cyan-400 font-mono text-xs">{bat.cca} CCA</strong>
+                      <span className="text-[10px] text-white/30 block font-mono uppercase">Arranque:</span>
+                      <strong className="text-blue-400 font-mono text-xs font-semibold">{bat.cca} CCA</strong>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-500 block uppercase">Polaridad:</span>
-                      <strong className="text-amber-300 font-mono text-[11px] truncate block" title={bat.polaridad}>
+                      <span className="text-[10px] text-white/30 block font-mono uppercase">Polaridad:</span>
+                      <strong className="text-white/80 font-mono text-[11px] truncate block" title={bat.polaridad}>
                         {bat.polaridad.includes('(PD') || bat.polaridad.includes('Derecho') ? 'PD (+ Der)' : 'PI (+ Izq)'}
                       </strong>
                     </div>
                   </div>
 
-                  {/* EJEMPLOS DE AUTOS COMPATIBLES */}
+                  {/* COMPATIBLES */}
                   <div className="text-xs mb-4">
-                    <span className="text-[11px] text-slate-400 font-semibold block mb-1">
-                      🚗 Algunos autos compatibles:
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-white/30 block mb-1">
+                      Modelos de referencia:
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {bat.modelosCompatibles.slice(0, 4).map((mod, i) => (
                         <span
                           key={i}
-                          className="bg-slate-950/90 border border-slate-800 text-[10px] text-slate-300 px-2 py-0.5 rounded-md"
+                          className="bg-white/[0.03] border border-white/[0.06] text-[10px] text-white/50 px-2 py-0.5 rounded-md font-light"
                         >
                           {mod}
                         </span>
@@ -276,7 +274,7 @@ export default function BatteryFinder() {
                       {bat.modelosCompatibles.length > 4 && (
                         <button
                           onClick={() => setBateriaModal(bat)}
-                          className="text-[10px] text-cyan-400 font-bold px-1 hover:underline cursor-pointer"
+                          className="text-[10px] text-blue-400 font-medium px-1 hover:underline cursor-pointer"
                         >
                           +{bat.modelosCompatibles.length - 4} más...
                         </button>
@@ -286,16 +284,16 @@ export default function BatteryFinder() {
                 </div>
 
                 {/* PRECIO Y ACCIONES */}
-                <div className="pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-white/[0.06]">
                   <div className="flex items-baseline justify-between mb-3">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Precio Batería CLP:</span>
-                      <span className="text-2xl font-black text-white font-mono">
+                      <span className="text-[10px] uppercase font-mono text-white/30 block">Precio CLP</span>
+                      <span className="text-2xl font-bold text-white font-mono">
                         ${bat.precio.toLocaleString('es-CL')}
                       </span>
                     </div>
-                    <span className="text-[11px] text-emerald-400 font-semibold">
-                      +{bat.garantia.split(' ')[0]} meses garantía
+                    <span className="text-xs text-emerald-400/80 font-light">
+                      {bat.garantia.split(' ')[0]} meses garantía
                     </span>
                   </div>
 
@@ -309,32 +307,35 @@ export default function BatteryFinder() {
                             precio: bat.precio,
                             precioInstalacion: bat.precioInstalacion,
                             marca: 'Batería Homologada',
-                            icono: bat.icono
+                            icono: '⚡'
                           },
                           true
                         )
                       }
-                      className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-2.5 px-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer transform active:scale-95"
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2 px-3 rounded-full transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <span>+ Carrito</span>
-                      <span>🛒</span>
                     </button>
 
                     <button
                       onClick={() => handlePedirBateriaWhatsApp(bat, true)}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-emerald-400 p-2 rounded-full transition-all cursor-pointer flex items-center justify-center"
                       title="Pedir a domicilio por WhatsApp"
                     >
-                      <span>Instalar</span>
-                      <span>💬</span>
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.28-1.39a9.9 9.9 0 0 0 4.76 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2Z" />
+                      </svg>
                     </button>
 
                     <button
                       onClick={() => setBateriaModal(bat)}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs py-2.5 px-2.5 rounded-xl transition-colors cursor-pointer"
-                      title="Ver ficha técnica completa"
+                      className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/50 hover:text-white p-2 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                      title="Ficha técnica completa"
                     >
-                      🔍
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -344,17 +345,19 @@ export default function BatteryFinder() {
         )}
 
         {/* NOTA DE SERVICIO TÉCNICO INCLUIDO */}
-        <div className="mt-10 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4 text-xs text-slate-300">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-2xl flex items-center justify-center shrink-0">
-              ⚡
+        <div className="mt-12 bg-white/[0.02] border border-white/[0.07] rounded-2xl p-7 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 text-xs text-white/50 font-light">
+            <div className="w-10 h-10 rounded-xl bg-blue-950/60 border border-blue-800/50 flex items-center justify-center text-blue-400 shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+              </svg>
             </div>
             <div>
-              <strong className="text-white text-sm block font-bold mb-0.5">
-                ¿Te quedaste en panne de batería en tu casa o trabajo?
+              <strong className="text-white text-sm block font-semibold mb-0.5">
+                ¿Te quedaste en panne de batería en tu domicilio o trabajo?
               </strong>
               <span>
-                Llevamos la batería exacta a tu domicilio en Santiago, realizamos el reemplazo técnico, limpiamos bornes y testeamos el alternador con equipo digital sin costo adicional.
+                Llevamos la batería exacta a tu ubicación en Santiago, realizamos el reemplazo técnico, limpiamos bornes y testeamos el alternador digitalmente sin costo adicional.
               </span>
             </div>
           </div>
@@ -363,78 +366,80 @@ export default function BatteryFinder() {
             href={whatsappUrl("Hola AutoBooking, me quedé en panne de batería y necesito auxilio a domicilio urgente")}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full md:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs py-3 px-6 rounded-full transition-all shrink-0 text-center shadow-lg shadow-amber-500/20"
+            className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-3 px-6 rounded-full transition-all shrink-0 text-center shadow-md shadow-blue-600/20"
           >
-            🚨 Auxilio Rápido de Batería por WhatsApp →
+            Auxilio Inmediato por WhatsApp →
           </a>
         </div>
 
       </div>
 
-      {/* MODAL FICHA TÉCNICA EXTENDIDA */}
+      {/* MODAL FICHA TÉCNICA */}
       {bateriaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full relative shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+          <div className="bg-[#0d1117] border border-white/[0.10] rounded-2xl p-7 max-w-xl w-full relative shadow-2xl max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setBateriaModal(null)}
-              className="absolute top-5 right-5 bg-slate-800 hover:bg-slate-700 text-slate-300 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] text-white/50 hover:text-white flex items-center justify-center transition-all cursor-pointer"
             >
-              ✕
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
 
-            <span className={`text-[10px] font-bold px-3 py-1 rounded-full border ${bateriaModal.tagColor} inline-block mb-2`}>
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full text-blue-400 bg-blue-950/40 border border-blue-800/40 uppercase tracking-wider inline-block mb-2">
               {bateriaModal.rankingLabel}
             </span>
 
-            <h3 className="text-2xl font-black text-white mb-1">
+            <h3 className="text-xl font-black text-white mb-1">
               {bateriaModal.nombre}
             </h3>
-            <p className="text-xs text-amber-300 font-mono font-bold mb-4">
+            <p className="text-xs text-white/40 font-mono mb-4">
               Código: {bateriaModal.codigo} · {bateriaModal.norma}
             </p>
 
-            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs mb-6">
-              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-800">
+            <div className="bg-white/[0.02] p-4 rounded-xl border border-white/[0.06] space-y-2 text-xs mb-5 font-light">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/[0.04]">
                 <div>
-                  <span className="text-slate-500 block">Capacidad:</span>
-                  <span className="font-bold text-white font-mono">{bateriaModal.capacidadAh} Ah</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Capacidad:</span>
+                  <span className="font-semibold text-white font-mono">{bateriaModal.capacidadAh} Ah</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Arranque en Frío:</span>
-                  <span className="font-bold text-cyan-400 font-mono">{bateriaModal.cca} CCA (-18°C)</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Arranque en Frío:</span>
+                  <span className="font-semibold text-blue-400 font-mono">{bateriaModal.cca} CCA (-18°C)</span>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-slate-800">
+              <div className="grid grid-cols-2 gap-2 pb-2 border-b border-white/[0.04]">
                 <div>
-                  <span className="text-slate-500 block">Polaridad:</span>
-                  <span className="font-semibold text-slate-200">{bateriaModal.polaridad}</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Polaridad:</span>
+                  <span className="text-white/70">{bateriaModal.polaridad}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Tipo de Borne:</span>
-                  <span className="font-semibold text-slate-200">{bateriaModal.tipoBorne}</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Tipo de Borne:</span>
+                  <span className="text-white/70">{bateriaModal.tipoBorne}</span>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-slate-500 block">Dimensiones:</span>
-                  <span className="font-semibold text-slate-300 font-mono">{bateriaModal.dimensiones}</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Dimensiones:</span>
+                  <span className="text-white/70 font-mono">{bateriaModal.dimensiones}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Anclaje Inferior:</span>
-                  <span className="font-semibold text-slate-300">{bateriaModal.anclaje}</span>
+                  <span className="text-white/30 block font-mono text-[10px] uppercase">Anclaje Inferior:</span>
+                  <span className="text-white/70">{bateriaModal.anclaje}</span>
                 </div>
               </div>
             </div>
 
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Todos los Modelos Compatibles en Chile:
+              <h4 className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-2">
+                Modelos Compatibles en Chile:
               </h4>
               <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto p-1">
                 {bateriaModal.modelosCompatibles.map((mod, i) => (
                   <span
                     key={i}
-                    className="bg-slate-950 border border-slate-800 text-xs text-slate-300 px-3 py-1 rounded-lg"
+                    className="bg-white/[0.03] border border-white/[0.06] text-xs text-white/60 px-3 py-1 rounded-lg font-light"
                   >
                     ✓ {mod}
                   </span>
@@ -442,19 +447,17 @@ export default function BatteryFinder() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+            <div className="pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
               <div>
-                <span className="text-xs text-slate-400 block">Precio con despacho:</span>
-                <span className="text-3xl font-black text-white font-mono">
+                <span className="text-[10px] uppercase font-mono text-white/30 block">Precio Total</span>
+                <span className="text-2xl font-bold text-white font-mono">
                   ${bateriaModal.precio.toLocaleString('es-CL')} CLP
-                </span>
-                <span className="text-xs text-cyan-400 block mt-0.5">
-                  +$15.000 con instalación a domicilio y chequeo de alternador
                 </span>
               </div>
 
               <div className="flex gap-2">
                 <button
+                  type="button"
                   onClick={() => {
                     addToCart(
                       {
@@ -463,24 +466,25 @@ export default function BatteryFinder() {
                         precio: bateriaModal.precio,
                         precioInstalacion: bateriaModal.precioInstalacion,
                         marca: 'Batería Homologada',
-                        icono: bateriaModal.icono
+                        icono: '⚡'
                       },
                       true
                     );
                     setBateriaModal(null);
                   }}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs py-3 px-5 rounded-xl transition-all cursor-pointer"
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2.5 px-5 rounded-full transition-all cursor-pointer"
                 >
-                  Añadir al Carrito 🛒
+                  Añadir al Carrito
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     handlePedirBateriaWhatsApp(bateriaModal, true);
                     setBateriaModal(null);
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 px-5 rounded-xl transition-all cursor-pointer"
+                  className="bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.10] text-emerald-400 font-semibold text-xs py-2.5 px-4 rounded-full transition-all cursor-pointer"
                 >
-                  Pedir por WhatsApp 💬
+                  WhatsApp
                 </button>
               </div>
             </div>

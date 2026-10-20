@@ -326,20 +326,20 @@ export default function DetailingWorkstation({ onBackToOverview }) {
       {/* ========================================================= */}
       {/* 1. ENCABEZADO DE LA ESTACIÓN DE DETAILING                 */}
       {/* ========================================================= */}
-      <div className="bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+      <div className="bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950 border border-cyan-800/80 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-2">
-              <span>✨</span> Taller & Detailing Profesional
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-semibold uppercase tracking-[0.18em] mb-2.5">
+              <span>Detailing & Operaciones de Calidad</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Control de Operaciones,{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-amber-300 font-serif italic font-normal">
-                Químicos & Checklist
+              Control Técnico de Taller,{' '}
+              <span className="text-white/40 font-light italic">
+                Insumos & Fases
               </span>
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl font-light">
-              Módulo &ldquo;Modo Taller&rdquo; optimizado para celular: gestión rápida de químicos por porcentaje, checklist de salida a terreno y 7 fases de calidad sin escribir formularios largos.
+            <p className="text-xs sm:text-sm text-white/45 mt-1.5 max-w-2xl font-light leading-relaxed">
+              Gestión táctil optimizada para celular: control de niveles químicos por porcentaje, checklist de salida para terreno y 7 fases de calidad estandarizadas.
             </p>
           </div>
 
@@ -350,37 +350,43 @@ export default function DetailingWorkstation({ onBackToOverview }) {
                 setCalcQuimicoSeleccionado(null);
                 setShowCalcModal(true);
               }}
-              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+              className="bg-white/[0.03] hover:bg-white/[0.06] text-white/80 hover:text-white border border-white/[0.08] px-4 py-2.5 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
               title="Calculadora de diluciones de atomizador"
             >
-              <span className="text-base">🧪</span>
+              <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5" />
+              </svg>
               <span>Calculadora de Diluciones</span>
             </button>
 
             <button
               onClick={() => setShowNuevoTrabajoModal(true)}
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black px-4 py-2.5 rounded-2xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/20"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-full text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-blue-600/25"
             >
-              <span>➕</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
               <span>Nuevo Trabajo Detailing</span>
             </button>
           </div>
         </div>
 
         {/* NAVEGACIÓN EN 3 PESTAÑAS SUGERIDAS */}
-        <div className="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-slate-800/80">
+        <div className="grid grid-cols-3 gap-2.5 mt-6 pt-5 border-t border-white/[0.06]">
           <button
             onClick={() => setSubTab('inventario')}
-            className={`py-3 px-3 rounded-2xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer border ${
+            className={`py-3 px-3 rounded-2xl text-xs font-semibold transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer border ${
               subTab === 'inventario'
-                ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-lg shadow-cyan-500/20'
-                : 'bg-slate-950/70 hover:bg-slate-800 text-slate-300 border-slate-800'
+                ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-600/25'
+                : 'bg-white/[0.02] hover:bg-white/[0.05] text-white/60 hover:text-white border-white/[0.06]'
             }`}
           >
-            <span className="text-base">📦</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+            </svg>
             <span>Stock de Bodega</span>
             {itemsPorComprar.length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-1 ${subTab === 'inventario' ? 'bg-slate-950 text-amber-300' : 'bg-rose-500 text-white'}`}>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-1 ${subTab === 'inventario' ? 'bg-white text-blue-600' : 'bg-rose-500/80 text-white'}`}>
                 {itemsPorComprar.length}
               </span>
             )}
@@ -388,30 +394,34 @@ export default function DetailingWorkstation({ onBackToOverview }) {
 
           <button
             onClick={() => setSubTab('salida')}
-            className={`py-3 px-3 rounded-2xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer border ${
+            className={`py-3 px-3 rounded-2xl text-xs font-semibold transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer border ${
               subTab === 'salida'
-                ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-lg shadow-cyan-500/20'
-                : 'bg-slate-950/70 hover:bg-slate-800 text-slate-300 border-slate-800'
+                ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-600/25'
+                : 'bg-white/[0.02] hover:bg-white/[0.05] text-white/60 hover:text-white border-white/[0.06]'
             }`}
           >
-            <span className="text-base">🚐</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.25h1.125c.621 0 1.129.504 1.09 1.124" />
+            </svg>
             <span>Checklist de Salida</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ml-1 ${subTab === 'salida' ? 'bg-slate-950 text-cyan-300' : 'bg-slate-800 text-slate-400'}`}>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ml-1 ${subTab === 'salida' ? 'bg-white/20 text-white' : 'bg-white/[0.04] text-white/40'}`}>
               {progresoSalida}%
             </span>
           </button>
 
           <button
             onClick={() => setSubTab('proceso')}
-            className={`py-3 px-3 rounded-2xl text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer border ${
+            className={`py-3 px-3 rounded-2xl text-xs font-semibold transition-all flex flex-col sm:flex-row items-center justify-center gap-2 cursor-pointer border ${
               subTab === 'proceso'
-                ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-lg shadow-cyan-500/20'
-                : 'bg-slate-950/70 hover:bg-slate-800 text-slate-300 border-slate-800'
+                ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-600/25'
+                : 'bg-white/[0.02] hover:bg-white/[0.05] text-white/60 hover:text-white border-white/[0.06]'
             }`}
           >
-            <span className="text-base">🎯</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" />
+            </svg>
             <span>Control de Calidad (7 Fases)</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ml-1 ${subTab === 'proceso' ? 'bg-slate-950 text-cyan-300' : 'bg-cyan-950 text-cyan-300 border border-cyan-800'}`}>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ml-1 ${subTab === 'proceso' ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'}`}>
               {trabajos.filter((t) => t.estado === 'en_proceso').length} act.
             </span>
           </button>

@@ -6,38 +6,38 @@ import VehicleHealthTracker from '../components/VehicleHealthTracker';
 
 export default function TelemetriaPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-32 md:pb-12">
+    <div className="min-h-screen bg-[#080a0d] text-white font-sans pb-32 md:pb-12">
       <Navbar />
 
       {/* HEADER DEDICADO DE TELEMETRÍA */}
-      <section className="pt-28 pb-10 px-4 bg-gradient-to-b from-indigo-950/40 via-slate-950 to-slate-950 border-b border-indigo-900/30">
+      <section className="pt-32 pb-14 px-6 lg:px-8 border-b border-white/[0.06] bg-gradient-to-b from-[#0c1424]/60 via-[#080a0d] to-[#080a0d]">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-950/90 border border-indigo-700/60 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-3">
-            <span>📡</span> Telemetría & Conectividad Vehicular
+          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 mb-3">
+            Telemetría & Conectividad Vehicular · AutoBooking
+          </p>
+          <div className="space-y-2 mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.08]">
+              Historial Clínico Automotriz
+            </h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white/40 tracking-tight leading-[1.08] italic">
+              y monitor de desgaste en vivo.
+            </h1>
           </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight">
-            Historial Clínico Automotriz &{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-sky-400 to-teal-300 font-serif italic font-normal">
-              Monitor de Desgaste en Vivo
-            </span>
-          </h1>
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto mt-3 font-light">
-            Monitorea el kilometraje proyectado por odómetro GPS, vida útil de pastillas de freno, porcentaje de degradación del aceite y estado de carga de tu batería.
+          <p className="text-sm sm:text-base text-white/40 max-w-2xl mx-auto font-light leading-relaxed">
+            Monitorea el kilometraje proyectado por odómetro GPS, la vida útil de pastillas de freno, el porcentaje de degradación del aceite y el estado de tu batería.
           </p>
         </div>
       </section>
 
       {/* COMPONENTE DE TELEMETRÍA E HISTORIAL CLÍNICO */}
-      <main className="py-6">
+      <main className="py-12">
         <VehicleHealthTracker />
       </main>
 
       {/* FOOTER */}
-      <footer className="bg-black text-slate-400 border-t border-slate-900 py-10 px-4 text-center text-xs">
+      <footer className="border-t border-white/[0.06] py-12 px-6 lg:px-8 text-center text-xs text-white/30 font-light">
         <p className="mb-2">© 2026 AutoBooking Chile — Plataforma de Telemetría y Mantención Predictiva.</p>
-        <p className="text-slate-500">
-          Toda la información se sincroniza de forma segura con tu cuenta de cliente y el taller central.
-        </p>
+        <p>Toda la información se sincroniza de forma segura con tu cuenta de cliente y el taller central.</p>
       </footer>
     </div>
   );

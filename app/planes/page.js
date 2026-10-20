@@ -10,12 +10,12 @@ const PLANES = [
   {
     id: 'movil',
     nombre: 'Taller Móvil',
-    badge: 'Para mecánicos independientes',
+    badge: 'Mecánicos independientes & a domicilio',
     precioMensual: 29900,
     precioAnual: 299000,
-    descripcion: 'Ideal para mecánicos que atienden a domicilio o parten su propio negocio independiente.',
+    descripcion: 'Diseñado para mecánicos que atienden a terreno o inician su operación independiente.',
     caracteristicas: [
-      '1 usuario / mecánico activo',
+      '1 usuario mecánico activo',
       'Agenda online 24/7 para tus clientes',
       'Hasta 60 Órdenes de Trabajo (OT) mensuales',
       'Historial de reparaciones por patente chilena',
@@ -24,80 +24,75 @@ const PLANES = [
       'Soporte técnico por WhatsApp'
     ],
     destacado: false,
-    color: 'border-slate-800'
   },
   {
     id: 'pro',
     nombre: 'Taller Pro',
-    badge: '⭐ Más Popular',
+    badge: 'La opción más elegida',
     precioMensual: 59900,
     precioAnual: 599000,
-    descripcion: 'La solución completa para talleres físicos y flotas móviles en crecimiento.',
+    descripcion: 'La solución integral para talleres mecánicos establecidos y servicios en expansión.',
     caracteristicas: [
-      'Hasta 5 usuarios / mecánicos',
+      'Hasta 5 mecánicos / operarios concurrentes',
       'Órdenes de Trabajo (OT) ilimitadas',
-      'Agendamientos online ilimitados 24/7',
-      'Módulo de Fidelización: Recordatorios de mantención por WhatsApp',
-      'Checklist fotográfico y recepción de daños',
-      'Cálculo de repuestos, mano de obra y desglose de IVA',
-      'Hoja de entrega digital y física con tu logo',
-      'Métricas de ventas y servicios más rentables',
+      'Agendamiento online 24/7 sin restricciones',
+      'Módulo de fidelización con recordatorios automáticos',
+      'Checklist fotográfico y control de daños de ingreso',
+      'Cálculo de insumos, repuestos, mano de obra e IVA',
+      'Hoja de entrega digital personalizada con tu logotipo',
+      'Métricas comerciales y servicios de mayor margen',
       'Soporte prioritario 7 días a la semana'
     ],
     destacado: true,
-    color: 'border-cyan-500 shadow-cyan-500/20'
   },
   {
     id: 'red',
     nombre: 'Taller Red / Flotas',
-    badge: 'Empresas y Franquicias',
+    badge: 'Empresas, cadenas y franquicias',
     precioMensual: 99900,
     precioAnual: 999000,
-    descripcion: 'Para cadenas multimarca, múltiples sucursales o flotas corporativas.',
+    descripcion: 'Para talleres multimarca con múltiples sucursales o flotas corporativas.',
     caracteristicas: [
       'Usuarios y mecánicos ilimitados',
       'Gestión multi-sucursal centralizada',
-      'Módulo avanzado de fidelización y campañas WhatsApp',
-      'Integración con sistemas contables / ERP vía API',
-      'Marca blanca: tu logo, colores y subdominio propio',
-      'Onboarding personalizado y capacitación de equipo',
-      'Gerente de cuenta dedicado'
+      'Fidelización avanzada y campañas automáticas vía WhatsApp',
+      'Integración con ERP y software contable vía API',
+      'Personalización completa con tu marca e identidad',
+      'Capacitación inicial y acompañamiento operativo',
+      'Gerente de cuenta corporativo asignado'
     ],
     destacado: false,
-    color: 'border-slate-800'
   }
 ];
 
 const PREGUNTAS_TALLER = [
   {
-    q: '¿Cómo funciona la prueba gratuita de 14 días?',
-    a: 'Puedes solicitar tu acceso sin ingresar tarjeta de crédito. Te configuramos una cuenta con tus datos y logo para que pruebes el sistema con tus clientes reales durante dos semanas.'
+    q: '¿Cómo funciona el periodo de prueba de 14 días?',
+    a: 'Puedes solicitar tu acceso sin necesidad de ingresar tarjeta de crédito. Configuramos tu cuenta con la información de tu taller para que operes con clientes reales durante dos semanas completas.'
   },
   {
-    q: '¿Necesito instalar algún programa en mi computador?',
-    a: 'No. AutoBooking funciona 100% en la nube desde cualquier navegador web (computador, tablet o teléfono móvil Android / iPhone). Tus mecánicos pueden usarlo directamente desde su celular en el taller o en terreno.'
+    q: '¿Requiere instalación de software en computadores?',
+    a: 'No. AutoBooking funciona 100% en la nube desde cualquier navegador web (computador de escritorio, tablet o smartphones Android / iOS). Tus mecánicos pueden utilizarlo directamente en el elevador o en terreno.'
   },
   {
-    q: '¿Cómo reciben mis clientes los recordatorios de mantención?',
-    a: 'El sistema detecta automáticamente cuándo un vehículo atendido hace 3 o 6 meses requiere revisión de kilometraje, cambio de aceite o pastillas, y te permite enviarle un WhatsApp personalizado con 1 solo clic.'
+    q: '¿Cómo funcionan los recordatorios de mantención a clientes?',
+    a: 'El sistema calcula los intervalos de mantenimiento en base al kilometraje promedio o fecha de última atención (ej. 3 o 6 meses) y te permite contactar al cliente con un mensaje personalizado vía WhatsApp con un solo clic.'
   },
   {
-    q: '¿Tienen contratos de permanencia mínima?',
-    a: 'Ninguno. Puedes pagar mes a mes y cancelar cuando desees. También ofrecemos planes anuales con un 17% de descuento (2 meses gratis).'
+    q: '¿Existen plazos forzosos o cláusulas de permanencia?',
+    a: 'Ninguno. La suscripción opera mes a mes y puedes cancelar el servicio en cualquier momento. También ofrecemos facturación anual con un 17% de ahorro (2 meses bonificados).'
   },
   {
-    q: '¿Emiten factura electrónica chilena?',
-    a: 'Sí, emitimos Factura Electrónica (afecta a IVA o exenta según corresponda) a nombre de tu empresa o RUT comercial en Chile.'
+    q: '¿Emiten Factura Electrónica en Chile?',
+    a: 'Sí, emitimos Factura Electrónica afecta a IVA a nombre del RUT o razón social de tu empresa en Chile.'
   }
 ];
 
 export default function PlanesPage() {
-  const [cicloFacturacion, setCicloFacturacion] = useState('mensual'); // 'mensual' | 'anual'
-  const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [cicloFacturacion, setCicloFacturacion] = useState('mensual');
   const [autosAlMes, setAutosAlMes] = useState(35);
   const [faqAbierta, setFaqAbierta] = useState(null);
 
-  // Formulario Demo
   const [demoForm, setDemoForm] = useState({
     nombreTaller: '',
     contacto: '',
@@ -110,9 +105,9 @@ export default function PlanesPage() {
   const [enviando, setEnviando] = useState(false);
   const [demoEnviada, setDemoEnviada] = useState(false);
 
-  // Calculadora ROI
-  const ticketPromedio = 65000; // CLP por mantención
-  const clientesRecuperados = Math.round(autosAlMes * 0.22); // 22% retención
+  // Estimador de Retorno de Inversión
+  const ticketPromedio = 65000;
+  const clientesRecuperados = Math.round(autosAlMes * 0.22);
   const ingresoExtra = clientesRecuperados * ticketPromedio;
 
   function handleDemoSubmit(e) {
@@ -120,23 +115,22 @@ export default function PlanesPage() {
     setEnviando(true);
 
     const waMsg = encodeURIComponent(
-      `¡Hola AutoBooking! Me interesa solicitar una DEMO para mi taller.\n\n` +
-      `🏢 Taller: ${demoForm.nombreTaller}\n` +
-      `👤 Contacto: ${demoForm.contacto}\n` +
-      `📞 Teléfono: ${demoForm.telefono}\n` +
-      `📍 Ciudad/Comuna: ${demoForm.comuna}\n` +
-      `🏷️ Plan de interés: ${demoForm.plan}\n` +
-      (demoForm.mensaje ? `💬 Mensaje: ${demoForm.mensaje}` : '')
+      `Hola AutoBooking. Solicito acceso a la DEMO para mi taller:\n\n` +
+      `• Taller: ${demoForm.nombreTaller}\n` +
+      `• Contacto: ${demoForm.contacto}\n` +
+      `• Teléfono: ${demoForm.telefono}\n` +
+      `• Comuna / Ciudad: ${demoForm.comuna}\n` +
+      `• Plan de interés: ${demoForm.plan}\n` +
+      (demoForm.mensaje ? `• Comentarios: ${demoForm.mensaje}` : '')
     );
 
-    // Si tiene Web3Forms configurado intentamos enviar en segundo plano
     if (WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== 'TU_ACCESS_KEY_AQUI') {
       fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: WEB3FORMS_ACCESS_KEY,
-          subject: `Nueva Solicitud Demo Taller: ${demoForm.nombreTaller}`,
+          subject: `Solicitud Demo Taller: ${demoForm.nombreTaller}`,
           ...demoForm
         })
       }).catch(() => {});
@@ -146,121 +140,154 @@ export default function PlanesPage() {
       setEnviando(false);
       setDemoEnviada(true);
       window.open(`https://wa.me/56912345678?text=${waMsg}`, '_blank');
-    }, 600);
+    }, 500);
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans pb-24 relative">
+    <div className="min-h-screen bg-[#080a0d] text-white font-sans pb-24 selection:bg-blue-600/30">
       <Navbar />
 
       {/* 1. HERO B2B SAAS */}
-      <header className="relative overflow-hidden bg-gradient-to-b from-blue-950 via-slate-900 to-slate-950 border-b border-slate-800 py-20 px-4 text-center">
-        <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+      <header className="relative pt-24 pb-20 px-6 lg:px-8 border-b border-white/[0.06] overflow-hidden text-center">
+        {/* Subtle radial aura */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-blue-600/[0.08] rounded-full blur-3xl pointer-events-none" />
+
         <div className="max-w-4xl mx-auto relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-800/60 text-cyan-400 text-xs font-bold uppercase tracking-wider mb-6">
-            <span>💼</span> AutoBooking para Talleres & Servicios Automotrices
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-blue-400 text-[11px] font-semibold uppercase tracking-[0.18em] mb-6">
+            AutoBooking para Talleres & Servicios Automotrices
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
-            Digitaliza tu taller y{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-              multiplica la fidelidad
-            </span>{' '}
+
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] mb-6">
+            Estandariza tu taller y{' '}
+            <span className="text-white/40 font-light italic">multiplica el retorno</span>{' '}
             de tus clientes
           </h1>
-          <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto mb-8 font-light leading-relaxed">
-            El software en la nube diseñado para talleres mecánicos, mecánicos a domicilio y servicios de car audio en Chile. Agendamiento online 24/7, Órdenes de Trabajo digitales y recordatorios automáticos por WhatsApp.
+
+          <p className="text-base sm:text-lg text-white/50 max-w-2xl mx-auto mb-10 font-light leading-relaxed">
+            Plataforma digital en la nube para talleres mecánicos, servicios a domicilio y centros de detailing en Chile. Agendamiento 24/7, Órdenes de Trabajo digitales y recordatorios automáticos por WhatsApp.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center">
             <a
               href="#demo"
-              className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-base py-3.5 px-8 rounded-full shadow-lg shadow-cyan-500/25 transition-all transform hover:scale-105"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm py-3.5 px-8 rounded-full shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
             >
-              🚀 Solicitar Demo Gratuita (14 días)
+              Solicitar demo gratuita (14 días)
             </a>
             <Link
               href="/taller"
-              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold text-base py-3.5 px-8 rounded-full transition-all flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white border border-white/[0.08] font-medium text-sm py-3.5 px-8 rounded-full transition-all flex items-center justify-center gap-2"
             >
-              <span>👀</span> Ver Demo del Panel Taller
+              <span>Explorar demo del panel taller</span>
+              <svg className="w-4 h-4 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
             </Link>
           </div>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-6 text-xs text-slate-400 font-medium">
-            <span className="flex items-center gap-1.5">✅ Sin instalación requerida</span>
-            <span className="flex items-center gap-1.5">✅ Factura electrónica chilena</span>
-            <span className="flex items-center gap-1.5">✅ Cancela cuando quieras</span>
-            <span className="flex items-center gap-1.5">✅ Soporte local en Chile</span>
+          <div className="mt-12 flex flex-wrap justify-center gap-6 sm:gap-8 text-xs text-white/40 font-light">
+            <span className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Sin instalación requerida
+            </span>
+            <span className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Factura electrónica chilena
+            </span>
+            <span className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Cancela cuando quieras
+            </span>
+            <span className="flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+              Soporte técnico local
+            </span>
           </div>
         </div>
       </header>
 
       {/* 2. VENTAJAS PRINCIPALES */}
-      <section id="caracteristicas" className="py-20 px-4 max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-14">
-          <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">Potencia Operativa</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-2">
-            Todo lo que tu taller necesita en una sola plataforma
+      <section id="caracteristicas" className="py-24 px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 block mb-2">
+            Arquitectura de Gestión
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Todo tu taller bajo una misma plataforma
           </h2>
-          <p className="text-slate-400 text-sm mt-3">
-            Deja atrás los cuadernos de papel, las pizarras y los mensajes desordenados.
+          <p className="text-white/45 text-sm mt-3 font-light leading-relaxed">
+            Elimina planillas dispersas, órdenes en papel y llamadas perdidas con un flujo operativo centralizado.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/30 text-blue-400 text-2xl flex items-center justify-center mb-6">
-              📅
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-3xl p-8 hover:border-white/[0.12] transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-blue-400 flex items-center justify-center mb-6">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
+              </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Agenda Online 24/7</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Tus clientes agendan desde su teléfono a cualquier hora, incluso de noche o feriados. Reduce llamadas y no pierdas ningún cliente por estar con las manos ocupadas en el taller.
+            <h3 className="text-lg font-bold text-white mb-2.5 tracking-tight">Agenda Online 24/7</h3>
+            <p className="text-white/45 text-sm leading-relaxed font-light">
+              Tus clientes agendan directamente desde su celular las 24 horas del día. Disminuye llamadas telefónicas mientras tus mecánicos trabajan en los vehículos.
             </p>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-2xl flex items-center justify-center mb-6">
-              📋
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-3xl p-8 hover:border-white/[0.12] transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-blue-400 flex items-center justify-center mb-6">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Órdenes de Trabajo (OT)</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Crea OTs profesionales numeradas, con checklist de recepción (combustible, kilometraje, rayaduras), cálculo automático de repuestos, mano de obra e IVA, listas para imprimir o enviar.
+            <h3 className="text-lg font-bold text-white mb-2.5 tracking-tight">Órdenes de Trabajo (OT)</h3>
+            <p className="text-white/45 text-sm leading-relaxed font-light">
+              Emite OTs correlativas con registro fotográfico de recepción, combustible, cálculo automático de repuestos, mano de obra e impuestos.
             </p>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 hover:border-cyan-500/40 transition-all">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-2xl flex items-center justify-center mb-6">
-              💬
+          <div className="bg-white/[0.02] border border-white/[0.06] rounded-3xl p-8 hover:border-white/[0.12] transition-all">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-blue-400 flex items-center justify-center mb-6">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
             </div>
-            <h3 className="text-xl font-bold text-white mb-3">Fidelización por WhatsApp</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              El sistema te avisa cuando un cliente atendido necesita su mantención de los 10.000 km o revisión de frenos. Envíale un mensaje personalizado con 1 clic y asegura su regreso.
+            <h3 className="text-lg font-bold text-white mb-2.5 tracking-tight">Fidelización por WhatsApp</h3>
+            <p className="text-white/45 text-sm leading-relaxed font-light">
+              Notifica a tus clientes cuando su vehículo cumpla el periodo para cambio de aceite, pastillas o revisión técnica, activando visitas recurrentes.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 3. CALCULADORA INTERACTIVA DE RETORNO (ROI) */}
-      <section id="calculadora" className="py-16 px-4 bg-slate-900/40 border-y border-slate-800/80">
+      {/* 3. CALCULADORA ROI */}
+      <section id="calculadora" className="py-20 px-6 lg:px-8 bg-white/[0.01] border-y border-white/[0.06]">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-cyan-800/40 rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden">
-            <div className="text-center max-w-2xl mx-auto mb-8">
-              <span className="text-xs uppercase font-bold text-emerald-400 tracking-wider bg-emerald-950/60 border border-emerald-800/40 px-3 py-1 rounded-full">
-                💰 Calculadora de Ganancia Adicional
+          <div className="bg-[#0d1117] border border-white/[0.08] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 block mb-2">
+                Simulador de Retorno
               </span>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-white mt-3">
-                ¿Cuánto dinero extra puede generar AutoBooking para tu taller?
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                ¿Cuánto valor extra puede generar AutoBooking en tu taller?
               </h3>
-              <p className="text-xs sm:text-sm text-slate-400 mt-2">
-                Simula el impacto de recuperar a tus clientes pasados con recordatorios automáticos de mantenimiento.
+              <p className="text-xs sm:text-sm text-white/45 mt-2 font-light">
+                Calcula la facturación adicional generada al reactivar clientes pasados mediante avisos preventivos.
               </p>
             </div>
 
-            <div className="space-y-6 max-w-xl mx-auto">
+            <div className="space-y-8 max-w-xl mx-auto">
               <div>
-                <div className="flex justify-between items-center text-sm font-semibold text-slate-200 mb-2">
+                <div className="flex justify-between items-center text-sm font-medium text-white/80 mb-3">
                   <span>Vehículos atendidos al mes:</span>
-                  <span className="text-cyan-400 text-lg font-bold">{autosAlMes} autos</span>
+                  <span className="text-blue-400 font-bold font-mono text-base">{autosAlMes} unidades</span>
                 </div>
                 <input
                   type="range"
@@ -269,33 +296,33 @@ export default function PlanesPage() {
                   step="5"
                   value={autosAlMes}
                   onChange={(e) => setAutosAlMes(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                  className="w-full h-1.5 bg-white/[0.08] rounded-lg appearance-none cursor-pointer accent-blue-500"
                 />
-                <div className="flex justify-between text-[11px] text-slate-500 mt-1">
-                  <span>10 autos (taller chico)</span>
-                  <span>75 autos (mediano)</span>
-                  <span>150+ autos (grande)</span>
+                <div className="flex justify-between text-[11px] text-white/35 mt-2 font-light">
+                  <span>10 vehículos (independiente)</span>
+                  <span>75 vehículos (mediano)</span>
+                  <span>150+ vehículos (flota)</span>
                 </div>
               </div>
 
               {/* Resultado del cálculo */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
-                <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-center">
-                  <span className="text-xs text-slate-400 block mb-1">Clientes fidelizados adicionales:</span>
-                  <span className="text-3xl font-black text-white">+{clientesRecuperados}</span>
-                  <span className="text-[11px] text-emerald-400 block mt-1">reagendamientos / mes</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/[0.06]">
+                <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 text-center">
+                  <span className="text-xs text-white/40 block mb-1 font-light">Clientes reactivados / mes:</span>
+                  <span className="text-3xl font-black text-white tracking-tight">+{clientesRecuperados}</span>
+                  <span className="text-[11px] text-blue-400 block mt-1 font-medium">visitas adicionales</span>
                 </div>
-                <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-2xl p-4 text-center">
-                  <span className="text-xs text-emerald-300 block mb-1">Facturación extra estimada:</span>
-                  <span className="text-3xl font-black text-emerald-400">
+                <div className="bg-blue-500/[0.06] border border-blue-500/20 rounded-2xl p-5 text-center">
+                  <span className="text-xs text-blue-300/80 block mb-1 font-light">Facturación extra estimada:</span>
+                  <span className="text-3xl font-black text-blue-400 font-mono tracking-tight">
                     +${ingresoExtra.toLocaleString('es-CL')}
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-1">CLP mensuales adicionales</span>
+                  <span className="text-[11px] text-white/40 block mt-1 font-light">CLP mensuales aproximados</span>
                 </div>
               </div>
 
-              <p className="text-center text-[11px] text-slate-400 italic">
-                * Estimación conservadora basada en un 22% de tasa de reactivación y un ticket promedio de $65.000 CLP. ¡El plan Taller Pro se paga solo con el primer cliente recuperado!
+              <p className="text-center text-[11px] text-white/35 font-light leading-relaxed">
+                * Estimación conservadora basada en un 22% de tasa de reactivación periódica y un ticket medio de $65.000 CLP.
               </p>
             </div>
           </div>
@@ -303,38 +330,40 @@ export default function PlanesPage() {
       </section>
 
       {/* 4. PLANES Y PRECIOS */}
-      <section id="planes" className="py-20 px-4 max-w-6xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">Suscripciones Flexibles</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-2">
-            Elige el plan ideal para tu negocio automotriz
+      <section id="planes" className="py-24 px-6 lg:px-8 max-w-6xl mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 block mb-2">
+            Planes de Suscripción
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            Elige el formato adecuado a tu operación
           </h2>
-          <p className="text-slate-400 text-sm mt-2">
-            Todos los planes incluyen 14 días de prueba gratuita. Sin contratos forzosos.
+          <p className="text-white/45 text-sm mt-2 font-light">
+            Todos los planes incluyen 14 días de prueba con configuración asistida.
           </p>
 
-          {/* Selector Mensual / Anual */}
-          <div className="inline-flex items-center bg-slate-900 border border-slate-800 rounded-full p-1.5 mt-6">
+          {/* Toggle Mensual / Anual */}
+          <div className="inline-flex items-center bg-white/[0.03] border border-white/[0.08] rounded-full p-1 mt-8">
             <button
               onClick={() => setCicloFacturacion('mensual')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all ${
+              className={`px-5 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                 cicloFacturacion === 'mensual'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                  : 'text-white/40 hover:text-white'
               }`}
             >
               Pago Mensual
             </button>
             <button
               onClick={() => setCicloFacturacion('anual')}
-              className={`px-5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-5 py-2 rounded-full text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer ${
                 cicloFacturacion === 'anual'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                  : 'text-white/40 hover:text-white'
               }`}
             >
               <span>Pago Anual</span>
-              <span className="bg-emerald-950 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full border border-emerald-700/60 font-black">
+              <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
                 2 Meses Gratis
               </span>
             </button>
@@ -342,53 +371,57 @@ export default function PlanesPage() {
         </div>
 
         {/* Tarjetas de Planes */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           {PLANES.map((plan) => {
             const precio = cicloFacturacion === 'mensual' ? plan.precioMensual : Math.round(plan.precioAnual / 12);
             return (
               <div
                 key={plan.id}
-                className={`relative bg-slate-900 rounded-3xl p-8 flex flex-col justify-between border-2 transition-all ${plan.color} ${
-                  plan.destacado ? 'scale-105 z-10 bg-slate-900/95 ring-2 ring-cyan-500/30' : 'hover:border-slate-700'
+                className={`relative bg-[#0d1117] rounded-3xl p-8 flex flex-col justify-between transition-all ${
+                  plan.destacado
+                    ? 'border-2 border-blue-500/50 shadow-2xl shadow-blue-500/10 ring-1 ring-blue-500/20'
+                    : 'border border-white/[0.08] hover:border-white/[0.15]'
                 }`}
               >
                 {plan.destacado && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-xs font-black uppercase tracking-wider py-1 px-4 rounded-full shadow-lg">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[10px] font-semibold uppercase tracking-[0.18em] py-1 px-3.5 rounded-full shadow-md">
                     Recomendado para Talleres
                   </div>
                 )}
 
                 <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-2xl font-black text-white">{plan.nombre}</h3>
-                      <span className="text-xs text-slate-400 font-medium">{plan.badge}</span>
-                    </div>
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-white tracking-tight">{plan.nombre}</h3>
+                    <span className="text-xs text-white/40 font-light block mt-0.5">{plan.badge}</span>
                   </div>
 
-                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+                  <p className="text-xs text-white/50 mb-6 font-light leading-relaxed">
                     {plan.descripcion}
                   </p>
 
-                  <div className="mb-6 pb-6 border-b border-slate-800">
+                  <div className="mb-6 pb-6 border-b border-white/[0.06]">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-extrabold text-white">
+                      <span className="text-4xl font-black text-white font-mono tracking-tight">
                         ${precio.toLocaleString('es-CL')}
                       </span>
-                      <span className="text-xs text-slate-400">CLP / mes</span>
+                      <span className="text-xs text-white/40 font-light">CLP / mes</span>
                     </div>
                     {cicloFacturacion === 'anual' && (
-                      <span className="text-[11px] text-emerald-400 font-semibold block mt-1">
+                      <span className="text-[11px] text-blue-400 font-medium block mt-1.5">
                         Facturado anualmente (${plan.precioAnual.toLocaleString('es-CL')} CLP/año + IVA)
                       </span>
                     )}
                   </div>
 
                   <div className="space-y-3 mb-8">
-                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Incluye:</span>
+                    <span className="text-[10px] font-semibold text-white/40 uppercase tracking-[0.18em] block">
+                      Capacidades:
+                    </span>
                     {plan.caracteristicas.map((c, i) => (
-                      <div key={i} className="flex items-start gap-2.5 text-xs text-slate-300">
-                        <span className="text-cyan-400 font-bold shrink-0">✓</span>
+                      <div key={i} className="flex items-start gap-2.5 text-xs text-white/70 font-light">
+                        <svg className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
                         <span>{c}</span>
                       </div>
                     ))}
@@ -400,13 +433,13 @@ export default function PlanesPage() {
                   onClick={() => {
                     setDemoForm((f) => ({ ...f, plan: plan.nombre }));
                   }}
-                  className={`w-full py-3 px-6 rounded-2xl font-bold text-sm text-center transition-all ${
+                  className={`w-full py-3.5 px-6 rounded-full font-semibold text-xs text-center transition-all cursor-pointer ${
                     plan.destacado
-                      ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg shadow-cyan-500/25'
-                      : 'bg-slate-800 hover:bg-slate-700 text-white'
+                      ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/25'
+                      : 'bg-white/[0.04] hover:bg-white/[0.08] text-white/80 hover:text-white border border-white/[0.08]'
                   }`}
                 >
-                  Comenzar Prueba Gratis
+                  Comenzar prueba gratis
                 </a>
               </div>
             );
@@ -415,38 +448,42 @@ export default function PlanesPage() {
       </section>
 
       {/* 5. FORMULARIO SOLICITUD DE DEMO */}
-      <section id="demo" className="py-20 px-4 bg-slate-900/60 border-t border-slate-800/80">
+      <section id="demo" className="py-24 px-6 lg:px-8 bg-white/[0.01] border-t border-white/[0.06]">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider bg-cyan-950/60 border border-cyan-800/40 px-3 py-1 rounded-full">
-              🚀 Comienza hoy mismo
+          <div className="text-center mb-12">
+            <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 block mb-2">
+              Acceso Inmediato
             </span>
-            <h2 className="text-3xl font-extrabold text-white mt-3">
+            <h2 className="text-3xl font-black text-white tracking-tight">
               Solicita tu Demo Personalizada de AutoBooking
             </h2>
-            <p className="text-slate-400 text-sm mt-2">
-              Ingresa los datos de tu taller. Te activaremos el acceso inmediato y te ayudaremos a configurar tus servicios y precios.
+            <p className="text-white/45 text-sm mt-2 font-light">
+              Ingresa los datos de tu taller. Te activaremos el entorno de pruebas y te asistiremos en la carga de servicios.
             </p>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div className="bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 sm:p-10 shadow-2xl">
             {demoEnviada ? (
               <div className="text-center py-10 space-y-4">
-                <span className="text-6xl">🎉</span>
-                <h3 className="text-2xl font-bold text-white">¡Solicitud recibida con éxito!</h3>
-                <p className="text-sm text-slate-300 max-w-md mx-auto">
-                  Hemos abierto WhatsApp para coordinar tu prueba gratuita de 14 días. También puedes explorar el panel de administración ahora mismo:
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mx-auto">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white tracking-tight">Solicitud enviada correctamente</h3>
+                <p className="text-sm text-white/50 max-w-md mx-auto font-light leading-relaxed">
+                  Se ha generado la conversación en WhatsApp para entregarte tus credenciales de prueba. También puedes revisar el panel demostrativo en este enlace:
                 </p>
                 <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
                   <Link
                     href="/taller"
-                    className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-8 rounded-full text-sm transition-all"
+                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-8 rounded-full text-xs transition-all cursor-pointer shadow-lg shadow-blue-600/25"
                   >
                     Ingresar al Panel de Taller
                   </Link>
                   <button
                     onClick={() => setDemoEnviada(false)}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-6 rounded-full text-sm transition-all"
+                    className="bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white border border-white/[0.08] font-medium py-3 px-6 rounded-full text-xs transition-all cursor-pointer"
                   >
                     Enviar otra solicitud
                   </button>
@@ -456,94 +493,108 @@ export default function PlanesPage() {
               <form onSubmit={handleDemoSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Nombre de tu Taller / Negocio *</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Nombre del Taller o Negocio *
+                    </label>
                     <input
                       required
                       type="text"
                       placeholder="Ej: Taller Mecánico San Cristóbal"
                       value={demoForm.nombreTaller}
                       onChange={(e) => setDemoForm({ ...demoForm, nombreTaller: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Tu Nombre y Apellido *</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Tu Nombre y Apellido *
+                    </label>
                     <input
                       required
                       type="text"
                       placeholder="Ej: Carlos Muñoz"
                       value={demoForm.contacto}
                       onChange={(e) => setDemoForm({ ...demoForm, contacto: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Teléfono / WhatsApp *</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Teléfono / WhatsApp *
+                    </label>
                     <input
                       required
                       type="tel"
                       placeholder="+56 9 1234 5678"
                       value={demoForm.telefono}
                       onChange={(e) => setDemoForm({ ...demoForm, telefono: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Email de Contacto</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Correo Electrónico
+                    </label>
                     <input
                       type="email"
                       placeholder="contacto@mitaller.cl"
                       value={demoForm.email}
                       onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Comuna / Ciudad *</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Comuna / Ciudad *
+                    </label>
                     <input
                       required
                       type="text"
-                      placeholder="Ej: Santiago, Concepción, Viña..."
+                      placeholder="Ej: Providencia, Santiago..."
                       value={demoForm.comuna}
                       onChange={(e) => setDemoForm({ ...demoForm, comuna: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">Plan de Interés</label>
+                    <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                      Plan de Interés
+                    </label>
                     <select
                       value={demoForm.plan}
                       onChange={(e) => setDemoForm({ ...demoForm, plan: e.target.value })}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-cyan-400"
+                      className="w-full bg-[#080a0d] border border-white/[0.08] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/80 transition-all"
                     >
-                      <option value="Taller Móvil">Taller Móvil ($29.900 CLP/mes)</option>
-                      <option value="Taller Pro">Taller Pro ($59.900 CLP/mes - Recomendado)</option>
-                      <option value="Taller Red / Flotas">Taller Red / Flotas ($99.900 CLP/mes)</option>
+                      <option value="Taller Móvil" className="bg-[#080a0d] text-white">Taller Móvil ($29.900 CLP/mes)</option>
+                      <option value="Taller Pro" className="bg-[#080a0d] text-white">Taller Pro ($59.900 CLP/mes)</option>
+                      <option value="Taller Red / Flotas" className="bg-[#080a0d] text-white">Taller Red / Flotas ($99.900 CLP/mes)</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">¿Algún requerimiento especial? (Opcional)</label>
+                  <label className="block text-[11px] font-semibold tracking-wider uppercase text-white/60 mb-1.5">
+                    Observaciones o requerimiento especial (Opcional)
+                  </label>
                   <textarea
-                    rows="3"
-                    placeholder="Cuéntanos cuántos mecánicos tienes o qué servicios ofreces..."
+                    rows="2"
+                    placeholder="Cantidad de operarios o tipo de servicios que ofrecen..."
                     value={demoForm.mensaje}
                     onChange={(e) => setDemoForm({ ...demoForm, mensaje: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl px-4 py-2 text-xs text-white placeholder-white/25 focus:outline-none focus:border-blue-500/80 transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={enviando}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black py-3.5 px-6 rounded-2xl text-base shadow-lg shadow-cyan-500/25 transition-all cursor-pointer disabled:opacity-50"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 px-6 rounded-full text-xs shadow-lg shadow-blue-600/25 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {enviando ? 'Enviando solicitud...' : 'Solicitar Prueba Gratuita de 14 Días'}
                 </button>
@@ -554,29 +605,39 @@ export default function PlanesPage() {
       </section>
 
       {/* 6. FAQ SAAS TALLERES */}
-      <section className="py-20 px-4 max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="text-xs uppercase font-bold text-cyan-400 tracking-wider">Resolvemos tus dudas</span>
-          <h2 className="text-3xl font-extrabold text-white mt-2">Preguntas frecuentes de dueños de taller</h2>
+      <section className="py-24 px-6 lg:px-8 max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <span className="text-[11px] font-semibold tracking-[0.18em] uppercase text-blue-400/80 block mb-2">
+            Preguntas Frecuentes
+          </span>
+          <h2 className="text-3xl font-black text-white tracking-tight">
+            Consultas comunes de administradores de taller
+          </h2>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {PREGUNTAS_TALLER.map((faq, index) => {
             const isOpen = faqAbierta === index;
             return (
               <div
                 key={index}
-                className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden transition-all"
+                className={`bg-white/[0.02] border rounded-2xl overflow-hidden transition-all ${
+                  isOpen ? 'border-blue-500/50 bg-white/[0.04]' : 'border-white/[0.06] hover:border-white/[0.12]'
+                }`}
               >
                 <button
                   onClick={() => setFaqAbierta(isOpen ? null : index)}
-                  className="w-full p-5 text-left font-bold text-white flex justify-between items-center hover:text-cyan-400 transition-colors"
+                  className="w-full p-5 text-left font-medium text-white flex justify-between items-center transition-colors cursor-pointer text-sm"
                 >
                   <span>{faq.q}</span>
-                  <span className="text-slate-500 text-lg ml-4">{isOpen ? '−' : '+'}</span>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ml-4 transition-transform ${isOpen ? 'rotate-45 text-blue-400' : 'text-white/40'}`}>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </span>
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-5 text-sm text-slate-300 leading-relaxed border-t border-slate-800/60 pt-3">
+                  <div className="px-5 pb-5 text-xs text-white/50 leading-relaxed border-t border-white/[0.04] pt-3 font-light">
                     {faq.a}
                   </div>
                 )}
@@ -587,9 +648,9 @@ export default function PlanesPage() {
       </section>
 
       {/* 7. FOOTER */}
-      <footer className="bg-slate-950 text-slate-400 py-12 text-center border-t border-slate-900">
-        <div className="max-w-4xl mx-auto px-4">
-          <p className="text-sm">© 2026 AutoBooking SaaS para Talleres. Todos los derechos reservados.</p>
+      <footer className="border-t border-white/[0.06] py-12 text-center text-xs text-white/40 font-light">
+        <div className="max-w-4xl mx-auto px-6">
+          <p>© 2026 AutoBooking SaaS para Talleres. Todos los derechos reservados.</p>
         </div>
       </footer>
 
