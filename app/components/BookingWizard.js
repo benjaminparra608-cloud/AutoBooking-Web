@@ -35,7 +35,14 @@ const initialForm = {
   botcheck: false,
 };
 
-export default function BookingWizard({ preselectedService, preselectedComuna, preselectedPatente }) {
+export default function BookingWizard({
+  preselectedService,
+  preselectedComuna,
+  preselectedPatente,
+  preselectedTallerId,
+  tallerPhone,
+  tallerNombre,
+}) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -112,8 +119,12 @@ export default function BookingWizard({ preselectedService, preselectedComuna, p
     if (!validateStep(4)) return;
     if (form.botcheck) return;
 
+    const greeting = tallerNombre
+      ? `Hola ${tallerNombre}. Deseo confirmar mi solicitud de agendamiento:`
+      : "Hola AutoBooking. Deseo confirmar mi solicitud de agendamiento:";
+
     const lines = [
-      "Hola AutoBooking. Deseo confirmar mi solicitud de agendamiento:",
+      greeting,
       `• Vehículo: ${form.marca} ${form.modelo} (${form.patente.toUpperCase()})`,
     ];
     if (form.km) lines.push(`• Kilometraje: ${form.km} km`);
@@ -125,12 +136,12 @@ export default function BookingWizard({ preselectedService, preselectedComuna, p
     if (form.direccion) lines.push(`• Dirección: ${form.direccion}`);
     if (form.comentario) lines.push(`• Observaciones: ${form.comentario}`);
 
-    const url = whatsappUrl(lines.join("\n"));
+    const url = whatsappUrl(lines.join("\n"), tallerPhone);
     setWaUrl(url);
 
     setSending(true);
     try {
-      await createCita(form);
+      await createCita(form, preselectedTallerId);
 
       await fetch("https://api.web3forms.com/submit", {
         method: "POST",

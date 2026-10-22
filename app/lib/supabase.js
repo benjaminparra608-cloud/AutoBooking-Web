@@ -1,12 +1,67 @@
 // app/lib/supabase.js
 // Cliente y funciones de persistencia para Citas, Agendamientos y Órdenes de Trabajo (OT)
 // Soporta Supabase en la nube con fallback inteligente a almacenamiento local (localStorage)
+import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
+export const supabase =
+  SUPABASE_URL &&
+  SUPABASE_ANON_KEY &&
+  !SUPABASE_URL.includes("tu-proyecto") &&
+  !SUPABASE_ANON_KEY.includes("tu-anon-key")
+    ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
 const LOCAL_STORAGE_KEY = "autobooking_citas_v1";
 const LOCAL_STORAGE_OT_KEY = "autobooking_ordenes_v1";
+
+// Talleres de prueba para cuando no haya conexión a base de datos
+export const DEMO_TALLERES = [
+  {
+    id: "taller-demo-1",
+    slug: "san-cristobal",
+    nombre: "Taller Mecánico San Cristóbal",
+    rut: "76.890.123-K",
+    telefono: "+56982674570",
+    email: "contacto@tallersancristobal.cl",
+    comuna: "Providencia",
+    direccion: "Av. Pedro de Valdivia 1420",
+    logo_url: "",
+    color_acento: "#3b82f6",
+    plan_suscripcion: "pro",
+    estado_suscripcion: "activa",
+  },
+  {
+    id: "taller-demo-2",
+    slug: "frenos-express",
+    nombre: "Frenos & Baterías Express",
+    rut: "77.123.456-8",
+    telefono: "+56912345678",
+    email: "contacto@frenosexpress.cl",
+    comuna: "Las Condes",
+    direccion: "Av. Las Condes 9800",
+    logo_url: "",
+    color_acento: "#10b981",
+    plan_suscripcion: "movil",
+    estado_suscripcion: "trial_14_dias",
+  },
+  {
+    id: "taller-demo-3",
+    slug: "taller-principal",
+    nombre: "Taller Principal AutoBooking",
+    rut: "76.543.210-9",
+    telefono: "+56982674570",
+    email: "taller@autobooking.cl",
+    comuna: "Santiago",
+    direccion: "Av. Libertador Bernardo O'Higgins 1020",
+    logo_url: "",
+    color_acento: "#3b82f6",
+    plan_suscripcion: "red",
+    estado_suscripcion: "activa",
+  },
+];
 
 const DEMO_CITAS = [
   {
@@ -158,6 +213,203 @@ export function isSupabaseConfigured() {
 }
 
 // ==========================================
+// SECCIÓN 0: MULTI-TENANT & AUTENTICACIÓN TALLERES
+// ==========================================
+
+export async function getTallerBySlug(slug) {
+  const cleanSlug = (slug || "").toLowerCase().trim();
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from("talleres")
+        .select("*")
+        .eq("slug", cleanSlug)
+        .maybeSingle();
+
+      if (!error && data) {
+        return data;
+      }
+    } catch (err) {
+      console.warn("Error consultando taller en Supabase por slug:", err);
+    }
+  }
+
+  // Fallback a los talleres demo
+  const found = DEMO_TALLERES.find((t) => t.slug === cleanSlug);
+  return found || DEMO_TALLERES[0];
+}
+
+export async function getTalleres() {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase.from("talleres").select("*").order("nombre");
+      if (!error && data && data.length > 0) {
+        return data;
+      }
+    } catch (err) {
+      console.warn("Error consultando talleres en Supabase:", err);
+    }
+  }
+  return DEMO_TALLERES;
+}
+
+export async function signInOwner(email, password) {
+  if (isSupabaseConfigured() && supabase) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+
+    // Obtener taller vinculado
+    const { data: usuarioTaller } = await supabase
+      .from("usuarios_taller")
+      .select("*, talleres(*)")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    return {
+      user: data.user,
+      session: data.session,
+      taller: usuarioTaller?.talleres || DEMO_TALLERES[0],
+      rol: usuarioTaller?.rol || "dueno",
+    };
+  }
+
+  // Fallback demo local
+  if (!email || !password) {
+    throw new Error("Por favor ingresa tu correo y contraseña.");
+  }
+
+  const demoUser = {
+    id: "user-demo-1",
+    email,
+    user_metadata: { nombre: "Carlos Henríquez" },
+  };
+
+  const demoSession = {
+    user: demoUser,
+    taller: DEMO_TALLERES[0],
+    rol: "dueno",
+  };
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("autobooking_owner_session", JSON.stringify(demoSession));
+  }
+  return demoSession;
+}
+
+export async function signUpOwner({ email, password, nombre, tallerNombre, telefono, comuna, slug }) {
+  const cleanSlug = (slug || tallerNombre.toLowerCase().replace(/[^a-z0-9]/g, "-")).trim();
+
+  if (isSupabaseConfigured() && supabase) {
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { nombre, tallerNombre } }
+    });
+    if (authError) throw authError;
+
+    const { data: tallerData, error: tallerError } = await supabase
+      .from("talleres")
+      .insert({
+        slug: cleanSlug,
+        nombre: tallerNombre,
+        telefono,
+        email,
+        comuna,
+        plan_suscripcion: "pro",
+        estado_suscripcion: "trial_14_dias"
+      })
+      .select()
+      .single();
+
+    if (tallerError) throw tallerError;
+
+    if (authData.user) {
+      await supabase.from("usuarios_taller").insert({
+        id: authData.user.id,
+        taller_id: tallerData.id,
+        nombre,
+        rol: "dueno"
+      });
+    }
+
+    return { user: authData.user, taller: tallerData };
+  }
+
+  // Fallback demo
+  const nuevoTaller = {
+    id: `taller-${Date.now()}`,
+    slug: cleanSlug,
+    nombre: tallerNombre,
+    telefono,
+    email,
+    comuna,
+    plan_suscripcion: "pro",
+    estado_suscripcion: "trial_14_dias"
+  };
+
+  const demoSession = {
+    user: { id: `user-${Date.now()}`, email, user_metadata: { nombre } },
+    taller: nuevoTaller,
+    rol: "dueno"
+  };
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("autobooking_owner_session", JSON.stringify(demoSession));
+  }
+  return demoSession;
+}
+
+export async function signOutOwner() {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
+  }
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("autobooking_owner_session");
+  }
+}
+
+export async function getCurrentOwnerSession() {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session) {
+        const user = data.session.user;
+        const { data: usuarioTaller } = await supabase
+          .from("usuarios_taller")
+          .select("*, talleres(*)")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        return {
+          user,
+          taller: usuarioTaller?.talleres || DEMO_TALLERES[0],
+          rol: usuarioTaller?.rol || "dueno"
+        };
+      }
+    } catch (e) {
+      console.warn("Error leyendo sesión en Supabase:", e);
+    }
+  }
+
+  // Fallback local
+  if (typeof window !== "undefined") {
+    const raw = localStorage.getItem("autobooking_owner_session");
+    if (raw) {
+      try {
+        return JSON.parse(raw);
+      } catch (err) {}
+    }
+  }
+  return null;
+}
+
+// ==========================================
 // SECCIÓN 1: CITAS Y AGENDAMIENTOS
 // ==========================================
 
@@ -185,10 +437,14 @@ function saveLocalCitas(citas) {
   }
 }
 
-export async function getCitas() {
+export async function getCitas(tallerId = null) {
   if (isSupabaseConfigured()) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/citas?select=*&order=created_at.desc`, {
+      let queryUrl = `${SUPABASE_URL}/rest/v1/citas?select=*&order=created_at.desc`;
+      if (tallerId) {
+        queryUrl += `&taller_id=eq.${tallerId}`;
+      }
+      const res = await fetch(queryUrl, {
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -203,11 +459,16 @@ export async function getCitas() {
       console.warn("Fallo en conexión con Supabase, usando respaldo local:", err);
     }
   }
-  return getLocalCitas();
+  const localList = getLocalCitas();
+  if (tallerId) {
+    return localList.filter((c) => !c.taller_id || c.taller_id === tallerId);
+  }
+  return localList;
 }
 
-export async function createCita(nuevaCita) {
+export async function createCita(nuevaCita, tallerId = null) {
   const citaObj = {
+    taller_id: tallerId || nuevaCita.taller_id || "taller-demo-1",
     patente: (nuevaCita.patente || "").toUpperCase().trim(),
     marca: nuevaCita.marca || "",
     modelo: nuevaCita.modelo || "",
@@ -342,10 +603,14 @@ function saveLocalOrdenes(ordenes) {
   }
 }
 
-export async function getOrdenes() {
+export async function getOrdenes(tallerId = null) {
   if (isSupabaseConfigured()) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/ordenes_trabajo?select=*&order=created_at.desc`, {
+      let queryUrl = `${SUPABASE_URL}/rest/v1/ordenes_trabajo?select=*&order=created_at.desc`;
+      if (tallerId) {
+        queryUrl += `&taller_id=eq.${tallerId}`;
+      }
+      const res = await fetch(queryUrl, {
         headers: {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -360,10 +625,14 @@ export async function getOrdenes() {
       console.warn("Fallo conexión con Supabase para OT, usando local:", err);
     }
   }
-  return getLocalOrdenes();
+  const localList = getLocalOrdenes();
+  if (tallerId) {
+    return localList.filter((o) => !o.taller_id || o.taller_id === tallerId);
+  }
+  return localList;
 }
 
-export async function createOrden(nuevaOT) {
+export async function createOrden(nuevaOT, tallerId = null) {
   const localList = getLocalOrdenes();
   const nextNumber = `OT-${new Date().getFullYear()}-${String(localList.length + 1).padStart(3, "0")}`;
 
@@ -371,6 +640,7 @@ export async function createOrden(nuevaOT) {
   const calcRepuestos = (nuevaOT.repuestos || []).reduce((acc, r) => acc + ((Number(r.precio) || 0) * (Number(r.cantidad) || 1)), 0);
 
   const otObj = {
+    taller_id: tallerId || nuevaOT.taller_id || "taller-demo-1",
     numero_ot: nuevaOT.numero_ot || nextNumber,
     cita_id: nuevaOT.cita_id || null,
     patente: (nuevaOT.patente || "").toUpperCase().trim(),

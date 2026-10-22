@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import DetailingWorkstation from '../components/DetailingWorkstation';
@@ -20,7 +21,12 @@ import {
   convertStoreOrderToOT,
   getInventory,
   updateInventoryStock,
-  adjustInventoryStock
+  adjustInventoryStock,
+  signInOwner,
+  signUpOwner,
+  signOutOwner,
+  getCurrentOwnerSession,
+  DEMO_TALLERES
 } from '../lib/supabase';
 import { SERVICES, ZONES, whatsappUrl } from '../lib/config';
 
@@ -49,6 +55,25 @@ const MECANICOS_TALLER = ['Carlos Henríquez', 'Andrés Silva', 'Matías Morales
 export default function TallerPage() {
   const [activeTab, setActiveTab] = useState('citas'); // 'citas' | 'ordenes' | 'vehiculos' | 'config'
   const [hasSupabase, setHasSupabase] = useState(false);
+
+  // ==========================================
+  // ESTADOS - AUTENTICACIÓN MULTI-TENANT
+  // ==========================================
+  const [session, setSession] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'register'
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  // Registro de nuevo taller
+  const [regNombre, setRegNombre] = useState('');
+  const [regTallerNombre, setRegTallerNombre] = useState('');
+  const [regTelefono, setRegTelefono] = useState('+569');
+  const [regComuna, setRegComuna] = useState('Santiago');
+  const [regSlug, setRegSlug] = useState('');
 
   // ==========================================
   // ESTADOS - CITAS
@@ -162,11 +187,11 @@ export default function TallerPage() {
   const [searchQueryInv, setSearchQueryInv] = useState('');
 
   // ==========================================
-  // CARGA INICIAL
+  // CARGA INICIAL & MULTI-TENANT
   // ==========================================
   useEffect(() => {
     setHasSupabase(isSupabaseConfigured());
-    cargarDatos();
+    initAuthAndData();
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
@@ -176,8 +201,105 @@ export default function TallerPage() {
     }
   }, []);
 
-  async function cargarDatos() {
-    await Promise.all([cargarCitas(), cargarOrdenes(), cargarPedidos(), cargarInventario()]);
+  async function initAuthAndData() {
+    setCheckingAuth(true);
+    try {
+      const sess = await getCurrentOwnerSession();
+      if (sess) {
+        setSession(sess);
+        await cargarDatos(sess.taller?.id);
+      }
+    } catch (err) {
+      console.warn('Error verificando sesión previa:', err);
+    } finally {
+      setCheckingAuth(false);
+    }
+  }
+
+  async function handleLogin(e) {
+    if (e) e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const sess = await signInOwner(authEmail, authPassword);
+      setSession(sess);
+      await cargarDatos(sess.taller?.id);
+    } catch (err) {
+      console.error('Error al iniciar sesión:', err);
+      setAuthError(err.message || 'Error al iniciar sesión. Revisa tus credenciales.');
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function handleDemoLogin(tallerDemo) {
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const demoSess = {
+        user: { id: `user-${tallerDemo.slug}`, email: tallerDemo.email, user_metadata: { nombre: 'Dueño de Taller' } },
+        taller: tallerDemo,
+        rol: 'dueno'
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('autobooking_owner_session', JSON.stringify(demoSess));
+      }
+      setSession(demoSess);
+      await cargarDatos(tallerDemo.id);
+    } catch (err) {
+      setAuthError('Error accediendo a demo');
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    if (!regTallerNombre.trim() || !authEmail.trim() || !authPassword.trim()) {
+      setAuthError('Por favor completa todos los campos requeridos.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    try {
+      const cleanSlug = regSlug.trim() || regTallerNombre.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      const sess = await signUpOwner({
+        email: authEmail,
+        password: authPassword,
+        nombre: regNombre || 'Dueño de Taller',
+        tallerNombre: regTallerNombre,
+        telefono: regTelefono,
+        comuna: regComuna,
+        slug: cleanSlug
+      });
+      setSession(sess);
+      await cargarDatos(sess.taller?.id);
+    } catch (err) {
+      console.error('Error en registro:', err);
+      setAuthError(err.message || 'Error registrando el taller.');
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    await signOutOwner();
+    setSession(null);
+    setCitas([]);
+    setOrdenes([]);
+  }
+
+  function handleCopyBookingLink() {
+    if (!session?.taller?.slug) return;
+    const url = `${window.location.origin}/${session.taller.slug}/agendar`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  }
+
+  async function cargarDatos(tallerId = null) {
+    const tid = tallerId || session?.taller?.id;
+    await Promise.all([cargarCitas(tid), cargarOrdenes(tid), cargarPedidos(), cargarInventario()]);
   }
 
   async function cargarPedidos() {
@@ -204,10 +326,11 @@ export default function TallerPage() {
     }
   }
 
-  async function cargarCitas() {
+  async function cargarCitas(tallerId = null) {
     setLoadingCitas(true);
     try {
-      const data = await getCitas();
+      const tid = tallerId || session?.taller?.id;
+      const data = await getCitas(tid);
       setCitas(data || []);
     } catch (err) {
       console.error('Error cargando citas:', err);
@@ -216,10 +339,11 @@ export default function TallerPage() {
     }
   }
 
-  async function cargarOrdenes() {
+  async function cargarOrdenes(tallerId = null) {
     setLoadingOrdenes(true);
     try {
-      const data = await getOrdenes();
+      const tid = tallerId || session?.taller?.id;
+      const data = await getOrdenes(tid);
       setOrdenes(data || []);
     } catch (err) {
       console.error('Error cargando órdenes:', err);
@@ -283,7 +407,7 @@ export default function TallerPage() {
       const created = await createCita({
         ...newCitaForm,
         estado: 'confirmada'
-      });
+      }, session?.taller?.id);
       setCitas(prev => [created, ...prev]);
       setShowNewCitaModal(false);
       setNewCitaForm({
@@ -362,7 +486,7 @@ export default function TallerPage() {
     }
 
     try {
-      const created = await createOrden(newOTForm);
+      const created = await createOrden(newOTForm, session?.taller?.id);
       setOrdenes(prev => [created, ...prev]);
       setShowNewOTModal(false);
       setNewOTForm(initialOTForm);
@@ -802,9 +926,347 @@ export default function TallerPage() {
     window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(finalMsg)}`, '_blank');
   }
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-[#080a0d] text-white flex flex-col font-sans">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center justify-center py-32">
+          <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4" />
+          <p className="text-white/60 text-sm tracking-wide">Validando acceso al taller...</p>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-[#080a0d] text-white font-sans pb-28 relative selection:bg-blue-600 selection:text-white">
+        <Navbar />
+
+        <main className="max-w-xl mx-auto px-4 pt-10 sm:pt-16">
+          {/* Badge & Título */}
+          <div className="text-center mb-8">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-3">
+              Portal SaaS B2B • AutoBooking Red
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-white mb-2">
+              Acceso a Talleres
+            </h1>
+            <p className="text-white/50 text-sm font-light max-w-md mx-auto">
+              Gestiona tus citas en tiempo real, órdenes de trabajo técnicas y tu portal exclusivo de agendamiento.
+            </p>
+          </div>
+
+          {/* Tarjeta de Acceso Rápido Demo (1-Click) */}
+          <div className="mb-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-white/70 uppercase tracking-wider">
+                Acceso Inmediato de Demostración
+              </span>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
+                Sin Contraseña
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleDemoLogin(DEMO_TALLERES[0])}
+                disabled={authLoading}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-blue-500/40 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-bold text-xs text-blue-300">
+                  SC
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-white group-hover:text-blue-300 truncate">
+                    Taller San Cristóbal
+                  </div>
+                  <div className="text-[11px] text-white/40">Providencia • Plan Pro</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDemoLogin(DEMO_TALLERES[1])}
+                disabled={authLoading}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] hover:border-emerald-500/40 text-left transition-all group cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center font-bold text-xs text-emerald-300">
+                  FE
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-white group-hover:text-emerald-300 truncate">
+                    Frenos & Baterías Express
+                  </div>
+                  <div className="text-[11px] text-white/40">Las Condes • Taller Móvil</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Formulario Login / Register */}
+          <div className="rounded-2xl border border-white/[0.08] bg-[#0d121c]/90 p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+            {/* Tabs */}
+            <div className="flex border-b border-white/[0.08] mb-6">
+              <button
+                type="button"
+                onClick={() => { setAuthMode('login'); setAuthError(''); }}
+                className={`flex-1 pb-3 text-xs font-medium uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+                  authMode === 'login'
+                    ? 'border-blue-500 text-white'
+                    : 'border-transparent text-white/40 hover:text-white/70'
+                }`}
+              >
+                Iniciar Sesión
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAuthMode('register'); setAuthError(''); }}
+                className={`flex-1 pb-3 text-xs font-medium uppercase tracking-wider text-center border-b-2 transition-all cursor-pointer ${
+                  authMode === 'register'
+                    ? 'border-blue-500 text-white'
+                    : 'border-transparent text-white/40 hover:text-white/70'
+                }`}
+              >
+                Registrar Nuevo Taller
+              </button>
+            </div>
+
+            {authError && (
+              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
+                <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{authError}</span>
+              </div>
+            )}
+
+            {authMode === 'login' ? (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-white/60 mb-1.5 font-medium">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="ejemplo@taller.cl"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-white/60 mb-1.5 font-medium">Contraseña</label>
+                  <input
+                    type="password"
+                    required
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full mt-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
+                >
+                  {authLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Ingresando...</span>
+                    </>
+                  ) : (
+                    <span>Entrar a mi Taller</span>
+                  )}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div>
+                  <label className="block text-xs text-white/60 mb-1.5 font-medium">Nombre del Taller</label>
+                  <input
+                    type="text"
+                    required
+                    value={regTallerNombre}
+                    onChange={(e) => {
+                      setRegTallerNombre(e.target.value);
+                      if (!regSlug) {
+                        setRegSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-'));
+                      }
+                    }}
+                    placeholder="ej. Taller Mecánico San Cristóbal"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1.5 font-medium">Tu Nombre</label>
+                    <input
+                      type="text"
+                      required
+                      value={regNombre}
+                      onChange={(e) => setRegNombre(e.target.value)}
+                      placeholder="ej. Carlos Silva"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1.5 font-medium">Comuna</label>
+                    <select
+                      value={regComuna}
+                      onChange={(e) => setRegComuna(e.target.value)}
+                      className="w-full bg-[#0d121c] border border-white/[0.08] focus:border-blue-500 rounded-xl px-3 py-2.5 text-sm text-white outline-none"
+                    >
+                      {ZONES.map((z) => (
+                        <option key={z} value={z}>{z}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1.5 font-medium">Teléfono / WhatsApp</label>
+                    <input
+                      type="text"
+                      required
+                      value={regTelefono}
+                      onChange={(e) => setRegTelefono(e.target.value)}
+                      placeholder="+56912345678"
+                      className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-white/60 mb-1.5 font-medium">Link de Agendamiento</label>
+                    <div className="text-[11px] text-white/40 mt-2 font-mono truncate">
+                      /{regSlug || 'tu-taller'}/agendar
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-white/60 mb-1.5 font-medium">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="contacto@mitaller.cl"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs text-white/60 mb-1.5 font-medium">Contraseña</label>
+                  <input
+                    type="password"
+                    required
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-white/[0.03] border border-white/[0.08] focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 outline-none transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full mt-2 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
+                >
+                  {authLoading ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span>Registrando taller...</span>
+                    </>
+                  ) : (
+                    <span>Crear Cuenta & Activar 14 Días Gratis</span>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </main>
+
+        <BottomNav />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#080a0d] text-white font-sans pb-28 relative">
       <Navbar />
+
+      {/* BARRA IDENTIDAD DEL TALLER AUTENTICADO */}
+      <div className="bg-[#0b0e14] border-b border-white/[0.08] px-4 sm:px-6 lg:px-8 py-3.5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-bold text-sm text-blue-300">
+              {(session?.taller?.nombre || 'T').slice(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-semibold text-white">
+                  {session?.taller?.nombre || 'Mi Taller'}
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/25 uppercase">
+                  {session?.taller?.plan_suscripcion || 'Plan Pro'}
+                </span>
+                {session?.taller?.comuna && (
+                  <span className="text-xs text-white/40 hidden sm:inline">
+                    • {session.taller.comuna}
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-white/40 flex items-center gap-1.5">
+                <span>Sesión: {session?.user?.email}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Link al portal de agendamiento público con botón de copiar */}
+            {session?.taller?.slug && (
+              <div className="flex items-center gap-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-1.5 text-xs">
+                <span className="text-white/40 text-[11px] hidden sm:inline">Portal Clientes:</span>
+                <span className="text-blue-400 font-mono text-xs truncate max-w-[160px] sm:max-w-none">
+                  /{session.taller.slug}/agendar
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyBookingLink}
+                  className="ml-1 text-white/60 hover:text-white px-1.5 py-0.5 rounded bg-white/[0.06] hover:bg-white/[0.1] text-[11px] font-medium transition-all cursor-pointer"
+                  title="Copiar enlace directo para enviar a clientes por WhatsApp o redes sociales"
+                >
+                  {copiedLink ? '¡Copiado!' : 'Copiar'}
+                </button>
+                <Link
+                  href={`/${session.taller.slug}/agendar`}
+                  target="_blank"
+                  className="ml-1 text-white/40 hover:text-blue-300 transition-colors"
+                  title="Abrir página pública de agendamiento"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </Link>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-xs text-white/50 hover:text-rose-400 border border-white/[0.08] hover:border-rose-500/30 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+              title="Cerrar sesión de este taller"
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* HEADER TALLER */}
       <header className="bg-[#080a0d] border-b border-white/[0.06] pt-10 pb-6 px-4 sm:px-6 lg:px-8">

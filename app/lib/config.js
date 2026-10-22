@@ -235,6 +235,7 @@ export function formatDateEs(date) {
   });
 }
 
-export function whatsappUrl(message) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+export function whatsappUrl(message, customNumber = null) {
+  const number = customNumber ? String(customNumber).replace(/\D/g, "") : WHATSAPP_NUMBER;
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 }
