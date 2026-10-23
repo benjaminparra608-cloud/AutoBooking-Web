@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import DetailingWorkstation from '../components/DetailingWorkstation';
+import VehicleDamageInspector from '../components/VehicleDamageInspector';
 import {
   getCitas,
   createCita,
@@ -185,6 +186,14 @@ export default function TallerPage() {
   const [loadingInventario, setLoadingInventario] = useState(true);
   const [filterCategoriaInv, setFilterCategoriaInv] = useState('todas');
   const [searchQueryInv, setSearchQueryInv] = useState('');
+
+  // ==========================================
+  // ESTADOS - INSPECCIÓN 360°, EQUIPO & STICKERS
+  // ==========================================
+  const [modalInspeccionOT, setModalInspeccionOT] = useState(null);
+  const [modalStickerQR, setModalStickerQR] = useState(null);
+  const [porcentajeComisionGlobal, setPorcentajeComisionGlobal] = useState(35);
+  const [modalLiquidacionMecanico, setModalLiquidacionMecanico] = useState(null);
 
   // ==========================================
   // CARGA INICIAL & MULTI-TENANT
@@ -904,6 +913,35 @@ export default function TallerPage() {
     };
   }, [inventarioList]);
 
+  const kpisEquipo = useMemo(() => {
+    return MECANICOS_TALLER.map((mecanico) => {
+      const ordenesMecanico = ordenes.filter((o) => (o.mecanico_asignado || '').trim() === mecanico);
+      const ordenesCompletadas = ordenesMecanico.filter((o) => o.estado === 'entregado' || o.estado === 'listo_entrega');
+      const totalManoObra = ordenesMecanico.reduce((acc, o) => acc + (Number(o.total_mano_obra) || 0), 0);
+      const totalRepuestos = ordenesMecanico.reduce((acc, o) => acc + (Number(o.total_repuestos) || 0), 0);
+      const comisionCLP = Math.round(totalManoObra * (porcentajeComisionGlobal / 100));
+
+      return {
+        mecanico,
+        totalOTs: ordenesMecanico.length,
+        completadas: ordenesCompletadas.length,
+        enProceso: ordenesMecanico.length - ordenesCompletadas.length,
+        totalManoObra,
+        totalRepuestos,
+        comisionCLP,
+        ordenes: ordenesMecanico
+      };
+    });
+  }, [ordenes, porcentajeComisionGlobal]);
+
+  const totalComisionesGlobal = useMemo(() => {
+    return kpisEquipo.reduce((acc, m) => acc + m.comisionCLP, 0);
+  }, [kpisEquipo]);
+
+  const totalManoObraGlobal = useMemo(() => {
+    return kpisEquipo.reduce((acc, m) => acc + m.totalManoObra, 0);
+  }, [kpisEquipo]);
+
   function handleEnviarWhatsAppRecordatorio(item, textoPersonalizado = null) {
     const telefono = (item.telefono || '').replace(/\D/g, '');
     const cliente = item.cliente || 'Estimado/a cliente';
@@ -1462,6 +1500,23 @@ export default function TallerPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('equipo')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs tracking-wide transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'equipo'
+                ? 'border-b-2 border-blue-500 text-white font-semibold'
+                : 'border-b-2 border-transparent text-white/40 hover:text-white/80 font-medium'
+            }`}
+          >
+            <svg className="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+            <span>Equipo & Comisiones</span>
+            <span className="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+              ${Math.round(totalComisionesGlobal / 1000)}k
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('config')}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs tracking-wide transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'config'
@@ -1997,6 +2052,34 @@ export default function TallerPage() {
                           <span>✨</span>
                           <span>Checklist Detailing & Diluciones</span>
                         </button>
+
+                        {/* Fila de Herramientas SaaS: 360° Daños, Tracker en Vivo y Sticker QR */}
+                        <div className="grid grid-cols-3 gap-1.5 pt-1 border-t border-slate-900">
+                          <button
+                            type="button"
+                            onClick={() => setModalInspeccionOT(ot)}
+                            className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-cyan-400 py-1.5 px-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            title="Inspección visual de carrocería y daños 360°"
+                          >
+                            <span>🔍</span> 360° Daños
+                          </button>
+                          <Link
+                            href={`/estado/${ot.patente}`}
+                            target="_blank"
+                            className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-blue-400 py-1.5 px-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-colors text-center"
+                            title="Abrir enlace del seguimiento en vivo que ve el cliente"
+                          >
+                            <span>📡</span> Tracker
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => setModalStickerQR(ot.patente)}
+                            className="bg-slate-900 hover:bg-slate-800 border border-slate-800 text-emerald-400 py-1.5 px-2 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer"
+                            title="Generar Sticker con código QR para guantera"
+                          >
+                            <span>🏷️</span> QR Auto
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -2101,6 +2184,31 @@ export default function TallerPage() {
                             <span className="text-lg font-extrabold text-emerald-400">${gastoTotal.toLocaleString('es-CL')}</span>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Botones de Pasaporte Digital & Sticker QR */}
+                      <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-800">
+                        <Link
+                          href={`/historial/${patenteSeleccionada}`}
+                          target="_blank"
+                          className="bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+                        >
+                          <span>📜</span> Pasaporte Digital Certificado
+                        </Link>
+                        <Link
+                          href={`/estado/${patenteSeleccionada}`}
+                          target="_blank"
+                          className="bg-blue-600/15 hover:bg-blue-600/25 border border-blue-500/30 text-blue-300 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all"
+                        >
+                          <span>📡</span> Ver Tracker en Vivo
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setModalStickerQR(patenteSeleccionada)}
+                          className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <span>🏷️</span> Imprimir Sticker QR Guantera
+                        </button>
                       </div>
 
                       {/* Línea de tiempo de servicios y OT */}
@@ -2997,6 +3105,192 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
         {/* ========================================================= */}
         {activeTab === 'detailing' && (
           <DetailingWorkstation onBackToOverview={() => setActiveTab('ordenes')} />
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 8: RENDIMIENTO Y COMISIONES POR MECÁNICO              */}
+        {/* ========================================================= */}
+        {activeTab === 'equipo' && (
+          <div className="space-y-6">
+            {/* KPIS DE PRODUCTIVIDAD Y COMISIONES */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3.5">
+              <div className="bg-[#0d121c] border border-white/[0.08] p-4 sm:p-5 rounded-2xl shadow-lg">
+                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">
+                  Mano de Obra Facturada
+                </div>
+                <div className="text-2xl font-extrabold text-white">
+                  ${totalManoObraGlobal.toLocaleString('es-CL')}
+                </div>
+                <div className="text-[11px] text-white/40 mt-1">Total acumulado en OTs</div>
+              </div>
+
+              <div className="bg-[#0d121c] border border-white/[0.08] p-4 sm:p-5 rounded-2xl shadow-lg">
+                <div className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                  <span>Comisiones a Pagar</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 font-bold">
+                    {porcentajeComisionGlobal}% Base
+                  </span>
+                </div>
+                <div className="text-2xl font-extrabold text-emerald-400">
+                  ${totalComisionesGlobal.toLocaleString('es-CL')}
+                </div>
+                <div className="text-[11px] text-emerald-400/60 mt-1">A liquidar este mes</div>
+              </div>
+
+              <div className="bg-[#0d121c] border border-white/[0.08] p-4 sm:p-5 rounded-2xl shadow-lg">
+                <div className="text-[11px] font-semibold text-blue-400 uppercase tracking-wider mb-1">
+                  Margen Líquido Taller
+                </div>
+                <div className="text-2xl font-extrabold text-blue-300">
+                  ${(totalManoObraGlobal - totalComisionesGlobal).toLocaleString('es-CL')}
+                </div>
+                <div className="text-[11px] text-blue-400/60 mt-1">Retención post comisiones</div>
+              </div>
+
+              {/* Selector Rápido de Porcentaje de Comisión */}
+              <div className="bg-[#0d121c] border border-white/[0.08] p-4 sm:p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+                <div className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-1">
+                  Pauta de Comisión Taller
+                </div>
+                <div className="flex gap-1.5 mt-1">
+                  {[25, 30, 35, 40, 50].map((pct) => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => setPorcentajeComisionGlobal(pct)}
+                      className={`flex-1 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        porcentajeComisionGlobal === pct
+                          ? 'bg-blue-600 text-white shadow'
+                          : 'bg-white/[0.04] text-white/40 hover:text-white'
+                      }`}
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                </div>
+                <div className="text-[10px] text-white/30 mt-2">Aplica sobre Mano de Obra neta</div>
+              </div>
+            </div>
+
+            {/* TARJETAS DE MECÁNICOS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {kpisEquipo.map((mec) => (
+                <div
+                  key={mec.mecanico}
+                  className="rounded-2xl border border-white/[0.08] bg-[#0d121c]/90 p-5 shadow-xl flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-500 border border-white/10 flex items-center justify-center font-bold text-white text-sm shadow">
+                        {mec.mecanico.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-white truncate">{mec.mecanico}</h4>
+                        <span className="text-[11px] text-white/40">Mecánico Especialista</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-xs py-3 border-y border-white/[0.06] mb-4">
+                      <div className="flex justify-between text-white/60">
+                        <span>OTs Asignadas:</span>
+                        <strong className="text-white font-mono">{mec.totalOTs}</strong>
+                      </div>
+                      <div className="flex justify-between text-white/60">
+                        <span>OTs Finalizadas:</span>
+                        <strong className="text-emerald-400 font-mono">{mec.completadas}</strong>
+                      </div>
+                      <div className="flex justify-between text-white/60">
+                        <span>Mano de Obra:</span>
+                        <strong className="text-white font-mono">${mec.totalManoObra.toLocaleString('es-CL')}</strong>
+                      </div>
+                      <div className="flex justify-between text-white/60 pt-1 border-t border-white/[0.04]">
+                        <span className="font-semibold text-emerald-400">Comisión ({porcentajeComisionGlobal}%):</span>
+                        <strong className="text-emerald-400 font-mono text-sm font-bold">
+                          ${mec.comisionCLP.toLocaleString('es-CL')}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setModalLiquidacionMecanico(mec)}
+                      className="w-full py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white text-xs font-semibold transition-all cursor-pointer"
+                    >
+                      Ver Liquidación Mensual
+                    </button>
+                    <a
+                      href={whatsappUrl(
+                        `Hola ${mec.mecanico}, te compartimos el resumen de producción de este mes en AutoBooking:\n` +
+                        `• Total OTs: ${mec.totalOTs} (${mec.completadas} completadas)\n` +
+                        `• Mano de Obra: $${mec.totalManoObra.toLocaleString('es-CL')} CLP\n` +
+                        `• Comisión calculada (${porcentajeComisionGlobal}%): $${mec.comisionCLP.toLocaleString('es-CL')} CLP.\n` +
+                        `¡Excelente trabajo!`
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <span>💬</span> WhatsApp Resumen
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* TABLA DETALLADA DE PRODUCCIÓN */}
+            <div className="rounded-2xl border border-white/[0.08] bg-[#0d121c]/90 overflow-hidden shadow-xl">
+              <div className="p-4 sm:p-5 border-b border-white/[0.06] flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Detalle de Trabajos y Comisiones por OT</h3>
+                  <p className="text-xs text-white/40">Desglose de cada orden de trabajo con el cálculo de comisión asignada.</p>
+                </div>
+                <span className="text-xs text-white/40 font-mono">{ordenes.length} OTs registradas</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-white/[0.02] text-white/50 border-b border-white/[0.06] uppercase tracking-wider font-semibold text-[10px]">
+                    <tr>
+                      <th className="py-3 px-4">OT #</th>
+                      <th className="py-3 px-4">Mecánico</th>
+                      <th className="py-3 px-4">Vehículo / Patente</th>
+                      <th className="py-3 px-4">Estado</th>
+                      <th className="py-3 px-4 text-right">Mano de Obra</th>
+                      <th className="py-3 px-4 text-right">Comisión ({porcentajeComisionGlobal}%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/[0.04]">
+                    {ordenes.map((ot) => {
+                      const manoObra = Number(ot.total_mano_obra) || 0;
+                      const comision = Math.round(manoObra * (porcentajeComisionGlobal / 100));
+                      return (
+                        <tr key={ot.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="py-3 px-4 font-mono font-bold text-blue-400">{ot.numero_ot}</td>
+                          <td className="py-3 px-4 text-white font-medium">{ot.mecanico_asignado || 'Sin Asignar'}</td>
+                          <td className="py-3 px-4 text-white/80">
+                            {ot.marca} {ot.modelo} <span className="font-mono text-white/40">({ot.patente})</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                              ot.estado === 'entregado'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            }`}>
+                              {ot.estado}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right font-mono text-white">${manoObra.toLocaleString('es-CL')}</td>
+                          <td className="py-3 px-4 text-right font-mono font-bold text-emerald-400">${comision.toLocaleString('es-CL')}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
 
       </main>
@@ -3935,6 +4229,188 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...`}
               >
                 <span>📲</span>
                 <span>Enviar por WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL INSPECCIÓN VISUAL DE CARROCERÍA & DAÑOS 360°        */}
+      {/* ========================================================= */}
+      {modalInspeccionOT && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="w-full max-w-4xl my-auto">
+            <VehicleDamageInspector
+              checklistData={modalInspeccionOT.checklist || {}}
+              patente={modalInspeccionOT.patente}
+              clienteNombre={modalInspeccionOT.cliente_nombre}
+              clienteTelefono={modalInspeccionOT.cliente_telefono}
+              onClose={() => setModalInspeccionOT(null)}
+              onChange={async (newChecklist) => {
+                await updateOrden(modalInspeccionOT.id, { checklist: newChecklist });
+                setOrdenes(prev => prev.map(o => o.id === modalInspeccionOT.id ? { ...o, checklist: newChecklist } : o));
+                setModalInspeccionOT(prev => prev ? { ...prev, checklist: newChecklist } : null);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL GENERADOR STICKER QR PARA GUANTERA / PARABRISAS     */}
+      {/* ========================================================= */}
+      {modalStickerQR && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+          <div className="relative w-full max-w-md bg-[#0d121c] border border-white/[0.1] rounded-2xl p-6 shadow-2xl text-white">
+            <button
+              type="button"
+              onClick={() => setModalStickerQR(null)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-base font-semibold text-white mb-1">
+              Sticker QR Oficial para Vehículo
+            </h3>
+            <p className="text-xs text-white/50 mb-6">
+              Imprime esta etiqueta y pégala en la guantera o parabrisas del vehículo para acceso instantáneo al historial.
+            </p>
+
+            <div className="p-5 rounded-2xl bg-white text-slate-900 border-2 border-slate-900 shadow-2xl flex flex-col items-center text-center mb-6">
+              <div className="w-full flex items-center justify-between border-b-2 border-slate-900 pb-2 mb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">
+                  AUTOBOOKING • PASAPORTE DIGITAL
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 font-mono">
+                  {modalStickerQR}
+                </span>
+              </div>
+
+              <div className="w-36 h-36 bg-white p-2 rounded-xl border border-slate-300 shadow-sm mb-3">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`https://autobooking.cl/historial/${modalStickerQR}`)}&color=0f172a&bgcolor=ffffff&qzone=2`}
+                  alt={`QR Historial ${modalStickerQR}`}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="text-xs font-bold text-slate-900 mb-0.5">
+                ESCANEA CON TU CELULAR
+              </div>
+              <div className="text-[10px] text-slate-600">
+                Historial de mantenciones y sellos de garantía técnica al día
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all cursor-pointer"
+              >
+                Imprimir Etiqueta
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalStickerQR(null)}
+                className="px-4 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] text-white/60 text-xs transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL LIQUIDACIÓN MENSUAL DE COMISIONES POR MECÁNICO      */}
+      {/* ========================================================= */}
+      {modalLiquidacionMecanico && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-[#0d121c] border border-white/[0.1] rounded-2xl p-6 sm:p-8 shadow-2xl text-white my-auto">
+            <button
+              type="button"
+              onClick={() => setModalLiquidacionMecanico(null)}
+              className="absolute top-5 right-5 text-white/40 hover:text-white cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.08]">
+              <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-bold text-blue-300 text-lg">
+                {modalLiquidacionMecanico.mecanico.slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+                  Liquidación de Producción & Comisiones
+                </span>
+                <h3 className="text-xl font-bold text-white">{modalLiquidacionMecanico.mecanico}</h3>
+                <p className="text-xs text-white/40">Período en curso • Pauta de Mano de Obra {porcentajeComisionGlobal}%</p>
+              </div>
+            </div>
+
+            {/* Resumen Totales */}
+            <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] mb-6 text-center">
+              <div>
+                <span className="text-[10px] text-white/40 uppercase block">OTs Asignadas</span>
+                <span className="text-lg font-bold text-white font-mono">{modalLiquidacionMecanico.totalOTs}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-white/40 uppercase block">Mano de Obra</span>
+                <span className="text-lg font-bold text-white font-mono">${modalLiquidacionMecanico.totalManoObra.toLocaleString('es-CL')}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-emerald-400 uppercase block font-semibold">Total a Liquidar</span>
+                <span className="text-lg font-bold text-emerald-400 font-mono">${modalLiquidacionMecanico.comisionCLP.toLocaleString('es-CL')}</span>
+              </div>
+            </div>
+
+            {/* Lista de Órdenes del Mecánico */}
+            <div className="space-y-2 mb-6 max-h-56 overflow-y-auto">
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/50 block mb-1">
+                Órdenes Asignadas ({modalLiquidacionMecanico.ordenes.length}):
+              </span>
+              {modalLiquidacionMecanico.ordenes.length === 0 ? (
+                <p className="text-xs text-white/40 italic">No hay órdenes registradas para este mecánico aún.</p>
+              ) : (
+                modalLiquidacionMecanico.ordenes.map((ot) => {
+                  const mo = Number(ot.total_mano_obra) || 0;
+                  const com = Math.round(mo * (porcentajeComisionGlobal / 100));
+                  return (
+                    <div
+                      key={ot.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] text-xs"
+                    >
+                      <div>
+                        <span className="font-mono font-bold text-blue-400 mr-2">{ot.numero_ot}</span>
+                        <span className="text-white/80">{ot.marca} {ot.modelo} ({ot.patente})</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-white/50 font-mono mr-3">M.O: ${mo.toLocaleString('es-CL')}</span>
+                        <span className="text-emerald-400 font-mono font-bold">+${com.toLocaleString('es-CL')}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/[0.08]">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="py-2.5 px-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-xs font-semibold transition-all cursor-pointer"
+              >
+                Imprimir Liquidación
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalLiquidacionMecanico(null)}
+                className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition-all cursor-pointer"
+              >
+                Cerrar
               </button>
             </div>
           </div>
