@@ -69,8 +69,8 @@ export default function Navbar() {
       {/* ========================================================= */}
       {/* 1. BARRA SUPERIOR MÓVIL COMPACTA (MINIMALISTA)             */}
       {/* ========================================================= */}
-      <nav className="sticky top-0 z-50 w-full bg-[#080a0d]/90 backdrop-blur-2xl border-b border-white/[0.06] px-5 py-3 flex md:hidden items-center justify-between">
-        <Link href="/" className="text-base font-black tracking-tight text-white flex items-center gap-2.5">
+      <nav className="sticky top-0 z-50 w-full bg-[#080a0d]/90 backdrop-blur-2xl border-b border-white/[0.06] px-4 py-3 flex md:hidden items-center justify-between">
+        <Link href="/" className="text-base font-black tracking-tight text-white flex items-center gap-2">
           <span className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black shadow-md shadow-blue-600/30">
             AB
           </span>
@@ -79,7 +79,29 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Botón SOS rápido en móvil */}
+          {isCliente && (
+            <Link
+              href="/emergencia"
+              className="bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-rose-300 font-bold text-[11px] py-1.5 px-2.5 rounded-full flex items-center gap-1 transition-all"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
+              <span>SOS</span>
+            </Link>
+          )}
+
+          {/* Botón Buscar en Móvil */}
+          <Link
+            href="/buscar"
+            className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/75 p-2 rounded-full flex items-center justify-center transition-all"
+            aria-label="Buscar servicios"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+          </Link>
+
           {/* Botón Carrito en Móvil */}
           <button
             onClick={() => setIsCartOpen(true)}
@@ -112,17 +134,6 @@ export default function Navbar() {
               </svg>
             )}
           </button>
-
-          {/* Botón Agendar en Móvil */}
-          {isCliente && (
-            <a
-              href="/#agendar"
-              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-1.5 px-3.5 rounded-full transition-all flex items-center gap-1 shadow-sm"
-            >
-              <span>Agendar</span>
-              <span className="text-[10px]">→</span>
-            </a>
-          )}
         </div>
       </nav>
 
@@ -160,6 +171,19 @@ export default function Navbar() {
             </Link>
           </div>
 
+          {/* Botón Destacado Emergencia SOS 24/7 */}
+          <Link
+            href="/emergencia"
+            onClick={handleNavLinkClick}
+            className="w-full p-3.5 rounded-xl bg-gradient-to-r from-rose-600/25 to-red-600/20 border border-rose-500/40 flex items-center justify-between text-xs font-bold text-rose-200"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span>Auxilio Vehicular SOS 24/7 (Sin seguro)</span>
+            </div>
+            <span>Pedir →</span>
+          </Link>
+
           {/* Categoría 1: Servicios & Mecánica */}
           <div className="border border-white/[0.06] rounded-xl overflow-hidden bg-white/[0.02]">
             <button
@@ -170,7 +194,7 @@ export default function Navbar() {
                 <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63" />
                 </svg>
-                <span>Servicios & Diagnóstico</span>
+                <span>Servicios, Buscador & Diagnóstico</span>
               </div>
               <svg className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${mobileExpandedSection === 'servicios' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -178,6 +202,13 @@ export default function Navbar() {
             </button>
             {mobileExpandedSection === 'servicios' && (
               <div className="p-3 pt-0 space-y-1.5 border-t border-white/[0.04]">
+                <Link
+                  href="/buscar"
+                  onClick={handleNavLinkClick}
+                  className="block p-2.5 rounded-lg text-xs text-blue-300 font-semibold hover:bg-white/[0.04] transition-colors"
+                >
+                  🔍 Buscador Inteligente de Categorías
+                </Link>
                 <a
                   href="/#servicios"
                   onClick={handleNavLinkClick}
@@ -192,25 +223,25 @@ export default function Navbar() {
                 >
                   Diagnóstico por Síntomas OBD2
                 </Link>
-                <a
-                  href="/#agendar"
+                <Link
+                  href="/estado"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-lg text-xs text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
-                  Cotizar y Agendar Servicio
-                </a>
-                <a
-                  href="/#cobertura"
+                  Rastreo de Reparación en Vivo
+                </Link>
+                <Link
+                  href="/historial"
                   onClick={handleNavLinkClick}
                   className="block p-2.5 rounded-lg text-xs text-white/60 hover:text-white hover:bg-white/[0.04] transition-colors"
                 >
-                  Cobertura en Santiago
-                </a>
+                  Pasaporte Automotriz QR
+                </Link>
               </div>
             )}
           </div>
 
-          {/* Categoría 2: Tienda & Telemetría */}
+          {/* Categoría 2: Tienda, Baterías & Mi Cuenta */}
           <div className="border border-white/[0.06] rounded-xl overflow-hidden bg-white/[0.02]">
             <button
               onClick={() => setMobileExpandedSection(mobileExpandedSection === 'tienda' ? '' : 'tienda')}
@@ -220,7 +251,7 @@ export default function Navbar() {
                 <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
-                <span>Tienda & Telemetría GPS</span>
+                <span>Tienda, Baterías & Mi Cuenta</span>
               </div>
               <svg className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${mobileExpandedSection === 'tienda' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -228,6 +259,13 @@ export default function Navbar() {
             </button>
             {mobileExpandedSection === 'tienda' && (
               <div className="p-3 pt-0 space-y-1.5 border-t border-white/[0.04]">
+                <Link
+                  href="/cuenta"
+                  onClick={handleNavLinkClick}
+                  className="block p-2.5 rounded-lg text-xs text-blue-300 font-semibold hover:bg-white/[0.04] transition-colors"
+                >
+                  👤 Mi Cuenta, Guantera Digital & Puntos
+                </Link>
                 <Link
                   href="/tienda"
                   onClick={handleNavLinkClick}
@@ -259,7 +297,7 @@ export default function Navbar() {
               onClick={handleNavLinkClick}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-600/20"
             >
-              <span>Agendar Hora en Santiago</span>
+              <span>Agendar Hora a Domicilio</span>
               <span>→</span>
             </a>
           </div>
@@ -271,9 +309,8 @@ export default function Navbar() {
       {/* ========================================================= */}
       <nav ref={navRef} className="sticky top-4 z-50 w-full px-6 lg:px-8 hidden md:block">
         <div className="max-w-7xl mx-auto bg-[#080a0d]/85 backdrop-blur-2xl border border-white/[0.08] shadow-[0_16px_40px_rgba(0,0,0,0.8)] rounded-full px-6 py-3 flex items-center justify-between transition-all relative">
-
           {/* LADO IZQUIERDO: LOGO DE MARCA */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             <Link href="/" className="text-base font-black tracking-tight text-white flex items-center gap-2.5 group shrink-0">
               <span className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black shadow-md shadow-blue-600/30 group-hover:scale-105 transition-transform">
                 AB
@@ -285,8 +322,7 @@ export default function Navbar() {
 
             {/* MENÚS DESPLEGABLES PRINCIPALES */}
             {isCliente && (
-              <div className="flex items-center gap-1.5 text-xs font-medium text-white/60">
-
+              <div className="flex items-center gap-1 text-xs font-medium text-white/65">
                 {/* DROPDOWN 1: SERVICIOS */}
                 <div
                   className="relative"
@@ -312,8 +348,26 @@ export default function Navbar() {
                   {openDropdown === 'servicios' && (
                     <div className="absolute top-full left-0 mt-3 w-80 bg-[#0d1117]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       <div className="text-[10px] font-semibold uppercase tracking-widest text-white/30 px-3 py-1 mb-1">
-                        Atención Técnica a Domicilio
+                        Atención Técnica & Seguimiento
                       </div>
+
+                      <Link
+                        href="/emergencia"
+                        onClick={handleNavLinkClick}
+                        className="flex items-start gap-3 p-2.5 rounded-xl bg-rose-500/[0.07] hover:bg-rose-500/15 border border-rose-500/20 transition-all group mb-1"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/30 flex items-center justify-center shrink-0">
+                          <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping" />
+                        </div>
+                        <div>
+                          <strong className="text-xs font-bold text-rose-300 block leading-tight">
+                            Emergencias SOS 24/7
+                          </strong>
+                          <span className="text-[11px] text-white/50 font-light leading-snug">
+                            Grúas, puente de batería, vulca y cerrajería sin seguro.
+                          </span>
+                        </div>
+                      </Link>
 
                       <a
                         href="/#servicios"
@@ -355,28 +409,8 @@ export default function Navbar() {
                         </div>
                       </Link>
 
-                      <a
-                        href="/#agendar"
-                        onClick={handleNavLinkClick}
-                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-all group"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0 group-hover:border-blue-500/30">
-                          <svg className="w-4 h-4 text-white/50 group-hover:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <strong className="text-xs font-semibold text-white/90 group-hover:text-blue-300 block transition-colors leading-tight">
-                            Cotizador de Mantenciones
-                          </strong>
-                          <span className="text-[11px] text-white/35 font-light leading-snug">
-                            Calcula el valor de tu servicio en segundos.
-                          </span>
-                        </div>
-                      </a>
-
-                      <a
-                        href="/#cobertura"
+                      <Link
+                        href="/estado"
                         onClick={handleNavLinkClick}
                         className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-all group"
                       >
@@ -388,13 +422,13 @@ export default function Navbar() {
                         </div>
                         <div>
                           <strong className="text-xs font-semibold text-white/90 group-hover:text-blue-300 block transition-colors leading-tight">
-                            Cobertura Comunal
+                            Tracker en Vivo & Pasaporte QR
                           </strong>
                           <span className="text-[11px] text-white/35 font-light leading-snug">
-                            Revisa disponibilidad en tu comuna de Santiago.
+                            Consulta el estado de reparación o historial por patente.
                           </span>
                         </div>
-                      </a>
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -414,7 +448,7 @@ export default function Navbar() {
                         : 'hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
-                    <span>Tienda & Telemetría</span>
+                    <span>Catálogo</span>
                     <svg className={`w-3 h-3 transition-transform duration-200 ${openDropdown === 'tienda' ? 'rotate-180 text-blue-400' : 'text-white/30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -490,12 +524,55 @@ export default function Navbar() {
                   )}
                 </div>
 
+                {/* ENLACE DIRECTO: EMERGENCIA SOS 24/7 */}
+                <Link
+                  href="/emergencia"
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                    pathname === '/emergencia'
+                      ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
+                      : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  }`}
+                >
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                  <span>Emergencia 24/7</span>
+                </Link>
+
+                {/* ENLACE DIRECTO: BUSCADOR */}
+                <Link
+                  href="/buscar"
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all ${
+                    pathname === '/buscar'
+                      ? 'bg-white/[0.1] text-white'
+                      : 'hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                  </svg>
+                  <span>Buscar</span>
+                </Link>
               </div>
             )}
           </div>
 
-          {/* LADO DERECHO: SELECTOR DE PORTAL + CARRITO + BOTÓN AGENDAR */}
-          <div className="flex items-center gap-3">
+          {/* LADO DERECHO: MI CUENTA + PORTAL + CARRITO + CTA */}
+          <div className="flex items-center gap-2.5">
+            {/* Botón Mi Cuenta del Conductor */}
+            {isCliente && (
+              <Link
+                href="/cuenta"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  pathname === '/cuenta'
+                    ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
+                    : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.08] text-white/75 hover:text-white'
+                }`}
+              >
+                <svg className="w-3.5 h-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+                <span className="hidden xl:inline">Mi Cuenta</span>
+              </Link>
+            )}
 
             {/* DROPDOWN 3: SELECTOR DE PORTAL / ÁREA */}
             <div
@@ -508,7 +585,7 @@ export default function Navbar() {
                 onClick={() => handleToggleDropdown('portal')}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-all cursor-pointer"
               >
-                <span>{isTaller ? 'Panel Taller' : isPlanes ? 'Planes SaaS' : 'Portal Clientes'}</span>
+                <span>{isTaller ? 'Panel Taller' : isPlanes ? 'Planes SaaS' : 'Plataforma'}</span>
                 <svg className={`w-3 h-3 transition-transform duration-200 ${openDropdown === 'portal' ? 'rotate-180 text-blue-400' : 'text-white/30'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
@@ -530,7 +607,7 @@ export default function Navbar() {
                   >
                     <div>
                       <strong className="text-xs font-semibold block leading-tight">Portal Clientes</strong>
-                      <span className="text-[10px] text-white/30">Atención técnica a domicilio</span>
+                      <span className="text-[10px] text-white/30">Atención a domicilio y SOS 24/7</span>
                     </div>
                   </Link>
 
@@ -543,7 +620,7 @@ export default function Navbar() {
                   >
                     <div>
                       <strong className="text-xs font-semibold block leading-tight">Panel Taller Mecánico</strong>
-                      <span className="text-[10px] text-white/30">Citas, OTs, Detailing y Stock</span>
+                      <span className="text-[10px] text-white/30">Citas, OTs, Inspección 360° y Stock</span>
                     </div>
                   </Link>
 
@@ -584,9 +661,9 @@ export default function Navbar() {
             {isCliente ? (
               <a
                 href="/#agendar"
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2 px-5 rounded-full shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
+                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs py-2 px-4 rounded-full shadow-lg shadow-blue-600/20 transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 whitespace-nowrap"
               >
-                <span>Agendar Visita</span>
+                <span>Agendar</span>
                 <span className="font-bold">→</span>
               </a>
             ) : isPlanes ? (
@@ -605,7 +682,6 @@ export default function Navbar() {
               </a>
             )}
           </div>
-
         </div>
       </nav>
     </>
