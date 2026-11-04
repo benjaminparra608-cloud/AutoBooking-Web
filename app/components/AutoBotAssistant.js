@@ -197,7 +197,7 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
     {
       id: 'msg-welcome',
       role: 'assistant',
-      text: '¡Hola! Soy AutoBot IA, tu ingeniero mecánico virtual 24/7. Cuéntame qué ruido, testigo o síntoma tiene tu auto y te diré exactamente qué hacer y cuánto cuesta resolverlo.',
+      text: '¡Hola! Soy AutoAI, tu ingeniero mecánico virtual 24/7. Cuéntame qué ruido, testigo o síntoma tiene tu auto y te diré exactamente qué hacer y cuánto cuesta resolverlo.',
       analysis: null,
     },
   ]);
@@ -216,7 +216,7 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
     const botMsg = {
       id: 'b-' + (Date.now() + 1),
       role: 'assistant',
-      text: `He analizado tu caso: "${textToSend}". Aquí tienes el dictamen técnico y la solución recomendada:`,
+      text: `He analizado tu caso: "${textToSend}". Aquí tienes el dictamen técnico de AutoAI y la solución recomendada:`,
       analysis: result,
     };
 
@@ -229,12 +229,12 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
       {/* Header del Chat */}
       <div className="bg-gradient-to-r from-blue-950/80 via-[#101726] to-[#0d1117] border-b border-white/[0.08] px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-black text-sm">
-            IA
+          <div className="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-black text-xs">
+            AI
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <strong className="text-sm font-black text-white">AutoBot IA · Ingeniero Virtual</strong>
+              <strong className="text-sm font-black text-white">AutoAI · Ingeniero Virtual</strong>
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <span className="text-[11px] text-white/50">
@@ -270,7 +270,6 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
               {m.text}
             </div>
 
-            {/* Tarjeta de dictamen técnico si existe */}
             {m.analysis && (
               <div className="mt-2.5 w-full bg-[#080a0d] border border-white/[0.1] rounded-2xl p-4 space-y-2.5">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -351,7 +350,7 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe qué le pasa a tu auto (ej. no parte, sale humo, frena largo)..."
+          placeholder="Pregúntale a AutoAI qué le pasa a tu auto..."
           className="flex-1 bg-white/[0.04] border border-white/[0.1] rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-white/35 focus:outline-none focus:border-blue-500"
         />
         <button
@@ -371,19 +370,19 @@ export default function AutoBotAssistant({ defaultOpen = false, embedded = false
   return (
     <>
       {isOpen ? (
-        <div className="fixed bottom-24 md:bottom-20 right-4 sm:right-6 z-50 w-[92vw] max-w-md">
+        <div className="fixed bottom-36 md:bottom-24 right-4 sm:right-6 z-50 w-[92vw] max-w-md">
           {chatPanel}
         </div>
       ) : (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-36 md:bottom-20 right-4 sm:right-6 z-40 bg-[#0d1117]/95 hover:bg-[#131b29] text-white border border-blue-500/40 px-4 py-2.5 rounded-full shadow-[0_10px_30px_rgba(37,99,235,0.35)] flex items-center gap-2.5 text-xs font-bold cursor-pointer transition-transform hover:scale-105"
+          className="fixed bottom-36 md:bottom-24 right-4 sm:right-6 z-40 bg-[#0d1117]/95 hover:bg-[#131b29] text-white border border-blue-500/40 px-4 py-2.5 rounded-full shadow-[0_10px_30px_rgba(37,99,235,0.35)] flex items-center gap-2.5 text-xs font-bold cursor-pointer transition-transform hover:scale-105"
         >
           <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-black">
-            IA
+            AI
           </span>
-          <span>¿Dudas con tu falla? Habla con AutoBot IA</span>
+          <span>¿Dudas con tu falla? Habla con AutoAI</span>
         </button>
       )}
     </>

@@ -462,7 +462,7 @@ export default function EmergenciaPage() {
             <div className="lg:w-80 shrink-0 bg-gradient-to-b from-blue-950/40 to-[#080a0d] border border-blue-500/25 rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[10px] font-bold uppercase tracking-wider mb-3">
-                  <span>AutoBot IA · Ingeniero Virtual</span>
+                  <span>AutoAI · Ingeniero Virtual</span>
                 </div>
                 <h3 className="text-base font-bold text-white mb-1.5">
                   ¿No sabes qué le pasa a tu auto?
@@ -1128,7 +1128,7 @@ export default function EmergenciaPage() {
             <div className="flex items-center justify-between pb-4 mb-5 border-b border-white/[0.08]">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 block">
-                  Asistente Técnico Inteligente AutoBooking
+                  AutoAI · Asistente Técnico Inteligente
                 </span>
                 <h3 className="text-lg font-black text-white">
                   ¿Qué síntoma presenta tu vehículo?
