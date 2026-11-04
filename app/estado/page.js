@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '../../components/Navbar';
-import BottomNav from '../../components/BottomNav';
+import Navbar from '../components/Navbar';
+import BottomNav from '../components/BottomNav';
 
 export default function EstadoBuscadorPage() {
   const router = useRouter();

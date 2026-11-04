@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '../../../components/Navbar';
-import BottomNav from '../../../components/BottomNav';
-import { getOrdenes, getCitas, DEMO_TALLERES } from '../../../lib/supabase';
-import { whatsappUrl } from '../../../lib/config';
+import Navbar from '../../components/Navbar';
+import BottomNav from '../../components/BottomNav';
+import { getOrdenes, getCitas, DEMO_TALLERES } from '../../lib/supabase';
+import { whatsappUrl } from '../../lib/config';
 
 export default function HistorialVehiculoPage() {
   const params = useParams();

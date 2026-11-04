@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Navbar from '../../../components/Navbar';
-import BottomNav from '../../../components/BottomNav';
-import { getOrdenes, getCitas, DEMO_TALLERES } from '../../../lib/supabase';
-import { whatsappUrl } from '../../../lib/config';
+import Navbar from '../../components/Navbar';
+import BottomNav from '../../components/BottomNav';
+import { getOrdenes, getCitas, DEMO_TALLERES } from '../../lib/supabase';
+import { whatsappUrl } from '../../lib/config';
 
 const ETAPAS_OT = [
   { id: 'ingresado', label: 'Recepción & Checklist', desc: 'Vehículo recibido e inspeccionado en taller', porcentaje: 20 },
