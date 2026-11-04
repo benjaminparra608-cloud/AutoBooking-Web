@@ -4,11 +4,21 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import AutoBotAssistant from '../components/AutoBotAssistant';
 import { DEFAULT_USER_VEHICLES, AUTOPOINTS_REWARDS } from '../lib/emergencyCatalog';
+import {
+  getDriverProfile,
+  saveDriverProfile,
+  getDriverVehicles,
+  saveDriverVehicle,
+  getEmergenciasSOS,
+  isSupabaseConfigured,
+} from '../lib/supabase';
 import { whatsappUrl } from '../lib/config';
 
 export default function CuentaPage() {
-  // Perfil del conductor
+  const [hasSupabase, setHasSupabase] = useState(false);
+
   const [profile, setProfile] = useState({
     nombre: 'Cristóbal Morales',
     email: 'cristobal.conductor@autobooking.cl',
@@ -18,10 +28,7 @@ export default function CuentaPage() {
     codigoReferido: 'AB-CRIS80',
   });
 
-  // Estado de pestañas activas dentro de Mi Cuenta
-  const [activeSection, setActiveSection] = useState('autos'); // 'autos' | 'reservas' | 'puntos' | 'referidos' | 'ajustes'
-
-  // Vehículos y Billetera Digital de Documentos
+  const [activeSection, setActiveSection] = useState('autos'); // 'autos' | 'reservas' | 'puntos' | 'referidos'
   const [vehicles, setVehicles] = useState(DEFAULT_USER_VEHICLES);
   const [selectedVehicleIdx, setSelectedVehicleIdx] = useState(0);
   const [newVehicleModal, setNewVehicleModal] = useState(false);
@@ -33,66 +40,71 @@ export default function CuentaPage() {
     kilometraje: '25000',
   });
 
-  // Puntos AutoPoints y cupones canjeados
   const [autoPoints, setAutoPoints] = useState(160);
   const [redeemedCodes, setRedeemedCodes] = useState([]);
   const [copiedCode, setCopiedCode] = useState('');
 
-  // Modal de verificación de teléfono ("Conviértete en usuario verificado")
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
   const [otpInput, setOtpInput] = useState('4829');
-
-  // Solicitudes SOS o reservas guardadas localmente
   const [sosHistory, setSosHistory] = useState([]);
 
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem('autobooking_driver_profile');
-      if (savedProfile) setProfile(JSON.parse(savedProfile));
+    setHasSupabase(isSupabaseConfigured());
+    async function loadAccountData() {
+      const [dbProfile, dbVehicles, dbSos] = await Promise.all([
+        getDriverProfile(),
+        getDriverVehicles(DEFAULT_USER_VEHICLES),
+        getEmergenciasSOS(),
+      ]);
 
-      const savedVehicles = localStorage.getItem('autobooking_driver_vehicles');
-      if (savedVehicles) setVehicles(JSON.parse(savedVehicles));
+      if (dbProfile) {
+        setProfile({
+          nombre: dbProfile.nombre,
+          email: dbProfile.email,
+          telefono: dbProfile.telefono,
+          comuna: dbProfile.comuna,
+          verificado: dbProfile.verificado,
+          codigoReferido: dbProfile.codigoReferido,
+        });
+        setAutoPoints(Number(dbProfile.autoPoints ?? 160));
+        setRedeemedCodes(Array.isArray(dbProfile.redeemedCodes) ? dbProfile.redeemedCodes : []);
+      }
 
-      const savedPoints = localStorage.getItem('autobooking_driver_points');
-      if (savedPoints) setAutoPoints(Number(savedPoints));
+      if (Array.isArray(dbVehicles) && dbVehicles.length > 0) {
+        setVehicles(dbVehicles);
+      }
 
-      const savedRedeemed = localStorage.getItem('autobooking_driver_redeemed');
-      if (savedRedeemed) setRedeemedCodes(JSON.parse(savedRedeemed));
-
-      const savedSos = localStorage.getItem('autobooking_sos_requests');
-      if (savedSos) setSosHistory(JSON.parse(savedSos));
-    } catch {
-      // ignore storage errors
+      if (Array.isArray(dbSos)) {
+        setSosHistory(dbSos);
+      }
     }
+    loadAccountData();
   }, []);
 
-  function saveProfile(updated) {
-    setProfile(updated);
-    try {
-      localStorage.setItem('autobooking_driver_profile', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+  async function persistProfileState(nextProfile, nextPoints = autoPoints, nextRedeemed = redeemedCodes) {
+    setProfile(nextProfile);
+    setAutoPoints(nextPoints);
+    setRedeemedCodes(nextRedeemed);
+    await saveDriverProfile({
+      ...nextProfile,
+      autoPoints: nextPoints,
+      redeemedCodes: nextRedeemed,
+    });
   }
 
-  function handleVerifyPhone() {
-    const updated = { ...profile, verificado: true };
-    saveProfile(updated);
+  async function handleVerifyPhone() {
+    const updatedProfile = { ...profile, verificado: true };
     const nextPts = autoPoints + 40;
-    setAutoPoints(nextPts);
-    try {
-      localStorage.setItem('autobooking_driver_points', String(nextPts));
-    } catch {
-      // ignore
-    }
+    await persistProfileState(updatedProfile, nextPts, redeemedCodes);
     setVerifyModalOpen(false);
   }
 
-  function handleAddVehicle(e) {
+  async function handleAddVehicle(e) {
     e.preventDefault();
     if (!newVehicleForm.patente.trim() || !newVehicleForm.marca.trim()) return;
     const created = {
       id: `veh-${Date.now()}`,
+      conductor_email: profile.email,
       patente: newVehicleForm.patente.trim().toUpperCase(),
       marca: newVehicleForm.marca.trim(),
       modelo: newVehicleForm.modelo.trim() || 'Modelo Estándar',
@@ -141,18 +153,15 @@ export default function CuentaPage() {
     setSelectedVehicleIdx(nextList.length - 1);
     setNewVehicleModal(false);
     setNewVehicleForm({ patente: '', marca: '', modelo: '', anio: '2023', kilometraje: '25000' });
-    try {
-      localStorage.setItem('autobooking_driver_vehicles', JSON.stringify(nextList));
-    } catch {
-      // ignore
-    }
+    await saveDriverVehicle(created, nextList);
   }
 
-  function handleCycleDocStatus(docId) {
+  async function handleCycleDocStatus(docId) {
     const order = ['al_dia', 'proximo', 'vencido'];
+    let targetVeh = null;
     const updatedVehicles = vehicles.map((v, idx) => {
       if (idx !== selectedVehicleIdx) return v;
-      return {
+      const updatedV = {
         ...v,
         documentos: v.documentos.map((d) => {
           if (d.id !== docId) return d;
@@ -160,28 +169,21 @@ export default function CuentaPage() {
           return { ...d, estado: nextState };
         }),
       };
+      targetVeh = updatedV;
+      return updatedV;
     });
     setVehicles(updatedVehicles);
-    try {
-      localStorage.setItem('autobooking_driver_vehicles', JSON.stringify(updatedVehicles));
-    } catch {
-      // ignore
+    if (targetVeh) {
+      await saveDriverVehicle(targetVeh, updatedVehicles);
     }
   }
 
-  function handleRedeemReward(reward) {
+  async function handleRedeemReward(reward) {
     if (redeemedCodes.includes(reward.code)) return;
     if (autoPoints < reward.costPoints) return;
     const nextPts = autoPoints - reward.costPoints;
     const nextRedeemed = [...redeemedCodes, reward.code];
-    setAutoPoints(nextPts);
-    setRedeemedCodes(nextRedeemed);
-    try {
-      localStorage.setItem('autobooking_driver_points', String(nextPts));
-      localStorage.setItem('autobooking_driver_redeemed', JSON.stringify(nextRedeemed));
-    } catch {
-      // ignore
-    }
+    await persistProfileState(profile, nextPts, nextRedeemed);
   }
 
   function handleCopyText(text) {
@@ -207,7 +209,6 @@ export default function CuentaPage() {
         {/* 1. CABECERA DE PERFIL + BANNER DE VERIFICACIÓN            */}
         {/* ========================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-8">
-          {/* Tarjeta principal del conductor */}
           <div className="lg:col-span-7 bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-xl font-black text-white shadow-lg shadow-blue-600/25 shrink-0">
@@ -227,6 +228,11 @@ export default function CuentaPage() {
                   ) : (
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-bold">
                       Verificación pendiente
+                    </span>
+                  )}
+                  {hasSupabase && (
+                    <span className="px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[9px] font-bold">
+                      ● Supabase Sync
                     </span>
                   )}
                 </div>
@@ -254,19 +260,18 @@ export default function CuentaPage() {
             </div>
           </div>
 
-          {/* Banner "Conviértete en usuario verificado" (Estilo Portal Motores en tema oscuro) */}
           <div className="lg:col-span-5 bg-gradient-to-br from-blue-950/45 via-[#0d1117] to-[#0d1117] border border-blue-500/30 rounded-3xl p-6 flex flex-col justify-between">
             {profile.verificado ? (
               <div className="space-y-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 block">
-                  Seguridad Activa
+                  Seguridad Activa en la Nube
                 </span>
                 <h2 className="text-base font-bold text-white">
                   Tu teléfono y cuenta de conductor están verificados
                 </h2>
                 <p className="text-xs text-white/60 leading-relaxed">
                   Tienes despacho prioritario en emergencias SOS 24/7 y alertas automáticas de vencimiento de
-                  Revisión Técnica y SOAP.
+                  Revisión Técnica y SOAP sincronizadas.
                 </p>
               </div>
             ) : (
@@ -315,14 +320,14 @@ export default function CuentaPage() {
               action: () => setActiveSection('autos'),
             },
             {
-              id: 'cotizaciones',
-              label: 'Cotizaciones',
-              sub: 'Precios al instante',
-              icon: '📋',
-              href: '/#agendar',
+              id: 'bencina',
+              label: 'Bencina & PRT',
+              sub: 'Precios y Restricción',
+              icon: '⛽',
+              href: '/bencina',
             },
             {
-              id: 'compras',
+              id: 'puntos',
               label: 'Mis Puntos',
               sub: `${autoPoints} AutoPoints`,
               icon: '🎁',
@@ -336,11 +341,11 @@ export default function CuentaPage() {
               action: () => setActiveSection('referidos'),
             },
             {
-              id: 'conversaciones',
-              label: 'Conversaciones',
-              sub: 'WhatsApp directo',
-              icon: '💬',
-              external: whatsappUrl('Hola AutoBooking, escribo desde Mi Cuenta de conductor.'),
+              id: 'seminuevos',
+              label: 'Compra-Venta',
+              sub: 'Sello 100 Puntos',
+              icon: '🛡️',
+              href: '/seminuevos',
             },
           ].map((card) => {
             const isSelected = activeSection === card.id;
@@ -361,19 +366,6 @@ export default function CuentaPage() {
                 >
                   {content}
                 </Link>
-              );
-            }
-            if (card.external) {
-              return (
-                <a
-                  key={card.id}
-                  href={card.external}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-[#0d1117] hover:bg-[#121824] border border-white/[0.08] hover:border-emerald-500/40 rounded-2xl p-4 text-left transition-all"
-                >
-                  {content}
-                </a>
               );
             }
             return (
@@ -403,7 +395,7 @@ export default function CuentaPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-blue-400 block mb-1">
-                  Guantera Digital Inteligente
+                  Guantera Digital Inteligente · Sincronizada con Supabase
                 </span>
                 <h2 className="text-2xl font-black text-white">
                   Mis Vehículos y Documentación Legal
@@ -418,7 +410,6 @@ export default function CuentaPage() {
               </button>
             </div>
 
-            {/* Selector de autos registrados */}
             <div className="flex flex-wrap gap-2.5">
               {vehicles.map((veh, idx) => (
                 <button
@@ -441,10 +432,8 @@ export default function CuentaPage() {
               ))}
             </div>
 
-            {/* Ficha del vehículo seleccionado + Documentos */}
             {activeVehicle && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Tarjeta resumen del auto */}
                 <div className="lg:col-span-5 bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 flex flex-col justify-between space-y-5">
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -468,6 +457,15 @@ export default function CuentaPage() {
                         <span className="text-white font-semibold">
                           {(Math.ceil(activeVehicle.kilometraje / 10000) * 10000).toLocaleString('es-CL')} km
                         </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/50">Calendario PRT & Restricción:</span>
+                        <Link
+                          href="/bencina"
+                          className="text-amber-400 hover:underline font-semibold"
+                        >
+                          Consultar por dígito →
+                        </Link>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/50">Pasaporte Digital QR:</span>
@@ -506,7 +504,6 @@ export default function CuentaPage() {
                   </div>
                 </div>
 
-                {/* Billetera de 4 Documentos del Vehículo */}
                 <div className="lg:col-span-7 bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -514,13 +511,13 @@ export default function CuentaPage() {
                         Documentos del Vehículo ({activeVehicle.patente})
                       </h3>
                       <p className="text-xs text-white/50">
-                        Haz clic en el estado de cualquier documento para actualizar su vigencia.
+                        Haz clic en el estado de cualquier documento para actualizar su vigencia en la nube.
                       </p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {activeVehicle.documentos.map((doc) => {
+                    {(activeVehicle.documentos || []).map((doc) => {
                       const badgeStyle =
                         doc.estado === 'al_dia'
                           ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
@@ -584,7 +581,7 @@ export default function CuentaPage() {
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold uppercase tracking-widest text-blue-400 block mb-1">
-                  Agenda & Emergencias
+                  Agenda & Emergencias Sincronizadas
                 </span>
                 <h2 className="text-xl font-black text-white">Mis Reservas y Asistencias en Ruta</h2>
               </div>
@@ -597,7 +594,6 @@ export default function CuentaPage() {
             </div>
 
             <div className="space-y-3">
-              {/* Reserva preventiva de ejemplo */}
               <div className="bg-white/[0.02] border border-white/[0.07] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-300 text-[10px] font-bold uppercase">
@@ -618,7 +614,6 @@ export default function CuentaPage() {
                 </Link>
               </div>
 
-              {/* Solicitudes SOS guardadas */}
               {sosHistory.map((sos) => (
                 <div
                   key={sos.id}
@@ -639,7 +634,7 @@ export default function CuentaPage() {
                     href="/emergencia"
                     className="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white shrink-0 text-center"
                   >
-                    Ver Detalle SOS
+                    Abrir Radar SOS →
                   </Link>
                 </div>
               ))}
@@ -800,7 +795,6 @@ export default function CuentaPage() {
         {/* 4. MI CUENTA & DESCUBRE (ESTILO PORTAL MOTORES)           */}
         {/* ========================================================= */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Columna 1: Configuración de Mi Cuenta */}
           <div className="bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/50 mb-3">
               Ajustes de Mi Cuenta
@@ -849,7 +843,6 @@ export default function CuentaPage() {
             ))}
           </div>
 
-          {/* Columna 2: Descubre más en AutoBooking */}
           <div className="bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6 space-y-3">
             <h3 className="text-sm font-bold uppercase tracking-wider text-white/50 mb-3">
               Descubre en AutoBooking
@@ -871,33 +864,33 @@ export default function CuentaPage() {
             </Link>
 
             <Link
-              href="/telemetria"
+              href="/bencina"
               className="w-full p-3.5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] flex items-center justify-between transition-all"
             >
               <div>
                 <strong className="text-xs font-bold text-white block">
-                  Consumo de Combustible & Telemetría GPS
+                  Estaciones de Bencina en Línea, Restricción & Calendario PRT
                 </strong>
                 <span className="text-[11px] text-white/50">
-                  Calcula gasto de bencina, desgaste de piezas y restricción vehicular
+                  Compara precios por litro en tu comuna y verifica tu patente
                 </span>
               </div>
-              <span className="text-xs font-bold text-blue-400">Abrir →</span>
+              <span className="text-xs font-bold text-emerald-400">Nuevo →</span>
             </Link>
 
             <Link
-              href="/historial"
+              href="/seminuevos"
               className="w-full p-3.5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/[0.06] flex items-center justify-between transition-all"
             >
               <div>
                 <strong className="text-xs font-bold text-white block">
-                  Pasaporte Digital Automotriz QR
+                  Compra-Venta de Autos Certificados (Sello 100 Puntos)
                 </strong>
                 <span className="text-[11px] text-white/50">
-                  Aumenta el valor de reventa de tu auto con historial certificado
+                  Publica tu vehículo o compra seminuevos auditados con escáner OBD2
                 </span>
               </div>
-              <span className="text-xs font-bold text-blue-400">Ver QR →</span>
+              <span className="text-xs font-bold text-blue-400">Explorar →</span>
             </Link>
 
             <Link
@@ -919,7 +912,7 @@ export default function CuentaPage() {
       </main>
 
       {/* ========================================================= */}
-      {/* MODAL: AGREGAR NUEVO VEHÍCULO A LA BILLETERA              */}
+      {/* MODAL: AGREGAR NUEVO VEHÍCULO A LA BILLETERA (SUPABASE)   */}
       {/* ========================================================= */}
       {newVehicleModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -1004,7 +997,7 @@ export default function CuentaPage() {
               type="submit"
               className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs cursor-pointer"
             >
-              Guardar Vehículo y Crear Billetera de Documentos
+              Guardar Vehículo en Guantera Digital
             </button>
           </form>
         </div>
@@ -1060,6 +1053,7 @@ export default function CuentaPage() {
         </div>
       )}
 
+      <AutoBotAssistant />
       <BottomNav />
     </div>
   );

@@ -893,7 +893,31 @@ export function saveLocalStoreOrders(orders) {
   }
 }
 
-export async function getStoreOrders() {
+export async function getStoreOrders(tallerId = null) {
+  if (isSupabaseConfigured()) {
+    try {
+      let queryUrl = `${SUPABASE_URL}/rest/v1/pedidos_tienda?select=*&order=created_at.desc`;
+      if (tallerId) {
+        queryUrl += `&taller_id=eq.${tallerId}`;
+      }
+      const res = await fetch(queryUrl, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          saveLocalStoreOrders(data);
+          return data;
+        }
+      }
+    } catch (err) {
+      console.warn("Fallo consultando pedidos_tienda en Supabase, usando local:", err);
+    }
+  }
   return getLocalStoreOrders();
 }
 
@@ -904,6 +928,7 @@ export async function createStoreOrder(orderData) {
     id: "ped-" + Date.now(),
     numero_pedido: `PED-2026-${String(nextNum).padStart(4, "0")}`,
     created_at: new Date().toISOString(),
+    taller_id: orderData.taller_id || "taller-demo-1",
     cliente_nombre: orderData.cliente_nombre || "Cliente Web",
     cliente_telefono: orderData.cliente_telefono || "",
     comuna: orderData.comuna || "Santiago",
@@ -922,28 +947,78 @@ export async function createStoreOrder(orderData) {
     notas: orderData.notas || ""
   };
 
+  if (isSupabaseConfigured()) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/pedidos_tienda`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(newOrder)
+      });
+      if (res.ok) {
+        const created = await res.json();
+        if (created && created[0]) {
+          saveLocalStoreOrders([created[0], ...list]);
+          return created[0];
+        }
+      }
+    } catch (err) {
+      console.warn("Error creando pedido de tienda en Supabase, guardando local:", err);
+    }
+  }
+
   const updated = [newOrder, ...list];
   saveLocalStoreOrders(updated);
   return newOrder;
 }
 
 export async function updateStoreOrderStatus(id, newStatus, mecanicoAsignado = null) {
-  const list = getLocalStoreOrders();
-  const updated = list.map((order) => {
-    if (order.id === id) {
-      return {
-        ...order,
-        estado: newStatus,
-        ...(mecanicoAsignado ? { mecanico_asignado: mecanicoAsignado } : {})
-      };
+  const patchPayload = {
+    estado: newStatus,
+    ...(mecanicoAsignado ? { mecanico_asignado: mecanicoAsignado } : {})
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/pedidos_tienda?id=eq.${id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(patchPayload)
+      });
+    } catch (err) {
+      console.warn("Error actualizando pedido en Supabase, aplicando local:", err);
     }
-    return order;
-  });
+  }
+
+  const list = getLocalStoreOrders();
+  const updated = list.map((order) => (order.id === id ? { ...order, ...patchPayload } : order));
   saveLocalStoreOrders(updated);
   return updated.find((o) => o.id === id);
 }
 
 export async function deleteStoreOrder(id) {
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/pedidos_tienda?id=eq.${id}`, {
+        method: "DELETE",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+    } catch (err) {
+      console.warn("Error eliminando pedido en Supabase:", err);
+    }
+  }
+
   const list = getLocalStoreOrders();
   const updated = list.filter((o) => o.id !== id);
   saveLocalStoreOrders(updated);
@@ -989,6 +1064,24 @@ export async function convertStoreOrderToOT(orderId, mecanicoAsignado = "Carlos 
     repuestos: repuestos,
     notas_internas: `Generado automáticamente desde Tienda Online (${order.numero_pedido}). Notas cliente: ${order.notas || "Sin observaciones"}`
   });
+
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/pedidos_tienda?id=eq.${orderId}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ot_generada_id: nuevaOT.numero_ot,
+          estado: "en_preparacion",
+          mecanico_asignado: mecanicoAsignado
+        })
+      });
+    } catch (err) {}
+  }
 
   // Marcar pedido con la OT generada y estado en preparación
   const updatedOrders = orders.map((o) =>
@@ -1046,14 +1139,64 @@ export function saveLocalInventory(inv) {
   }
 }
 
-export async function getInventory() {
+export async function getInventory(tallerId = null) {
+  if (isSupabaseConfigured()) {
+    try {
+      let queryUrl = `${SUPABASE_URL}/rest/v1/inventario_taller?select=*`;
+      if (tallerId) {
+        queryUrl += `&taller_id=eq.${tallerId}`;
+      }
+      const res = await fetch(queryUrl, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const normalized = data.map((row) => ({
+            id: row.id,
+            codigo: row.codigo,
+            nombre: row.nombre,
+            categoria: row.categoria,
+            stock: row.stock,
+            stockMinimo: row.stock_minimo ?? row.stockMinimo ?? 2,
+            precioVenta: row.precio_venta ?? row.precioVenta ?? 0,
+            ubicacion: row.ubicacion,
+            icono: row.icono || "🔋"
+          }));
+          saveLocalInventory(normalized);
+          return normalized;
+        }
+      }
+    } catch (err) {
+      console.warn("Fallo consultando inventario en Supabase, usando local:", err);
+    }
+  }
   return getLocalInventory();
 }
 
 export async function updateInventoryStock(id, newStock) {
+  const cleanStock = Math.max(0, Number(newStock) || 0);
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/inventario_taller?id=eq.${id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ stock: cleanStock, updated_at: new Date().toISOString() })
+      });
+    } catch (err) {}
+  }
+
   const list = getLocalInventory();
   const updated = list.map((item) =>
-    item.id === id ? { ...item, stock: Math.max(0, Number(newStock) || 0) } : item
+    item.id === id ? { ...item, stock: cleanStock } : item
   );
   saveLocalInventory(updated);
   return updated.find((i) => i.id === id);
@@ -1061,10 +1204,560 @@ export async function updateInventoryStock(id, newStock) {
 
 export async function adjustInventoryStock(id, delta) {
   const list = getLocalInventory();
-  const updated = list.map((item) =>
-    item.id === id ? { ...item, stock: Math.max(0, item.stock + delta) } : item
-  );
-  saveLocalInventory(updated);
+  const target = list.find((i) => i.id === id);
+  const nextStock = Math.max(0, (target?.stock || 0) + delta);
+  return updateInventoryStock(id, nextStock);
+}
+
+// ==========================================
+// 5. PERSISTENCIA SUPABASE DE EMERGENCIAS SOS 24/7
+// ==========================================
+export const LOCAL_STORAGE_SOS_KEY = "autobooking_sos_requests";
+
+export function getLocalEmergenciasSOS() {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_SOS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+export function saveLocalEmergenciasSOS(list) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_SOS_KEY, JSON.stringify(list));
+  } catch (err) {}
+}
+
+export async function getEmergenciasSOS(tallerId = null) {
+  if (isSupabaseConfigured()) {
+    try {
+      let queryUrl = `${SUPABASE_URL}/rest/v1/emergencias_sos?select=*&order=created_at.desc`;
+      if (tallerId) {
+        queryUrl += `&taller_id=eq.${tallerId}`;
+      }
+      const res = await fetch(queryUrl, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((row) => ({
+            id: row.id,
+            createdAt: row.created_at ? new Date(row.created_at).toLocaleString("es-CL") : "Recién",
+            created_at: row.created_at,
+            serviceId: row.service_id,
+            serviceTitle: row.service_title,
+            eta: row.eta,
+            price: Number(row.price) || 24990,
+            comuna: row.comuna,
+            direccion: row.direccion,
+            referencia: row.referencia,
+            gpsCoords: row.gps_coords,
+            esSubterraneo: row.es_subterraneo,
+            patente: row.patente,
+            vehiculo: row.vehiculo,
+            conductorNombre: row.conductor_nombre,
+            conductorTelefono: row.conductor_telefono,
+            operadorAsignado: row.operador_asignado || "Unidad Móvil SOS #04 (Carlos H.)",
+            gruaPatente: row.grua_patente || "SOS-247",
+            etapaRadar: Number(row.etapa_radar) || 2,
+            status: row.status || "En despacho prioritario",
+            ot_generada_id: row.ot_generada_id || null
+          }));
+          saveLocalEmergenciasSOS(mapped);
+          return mapped;
+        }
+      }
+    } catch (err) {
+      console.warn("Fallo consultando emergencias_sos en Supabase, usando local:", err);
+    }
+  }
+  return getLocalEmergenciasSOS();
+}
+
+export async function createEmergenciaSOS(sosData) {
+  const folio = sosData.id || `SOS-${Math.floor(100000 + Math.random() * 900000)}`;
+  const nowIso = new Date().toISOString();
+
+  const dbPayload = {
+    id: folio,
+    created_at: nowIso,
+    taller_id: sosData.taller_id || "taller-demo-1",
+    service_id: sosData.serviceId || "grua-hidraulica",
+    service_title: sosData.serviceTitle || "Grúa hidráulica",
+    eta: sosData.eta || "30–45 min",
+    price: Number(sosData.price) || 54990,
+    comuna: sosData.comuna || "Las Condes",
+    direccion: sosData.direccion || "Coordenadas GPS",
+    referencia: sosData.referencia || "",
+    gps_coords: sosData.gpsCoords || null,
+    es_subterraneo: Boolean(sosData.esSubterraneo),
+    patente: (sosData.patente || "SIN-PATENTE").toUpperCase(),
+    vehiculo: sosData.vehiculo || "Vehículo particular",
+    conductor_nombre: sosData.conductorNombre || "Conductor AutoBooking",
+    conductor_telefono: sosData.conductorTelefono || "",
+    operador_asignado: "Unidad de Rescate #04 — Carlos Henríquez",
+    grua_patente: "GRUA-84",
+    etapa_radar: 2,
+    status: "Unidad asignada en preparación"
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/emergencias_sos`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dbPayload)
+      });
+    } catch (err) {
+      console.warn("Error guardando emergencia SOS en Supabase, aplicando respaldo local:", err);
+    }
+  }
+
+  const uiItem = {
+    id: folio,
+    createdAt: new Date(nowIso).toLocaleString("es-CL"),
+    created_at: nowIso,
+    serviceId: dbPayload.service_id,
+    serviceTitle: dbPayload.service_title,
+    eta: dbPayload.eta,
+    price: dbPayload.price,
+    comuna: dbPayload.comuna,
+    direccion: dbPayload.direccion,
+    referencia: dbPayload.referencia,
+    gpsCoords: dbPayload.gps_coords,
+    esSubterraneo: dbPayload.es_subterraneo,
+    patente: dbPayload.patente,
+    vehiculo: dbPayload.vehiculo,
+    conductorNombre: dbPayload.conductor_nombre,
+    conductorTelefono: dbPayload.conductor_telefono,
+    operadorAsignado: dbPayload.operador_asignado,
+    gruaPatente: dbPayload.grua_patente,
+    etapaRadar: dbPayload.etapa_radar,
+    status: dbPayload.status,
+    ot_generada_id: null
+  };
+
+  const currentList = getLocalEmergenciasSOS();
+  const updated = [uiItem, ...currentList.filter((r) => r.id !== folio)].slice(0, 15);
+  saveLocalEmergenciasSOS(updated);
+  return uiItem;
+}
+
+export async function updateEmergenciaSOSStatus(id, updates) {
+  const dbPatch = {};
+  if (updates.status !== undefined) dbPatch.status = updates.status;
+  if (updates.etapaRadar !== undefined) dbPatch.etapa_radar = updates.etapaRadar;
+  if (updates.operadorAsignado !== undefined) dbPatch.operador_asignado = updates.operadorAsignado;
+  if (updates.ot_generada_id !== undefined) dbPatch.ot_generada_id = updates.ot_generada_id;
+
+  if (isSupabaseConfigured() && Object.keys(dbPatch).length > 0) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/emergencias_sos?id=eq.${id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(dbPatch)
+      });
+    } catch (err) {}
+  }
+
+  const list = getLocalEmergenciasSOS();
+  const updated = list.map((item) => (item.id === id ? { ...item, ...updates } : item));
+  saveLocalEmergenciasSOS(updated);
   return updated.find((i) => i.id === id);
+}
+
+// ==========================================
+// 6. PERSISTENCIA SUPABASE DE PERFIL CONDUCTOR, AUTOPOINTS Y GUANTERA DIGITAL
+// ==========================================
+const LOCAL_PROFILE_KEY = "autobooking_driver_profile";
+const LOCAL_VEHICLES_KEY = "autobooking_driver_vehicles";
+
+const DEFAULT_DRIVER_PROFILE = {
+  id: "cristobal.conductor@autobooking.cl",
+  nombre: "Cristóbal Morales",
+  email: "cristobal.conductor@autobooking.cl",
+  telefono: "+56 9 8267 4570",
+  comuna: "Las Condes, Santiago",
+  verificado: false,
+  codigoReferido: "AB-CRIS80",
+  autoPoints: 160,
+  redeemedCodes: []
+};
+
+export async function getDriverProfile(email = "cristobal.conductor@autobooking.cl") {
+  if (isSupabaseConfigured()) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/conductores_perfil?id=eq.${encodeURIComponent(email)}&select=*`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        }
+      );
+      if (res.ok) {
+        const rows = await res.json();
+        if (rows && rows[0]) {
+          const row = rows[0];
+          const mapped = {
+            id: row.id,
+            nombre: row.nombre,
+            email: row.email,
+            telefono: row.telefono,
+            comuna: row.comuna,
+            verificado: Boolean(row.verificado),
+            codigoReferido: row.codigo_referido || "AB-CRIS80",
+            autoPoints: Number(row.auto_points ?? 160),
+            redeemedCodes: Array.isArray(row.redeemed_codes) ? row.redeemed_codes : []
+          };
+          if (typeof window !== "undefined") {
+            localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(mapped));
+          }
+          return mapped;
+        }
+      }
+    } catch (err) {
+      console.warn("Error consultando conductores_perfil en Supabase:", err);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(LOCAL_PROFILE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const pts = localStorage.getItem("autobooking_driver_points");
+        const red = localStorage.getItem("autobooking_driver_redeemed");
+        return {
+          ...DEFAULT_DRIVER_PROFILE,
+          ...parsed,
+          autoPoints: pts ? Number(pts) : parsed.autoPoints ?? 160,
+          redeemedCodes: red ? JSON.parse(red) : parsed.redeemedCodes ?? []
+        };
+      }
+    } catch (err) {}
+  }
+  return DEFAULT_DRIVER_PROFILE;
+}
+
+export async function saveDriverProfile(profileData) {
+  const merged = {
+    ...DEFAULT_DRIVER_PROFILE,
+    ...profileData,
+    id: profileData.email || DEFAULT_DRIVER_PROFILE.id
+  };
+
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(merged));
+      localStorage.setItem("autobooking_driver_points", String(merged.autoPoints));
+      localStorage.setItem("autobooking_driver_redeemed", JSON.stringify(merged.redeemedCodes || []));
+    } catch (err) {}
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      const dbRow = {
+        id: merged.id,
+        updated_at: new Date().toISOString(),
+        nombre: merged.nombre,
+        email: merged.email,
+        telefono: merged.telefono,
+        comuna: merged.comuna,
+        verificado: Boolean(merged.verificado),
+        codigo_referido: merged.codigoReferido,
+        auto_points: Number(merged.autoPoints || 0),
+        redeemed_codes: merged.redeemedCodes || []
+      };
+      await fetch(`${SUPABASE_URL}/rest/v1/conductores_perfil`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates"
+        },
+        body: JSON.stringify(dbRow)
+      });
+    } catch (err) {
+      console.warn("Error sincronizando conductores_perfil en Supabase:", err);
+    }
+  }
+
+  return merged;
+}
+
+export async function getDriverVehicles(defaultList = []) {
+  if (isSupabaseConfigured()) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/vehiculos_conductor?select=*&order=created_at.asc`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        }
+      );
+      if (res.ok) {
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(LOCAL_VEHICLES_KEY, JSON.stringify(rows));
+          }
+          return rows;
+        }
+      }
+    } catch (err) {
+      console.warn("Error leyendo vehiculos_conductor en Supabase:", err);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(LOCAL_VEHICLES_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (err) {}
+  }
+  return defaultList;
+}
+
+export async function saveDriverVehicle(vehicle, fullList = []) {
+  if (typeof window !== "undefined" && fullList.length > 0) {
+    try {
+      localStorage.setItem(LOCAL_VEHICLES_KEY, JSON.stringify(fullList));
+    } catch (err) {}
+  }
+
+  if (isSupabaseConfigured() && vehicle) {
+    try {
+      const dbRow = {
+        id: vehicle.id,
+        conductor_email: vehicle.conductor_email || "cristobal.conductor@autobooking.cl",
+        patente: (vehicle.patente || "").toUpperCase(),
+        marca: vehicle.marca,
+        modelo: vehicle.modelo,
+        anio: Number(vehicle.anio) || 2023,
+        kilometraje: Number(vehicle.kilometraje) || 0,
+        combustible: vehicle.combustible || "Gasolina 95",
+        vin: vehicle.vin || "",
+        documentos: vehicle.documentos || []
+      };
+      await fetch(`${SUPABASE_URL}/rest/v1/vehiculos_conductor`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates"
+        },
+        body: JSON.stringify(dbRow)
+      });
+    } catch (err) {
+      console.warn("Error guardando vehiculo en Supabase:", err);
+    }
+  }
+  return vehicle;
+}
+
+// ==========================================
+// 7. MARKETPLACE DE AUTOS CERTIFICADOS (SELLO PRE-COMPRA 100 PUNTOS)
+// ==========================================
+const LOCAL_MARKETPLACE_KEY = "autobooking_marketplace_cars_v1";
+
+export const DEMO_MARKETPLACE_CARS = [
+  {
+    id: "mkt-demo-1",
+    patente: "PJKW-84",
+    marca: "Mazda",
+    modelo: "CX-5",
+    version: "2.5 GTX AWD Automático",
+    anio: 2022,
+    kilometraje: 42850,
+    transmision: "Automática SkyActiv",
+    combustible: "Gasolina 95",
+    precio: 21490000,
+    comuna: "Las Condes",
+    vendedor_nombre: "Cristóbal Morales",
+    vendedor_telefono: "+56982674570",
+    puntaje_inspeccion: 99,
+    certificado_obd2: true,
+    sin_choques: true,
+    mantenciones_al_dia: true,
+    resumen_tecnico:
+      "Inspección 100 puntos aprobada sin códigos DTC en escáner OBD2. Pintura de fábrica verificada con micrómetro digital y tracción AWD testeada.",
+    estado: "disponible"
+  },
+  {
+    id: "mkt-demo-2",
+    patente: "RTFG-22",
+    marca: "Toyota",
+    modelo: "RAV4 Hybrid",
+    version: "2.5 XLE E-CVT",
+    anio: 2023,
+    kilometraje: 28400,
+    transmision: "Automática E-CVT",
+    combustible: "Híbrido",
+    precio: 24990000,
+    comuna: "Vitacura",
+    vendedor_nombre: "Martín Undurraga",
+    vendedor_telefono: "+56982674570",
+    puntaje_inspeccion: 100,
+    certificado_obd2: true,
+    sin_choques: true,
+    mantenciones_al_dia: true,
+    resumen_tecnico:
+      "Batería híbrida al 98% de salud certificada por escáner OEM. Único dueño, todas las mantenciones selladas en Pasaporte QR AutoBooking.",
+    estado: "disponible"
+  },
+  {
+    id: "mkt-demo-3",
+    patente: "LZXP-91",
+    marca: "Peugeot",
+    modelo: "3008",
+    version: "1.6 BlueHDi Allure EAT8",
+    anio: 2021,
+    kilometraje: 54200,
+    transmision: "Automática EAT8",
+    combustible: "Diésel",
+    precio: 17890000,
+    comuna: "Providencia",
+    vendedor_nombre: "Francisca Echeverría",
+    vendedor_telefono: "+56982674570",
+    puntaje_inspeccion: 96,
+    certificado_obd2: true,
+    sin_choques: true,
+    mantenciones_al_dia: true,
+    resumen_tecnico:
+      "Frenos Brembo cerámicos recién instalados y batería AGM Start-Stop nueva con garantía vigente de 18 meses.",
+    estado: "disponible"
+  },
+  {
+    id: "mkt-demo-4",
+    patente: "KWRT-55",
+    marca: "Subaru",
+    modelo: "Forester",
+    version: "2.5i-S Symmetrical AWD EyeSight",
+    anio: 2022,
+    kilometraje: 38900,
+    transmision: "Automática Lineartronic",
+    combustible: "Gasolina 95",
+    precio: 22300000,
+    comuna: "Ñuñoa",
+    vendedor_nombre: "Sebastián Rojas",
+    vendedor_telefono: "+56982674570",
+    puntaje_inspeccion: 98,
+    certificado_obd2: true,
+    sin_choques: true,
+    mantenciones_al_dia: true,
+    resumen_tecnico:
+      "Sistema ADAS EyeSight calibrado y verificado. Sin fugas en diferencial ni caja, neumáticos al 85% de vida útil.",
+    estado: "disponible"
+  }
+];
+
+export async function getMarketplaceCars() {
+  if (isSupabaseConfigured()) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/autos_marketplace?select=*&order=created_at.desc`,
+        {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        }
+      );
+      if (res.ok) {
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows.length > 0) {
+          if (typeof window !== "undefined") {
+            localStorage.setItem(LOCAL_MARKETPLACE_KEY, JSON.stringify(rows));
+          }
+          return rows;
+        }
+      }
+    } catch (err) {
+      console.warn("Error leyendo autos_marketplace en Supabase:", err);
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem(LOCAL_MARKETPLACE_KEY);
+      if (raw) return JSON.parse(raw);
+      localStorage.setItem(LOCAL_MARKETPLACE_KEY, JSON.stringify(DEMO_MARKETPLACE_CARS));
+    } catch (err) {}
+  }
+  return DEMO_MARKETPLACE_CARS;
+}
+
+export async function createMarketplaceCar(carData) {
+  const newCar = {
+    id: "mkt-" + Date.now(),
+    created_at: new Date().toISOString(),
+    patente: (carData.patente || "ABCD-12").toUpperCase(),
+    marca: carData.marca || "Marca",
+    modelo: carData.modelo || "Modelo",
+    version: carData.version || "Versión Full Equipo",
+    anio: Number(carData.anio) || 2022,
+    kilometraje: Number(carData.kilometraje) || 35000,
+    transmision: carData.transmision || "Automática",
+    combustible: carData.combustible || "Gasolina 95",
+    precio: Number(carData.precio) || 15000000,
+    comuna: carData.comuna || "Las Condes",
+    vendedor_nombre: carData.vendedor_nombre || "Conductor Verificado",
+    vendedor_telefono: carData.vendedor_telefono || "+56982674570",
+    puntaje_inspeccion: Number(carData.puntaje_inspeccion) || 97,
+    certificado_obd2: true,
+    sin_choques: true,
+    mantenciones_al_dia: true,
+    resumen_tecnico:
+      carData.resumen_tecnico ||
+      "Vehículo con solicitud de Sello Pre-Compra 100 Puntos AutoBooking y validación de escáner OBD2.",
+    estado: "disponible"
+  };
+
+  if (isSupabaseConfigured()) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/autos_marketplace`, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(newCar)
+      });
+    } catch (err) {
+      console.warn("Error publicando auto en Supabase:", err);
+    }
+  }
+
+  const current = await getMarketplaceCars();
+  const updated = [newCar, ...current];
+  if (typeof window !== "undefined") {
+    try {
+      localStorage.setItem(LOCAL_MARKETPLACE_KEY, JSON.stringify(updated));
+    } catch (err) {}
+  }
+  return newCar;
 }
 

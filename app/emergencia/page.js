@@ -4,12 +4,20 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import AutoBotAssistant from '../components/AutoBotAssistant';
 import {
   EMERGENCY_SERVICES,
   EMERGENCY_SYMPTOM_WIZARD,
   EMERGENCY_COVERAGE_REGIONS,
   EMERGENCY_FAQS,
 } from '../lib/emergencyCatalog';
+import {
+  getEmergenciasSOS,
+  createEmergenciaSOS,
+  updateEmergenciaSOSStatus,
+  getDriverProfile,
+  isSupabaseConfigured,
+} from '../lib/supabase';
 import { whatsappUrl } from '../lib/config';
 
 function formatCLP(value) {
@@ -61,14 +69,20 @@ function ServiceIcon({ type, className = 'w-6 h-6' }) {
   }
 }
 
+const RADAR_STEPS = [
+  { step: 1, label: 'Orden Recibida', sub: 'Validada en central 24/7' },
+  { step: 2, label: 'Unidad Asignada', sub: 'Operador verificado' },
+  { step: 3, label: 'En Ruta GPS', sub: 'En camino a tu punto' },
+  { step: 4, label: 'En el Lugar', sub: 'Asistencia en curso' },
+];
+
 export default function EmergenciaPage() {
-  // Modal de solicitud SOS en 3 pasos
   const [sosModalOpen, setSosModalOpen] = useState(false);
   const [sosStep, setSosStep] = useState(1);
   const [selectedServiceId, setSelectedServiceId] = useState('grua-hidraulica');
   const [selectedRegionIdx, setSelectedRegionIdx] = useState(0);
+  const [hasSupabase, setHasSupabase] = useState(false);
 
-  // Datos del formulario SOS
   const [sosForm, setSosForm] = useState({
     comuna: 'Las Condes',
     direccion: '',
@@ -82,36 +96,33 @@ export default function EmergenciaPage() {
   });
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsStatus, setGpsStatus] = useState('');
+  const [submittingSos, setSubmittingSos] = useState(false);
 
-  // Modal de Asistente de Síntomas IA
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selectedSymptomId, setSelectedSymptomId] = useState(EMERGENCY_SYMPTOM_WIZARD[0].id);
-
-  // Preguntas frecuentes abiertas
   const [openFaqIdx, setOpenFaqIdx] = useState(0);
-
-  // Historial reciente de solicitudes SOS guardadas en el dispositivo
   const [recentRequests, setRecentRequests] = useState([]);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('autobooking_sos_requests');
-      if (saved) {
-        setRecentRequests(JSON.parse(saved));
+    setHasSupabase(isSupabaseConfigured());
+    async function initData() {
+      const [sosList, profile] = await Promise.all([
+        getEmergenciasSOS(),
+        getDriverProfile(),
+      ]);
+      if (Array.isArray(sosList)) {
+        setRecentRequests(sosList);
       }
-      const savedProfile = localStorage.getItem('autobooking_driver_profile');
-      if (savedProfile) {
-        const parsed = JSON.parse(savedProfile);
+      if (profile) {
         setSosForm((prev) => ({
           ...prev,
-          nombre: parsed.nombre || prev.nombre,
-          telefono: parsed.telefono || prev.telefono,
-          comuna: parsed.comuna || prev.comuna,
+          nombre: profile.nombre || prev.nombre,
+          telefono: profile.telefono || prev.telefono,
+          comuna: (profile.comuna || prev.comuna).split(',')[0].trim(),
         }));
       }
-    } catch {
-      // ignore storage errors
     }
+    initData();
   }, []);
 
   const currentService =
@@ -158,35 +169,32 @@ export default function EmergenciaPage() {
     );
   }
 
-  // Cálculo transparente de precio cerrado estimado
   const finalEstimatedPrice =
     currentService.priceFrom + (sosForm.esSubterraneo && currentService.id === 'grua-hidraulica' ? 30000 : 0);
 
-  function handleConfirmSosDispatch() {
-    const folio = `SOS-${Math.floor(100000 + Math.random() * 900000)}`;
-    const newReq = {
-      id: folio,
-      createdAt: new Date().toLocaleString('es-CL'),
+  async function handleConfirmSosDispatch() {
+    setSubmittingSos(true);
+    const createdReq = await createEmergenciaSOS({
+      serviceId: currentService.id,
       serviceTitle: currentService.title,
       eta: currentService.eta,
       price: finalEstimatedPrice,
       comuna: sosForm.comuna,
       direccion: sosForm.direccion || 'Por confirmar en mapa',
+      referencia: sosForm.referencia,
+      gpsCoords: sosForm.gpsCoords,
+      esSubterraneo: sosForm.esSubterraneo,
       patente: (sosForm.patente || 'SIN-PATENTE').toUpperCase(),
       vehiculo: sosForm.vehiculo || 'Vehículo particular',
-      status: 'En despacho prioritario',
-    };
+      conductorNombre: sosForm.nombre || 'Conductor AutoBooking',
+      conductorTelefono: sosForm.telefono,
+    });
 
-    try {
-      const updated = [newReq, ...recentRequests].slice(0, 5);
-      setRecentRequests(updated);
-      localStorage.setItem('autobooking_sos_requests', JSON.stringify(updated));
-    } catch {
-      // ignore
-    }
+    setRecentRequests((prev) => [createdReq, ...prev.filter((r) => r.id !== createdReq.id)]);
+    setSubmittingSos(false);
 
     const msg = [
-      `🚨 *SOLICITUD DE EMERGENCIA SOS 24/7 (${folio})*`,
+      `🚨 *SOLICITUD DE EMERGENCIA SOS 24/7 (${createdReq.id})*`,
       `• *Servicio requerido:* ${currentService.title}`,
       `• *Valor base confirmado:* ${formatCLP(finalEstimatedPrice)}`,
       `• *Tiempo estimado:* ${currentService.eta}`,
@@ -205,6 +213,25 @@ export default function EmergenciaPage() {
     setSosModalOpen(false);
   }
 
+  async function handleAdvanceRadarStage(req) {
+    const nextStage = ((req.etapaRadar || 2) % 4) + 1;
+    const statusMap = {
+      1: 'Orden recibida en central',
+      2: 'Unidad asignada en preparación',
+      3: 'Grúa / Móvil en ruta por GPS',
+      4: 'Operador en el punto de asistencia',
+    };
+    const updated = await updateEmergenciaSOSStatus(req.id, {
+      etapaRadar: nextStage,
+      status: statusMap[nextStage],
+    });
+    if (updated) {
+      setRecentRequests((prev) => prev.map((r) => (r.id === req.id ? updated : r)));
+    }
+  }
+
+  const activeRequest = recentRequests[0] || null;
+
   return (
     <div className="min-h-screen bg-[#080a0d] text-white pb-28 md:pb-16 selection:bg-rose-500 selection:text-white">
       <Navbar />
@@ -213,21 +240,23 @@ export default function EmergenciaPage() {
       {/* 1. HERO PRINCIPAL DE EMERGENCIA 24/7                      */}
       {/* ========================================================= */}
       <section className="relative overflow-hidden pt-8 pb-16 md:pt-14 md:pb-24 border-b border-white/[0.06]">
-        {/* Resplandor ambiental rojo/azul estilo lujo oscuro */}
         <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[780px] h-[420px] bg-gradient-to-tr from-rose-600/20 via-red-500/10 to-blue-600/10 rounded-full blur-3xl" />
 
         <div className="max-w-6xl mx-auto px-5 sm:px-8 relative z-10">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs text-white/40 mb-6">
             <Link href="/" className="hover:text-white transition-colors">
               Inicio
             </Link>
             <span>/</span>
             <span className="text-rose-400 font-medium">Emergencia Automotriz 24/7</span>
+            {hasSupabase && (
+              <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                ● Supabase Live Sync
+              </span>
+            )}
           </div>
 
           <div className="max-w-3xl">
-            {/* Pill superior */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] font-bold uppercase tracking-wider mb-6">
               <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
               <span>Emergencia automotriz 24/7 · Sin seguro</span>
@@ -247,7 +276,6 @@ export default function EmergenciaPage() {
               <strong className="text-white font-semibold">precio cerrado antes de despachar</strong>.
             </p>
 
-            {/* Botones de acción principales */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-8">
               <button
                 type="button"
@@ -267,7 +295,6 @@ export default function EmergenciaPage() {
               </a>
             </div>
 
-            {/* 3 Sellos de confianza */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               {[
                 'Sin contratos ni letra chica',
@@ -287,37 +314,89 @@ export default function EmergenciaPage() {
             </div>
           </div>
 
-          {/* Si el usuario ya pidió un SOS en esta sesión, mostrar tarjeta de seguimiento en vivo */}
-          {recentRequests.length > 0 && (
-            <div className="mt-8 bg-rose-950/30 border border-rose-500/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-300 font-black text-xs shrink-0">
-                  SOS
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold uppercase tracking-wider text-rose-300">
-                      Última solicitud activa · {recentRequests[0].id}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      {recentRequests[0].status}
-                    </span>
+          {/* ========================================================= */}
+          {/* RADAR EN VIVO DE SEGUIMIENTO SOS (CONECTADO A SUPABASE)   */}
+          {/* ========================================================= */}
+          {activeRequest && (
+            <div className="mt-10 bg-gradient-to-br from-rose-950/40 via-[#0d1117] to-[#0d1117] border border-rose-500/40 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-300 font-black text-xs shrink-0">
+                    <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
                   </div>
-                  <p className="text-sm font-semibold text-white mt-0.5">
-                    {recentRequests[0].serviceTitle} — {recentRequests[0].comuna} ({recentRequests[0].patente})
-                  </p>
-                  <p className="text-xs text-white/50">
-                    Valor estimado: {formatCLP(recentRequests[0].price)} · ETA: {recentRequests[0].eta}
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold uppercase tracking-wider text-rose-300">
+                        Radar de Despacho SOS en Vivo · {activeRequest.id}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        {activeRequest.status}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+                      {activeRequest.serviceTitle} — {activeRequest.comuna} ({activeRequest.patente})
+                    </h3>
+                    <p className="text-xs text-white/55">
+                      Operador asignado:{' '}
+                      <strong className="text-white">
+                        {activeRequest.operadorAsignado || 'Unidad Móvil SOS #04'}
+                      </strong>{' '}
+                      · Unidad: <span className="font-mono">{activeRequest.gruaPatente || 'GRUA-84'}</span> ·
+                      Tarifa cerrada: <strong className="text-rose-300">{formatCLP(activeRequest.price)}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleAdvanceRadarStage(activeRequest)}
+                    className="px-3.5 py-2 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-semibold text-white cursor-pointer"
+                    title="Actualizar estado del radar"
+                  >
+                    Actualizar Radar ↻
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSosModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white cursor-pointer"
+                  >
+                    Nueva Solicitud
+                  </button>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setSosModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.1] text-xs font-semibold text-white shrink-0 cursor-pointer"
-              >
-                Modificar / Reenviar ubicación
-              </button>
+
+              {/* Barra de 4 etapas del rescate */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {RADAR_STEPS.map((st) => {
+                  const currentStage = activeRequest.etapaRadar || 2;
+                  const done = st.step <= currentStage;
+                  const isCurrent = st.step === currentStage;
+                  return (
+                    <div
+                      key={st.step}
+                      className={`p-3.5 rounded-2xl border transition-all ${
+                        isCurrent
+                          ? 'bg-rose-500/15 border-rose-500 text-white'
+                          : done
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-white/90'
+                          : 'bg-white/[0.02] border-white/[0.06] text-white/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                          Etapa 0{st.step}
+                        </span>
+                        <span className="text-xs font-black">
+                          {done ? '✓' : '○'}
+                        </span>
+                      </div>
+                      <strong className="text-xs font-bold block">{st.label}</strong>
+                      <span className="text-[10px] opacity-75 block">{st.sub}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -380,11 +459,10 @@ export default function EmergenciaPage() {
               </div>
             </div>
 
-            {/* Tarjeta lateral Asistente IA */}
             <div className="lg:w-80 shrink-0 bg-gradient-to-b from-blue-950/40 to-[#080a0d] border border-blue-500/25 rounded-2xl p-5 flex flex-col justify-between space-y-4">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300 text-[10px] font-bold uppercase tracking-wider mb-3">
-                  <span>Asistente Técnico IA</span>
+                  <span>AutoBot IA · Ingeniero Virtual</span>
                 </div>
                 <h3 className="text-base font-bold text-white mb-1.5">
                   ¿No sabes qué le pasa a tu auto?
@@ -433,7 +511,6 @@ export default function EmergenciaPage() {
               className="group bg-[#0d1117] hover:bg-[#111722] border border-white/[0.08] hover:border-rose-500/40 rounded-3xl p-6 flex flex-col justify-between transition-all duration-200 shadow-lg"
             >
               <div>
-                {/* Top row: Icon + ETA pill */}
                 <div className="flex items-center justify-between gap-2 mb-5">
                   <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-400 flex items-center justify-center group-hover:scale-105 transition-transform">
                     <ServiceIcon type={service.iconType} className="w-6 h-6" />
@@ -447,7 +524,6 @@ export default function EmergenciaPage() {
                   </div>
                 </div>
 
-                {/* Title & Price */}
                 <h3 className="text-lg font-bold text-white mb-1 group-hover:text-rose-200 transition-colors">
                   {service.title}
                 </h3>
@@ -461,7 +537,6 @@ export default function EmergenciaPage() {
 
                 <p className="text-xs text-white/60 leading-relaxed mb-4">{service.description}</p>
 
-                {/* Includes list */}
                 <ul className="space-y-1.5 mb-6 border-t border-white/[0.06] pt-4">
                   {service.includes.map((inc, idx) => (
                     <li key={idx} className="flex items-start gap-2 text-[11px] text-white/65">
@@ -572,7 +647,7 @@ export default function EmergenciaPage() {
               {
                 num: '04',
                 title: 'Recibe ayuda en minutos',
-                desc: 'Un especialista verificado va directo a tu punto con monitoreo por WhatsApp en tiempo real.',
+                desc: 'Un especialista verificado va directo a tu punto con monitoreo por Radar y WhatsApp en tiempo real.',
               },
             ].map((item) => (
               <div
@@ -605,7 +680,6 @@ export default function EmergenciaPage() {
               Santiago, Valparaíso/Viña del Mar y Gran Concepción.
             </p>
 
-            {/* 3 Métricas clave */}
             <div className="grid grid-cols-3 gap-3 pt-2">
               <div className="bg-[#0d1117] border border-white/[0.08] rounded-2xl p-4 text-center">
                 <span className="text-2xl font-black text-white block">3</span>
@@ -623,7 +697,6 @@ export default function EmergenciaPage() {
           </div>
 
           <div className="lg:col-span-7 bg-[#0d1117] border border-white/[0.08] rounded-3xl p-6">
-            {/* Selector de Región */}
             <div className="flex flex-wrap gap-2 mb-6">
               {EMERGENCY_COVERAGE_REGIONS.map((reg, idx) => (
                 <button
@@ -826,7 +899,6 @@ export default function EmergenciaPage() {
       {sosModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-[#0d1117] border border-white/[0.12] rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8">
-            {/* Header del modal */}
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/[0.08]">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400 block">
@@ -847,7 +919,6 @@ export default function EmergenciaPage() {
               </button>
             </div>
 
-            {/* PASO 1: ELEGIR SERVICIO */}
             {sosStep === 1 && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[340px] overflow-y-auto pr-1">
@@ -905,7 +976,6 @@ export default function EmergenciaPage() {
               </div>
             )}
 
-            {/* PASO 2: UBICACIÓN GPS Y VEHÍCULO */}
             {sosStep === 2 && (
               <div className="space-y-4">
                 <button
@@ -996,7 +1066,6 @@ export default function EmergenciaPage() {
               </div>
             )}
 
-            {/* PASO 3: CONFIRMACIÓN Y PRECIO CERRADO */}
             {sosStep === 3 && (
               <div className="space-y-4">
                 <div className="bg-rose-950/30 border border-rose-500/30 rounded-2xl p-4 space-y-2">
@@ -1023,8 +1092,8 @@ export default function EmergenciaPage() {
                 </div>
 
                 <p className="text-[11px] text-white/50 leading-relaxed">
-                  Al presionar confirmar se registrará tu orden SOS y se abrirá el canal prioritario de
-                  WhatsApp con la central de despacho para compartir el link en vivo del operador.
+                  Al presionar confirmar se guardará tu orden SOS en Supabase, se activará el Radar de
+                  Seguimiento en vivo y se abrirá WhatsApp con la central 24/7.
                 </p>
 
                 <div className="pt-2 flex items-center justify-between gap-3">
@@ -1037,10 +1106,11 @@ export default function EmergenciaPage() {
                   </button>
                   <button
                     type="button"
+                    disabled={submittingSos}
                     onClick={handleConfirmSosDispatch}
                     className="flex-1 py-3.5 px-5 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs shadow-lg shadow-rose-600/30 cursor-pointer"
                   >
-                    🚨 Confirmar y Despachar Unidad Ahora
+                    {submittingSos ? 'Registrando despacho SOS...' : '🚨 Confirmar y Despachar Unidad Ahora'}
                   </button>
                 </div>
               </div>
@@ -1121,6 +1191,7 @@ export default function EmergenciaPage() {
         </div>
       )}
 
+      <AutoBotAssistant />
       <BottomNav />
     </div>
   );

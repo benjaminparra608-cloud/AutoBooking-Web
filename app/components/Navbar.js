@@ -209,6 +209,20 @@ export default function Navbar() {
                 >
                   🔍 Buscador Inteligente de Categorías
                 </Link>
+                <Link
+                  href="/bencina"
+                  onClick={handleNavLinkClick}
+                  className="block p-2.5 rounded-lg text-xs text-emerald-300 font-semibold hover:bg-white/[0.04] transition-colors"
+                >
+                  ⛽ Bencina en Línea, Restricción & Calendario PRT
+                </Link>
+                <Link
+                  href="/seminuevos"
+                  onClick={handleNavLinkClick}
+                  className="block p-2.5 rounded-lg text-xs text-white/80 font-medium hover:bg-white/[0.04] transition-colors"
+                >
+                  🛡️ Compra-Venta Autos Certificados (100 Puntos)
+                </Link>
                 <a
                   href="/#servicios"
                   onClick={handleNavLinkClick}
@@ -426,6 +440,42 @@ export default function Navbar() {
                           </strong>
                           <span className="text-[11px] text-white/35 font-light leading-snug">
                             Consulta el estado de reparación o historial por patente.
+                          </span>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/bencina"
+                        onClick={handleNavLinkClick}
+                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-all group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                          <span className="text-xs">⛽</span>
+                        </div>
+                        <div>
+                          <strong className="text-xs font-semibold text-emerald-300 block transition-colors leading-tight">
+                            Bencina en Línea, Restricción & PRT
+                          </strong>
+                          <span className="text-[11px] text-white/40 font-light leading-snug">
+                            Compara precios por litro y verifica tu patente hoy.
+                          </span>
+                        </div>
+                      </Link>
+
+                      <Link
+                        href="/seminuevos"
+                        onClick={handleNavLinkClick}
+                        className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-white/[0.04] transition-all group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center shrink-0">
+                          <span className="text-xs">🛡️</span>
+                        </div>
+                        <div>
+                          <strong className="text-xs font-semibold text-white/90 group-hover:text-blue-300 block transition-colors leading-tight">
+                            Compra-Venta Certificada (100 Pts)
+                          </strong>
+                          <span className="text-[11px] text-white/40 font-light leading-snug">
+                            Autos seminuevos auditados con escáner OBD2.
                           </span>
                         </div>
                       </Link>

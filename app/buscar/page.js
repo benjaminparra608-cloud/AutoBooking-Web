@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import AutoBotAssistant from '../components/AutoBotAssistant';
 import {
   RECOMMENDED_SEARCH_TAGS,
   DISCOVER_CATEGORIES,
@@ -373,6 +374,12 @@ export default function BuscarPage() {
               </Link>
             </div>
           </div>
+        </section>
+        {/* ========================================================= */}
+        {/* 5. ASISTENTE CONVERSACIONAL IA INTEGRADO                  */}
+        {/* ========================================================= */}
+        <section className="mt-10">
+          <AutoBotAssistant embedded={true} />
         </section>
       </main>
 
